@@ -1,0 +1,105 @@
+<view class="page">
+  <loading wx:if="{{loading}}" mode="block" text="正在打开资料库" />
+
+  <block wx:elif="{{error}}">
+    <view class="errorbox">
+      <text class="errorbox__title">{{error}}</text>
+      <text class="errorbox__hint">若是首次运行，请先在 miniprogram/config/env.ts 填写云开发环境 ID，并部署云函数。</text>
+      <view class="errorbox__btn" bindtap="onRetry">重试</view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="hero">
+      <view class="hero__avatar">{{initial}}</view>
+      <view class="hero__text">
+        <text class="hero__greet">{{greet}}</text>
+        <view class="hero__name" bindtap="onEditName" hover-class="hero__name--hover">
+          <text>{{displayName}}</text>
+          <view class="hero__pen"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="stats">
+      <view class="stats__item">
+        <text class="stats__num tabular">{{stats.records}}</text>
+        <text class="stats__label">资料</text>
+      </view>
+      <view class="stats__sep"></view>
+      <view class="stats__item">
+        <text class="stats__num tabular">{{stats.attachments}}</text>
+        <text class="stats__label">附件</text>
+      </view>
+      <view class="stats__sep"></view>
+      <view class="stats__item">
+        <text class="stats__num tabular">{{stats.anniversaries}}</text>
+        <text class="stats__label">纪念日</text>
+      </view>
+    </view>
+
+    <search-bar readonly="{{true}}" value="" placeholder="搜索标题或内容" bind:tap="onSearchTap" />
+
+    <view class="section">
+      <view class="section__head">
+        <text class="section__title">快捷新增</text>
+        <text class="section__action" bindtap="onNewTap">新建资料</text>
+      </view>
+
+      <view class="grid">
+        <view
+          wx:for="{{categories}}"
+          wx:key="_id"
+          class="grid__item"
+          data-id="{{item._id}}"
+          bindtap="onCategoryTap"
+          hover-class="grid__item--hover"
+        >
+          <view class="grid__dot" style="background: {{item.color}}"></view>
+          <text class="grid__name">{{item.name}}</text>
+          <text class="grid__count tabular">{{item.record_count}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{favorites.length > 0}}" class="section">
+      <view class="section__head">
+        <text class="section__title">收藏</text>
+        <text class="section__action" bindtap="onSeeFavorites">查看全部</text>
+      </view>
+      <record-card
+        wx:for="{{favorites}}"
+        wx:key="_id"
+        item="{{item}}"
+        bind:tap="onRecordTap"
+        class="stack-item"
+      />
+    </view>
+
+    <view class="section">
+      <view class="section__head">
+        <text class="section__title">最近记录</text>
+        <text wx:if="{{recent.length > 0}}" class="section__action" bindtap="onSeeAll">全部</text>
+      </view>
+
+      <empty-state
+        wx:if="{{recent.length === 0}}"
+        title="还没有任何资料"
+        desc="从一条备忘开始，之后所有证件、文件、人物都可以归档在这里"
+        actionText="新建第一条"
+        bind:action="onNewTap"
+      />
+      <block wx:else>
+        <record-card
+          wx:for="{{recent}}"
+          wx:key="_id"
+          item="{{item}}"
+          bind:tap="onRecordTap"
+          class="stack-item"
+        />
+      </block>
+    </view>
+  </block>
+
+  <custom-tabbar current="home" />
+</view>

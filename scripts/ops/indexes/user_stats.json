@@ -1,0 +1,11 @@
+{
+  "CreateIndexes": [
+    {
+      "IndexName": "idx_owner_openid",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [{ "Name": "owner_openid", "Direction": "1" }],
+        "MgoIsUnique": false
+      }
+    }
+  ]
+}

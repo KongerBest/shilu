@@ -1,0 +1,116 @@
+{
+  "CreateIndexes": [
+    {
+      "IndexName": "idx_owner_deleted_updated",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "updated_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_deleted_created",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "created_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_category_deleted_updated",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "category_id", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "updated_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_archived_deleted_updated",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "is_archived", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "updated_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_favorite_deleted_updated",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "is_favorite", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "updated_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_template_deleted",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "template_id", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_tags_deleted_updated",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "tags", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "updated_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_contacts_deleted",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "contact_ids", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_remind_at",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "remind_at", "Direction": "1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_title",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "title", "Direction": "1" }
+        ],
+        "MgoIsUnique": false
+      }
+    }
+  ]
+}

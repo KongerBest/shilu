@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "资料详情",
+  "usingComponents": {
+    "loading": "/components/loading/index",
+    "empty-state": "/components/empty-state/index"
+  }
+}

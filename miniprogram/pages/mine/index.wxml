@@ -1,0 +1,59 @@
+<view class="page">
+  <loading wx:if="{{loading}}" mode="block" text="正在读取" />
+
+  <block wx:else>
+    <view class="profile">
+      <view class="profile__avatar">{{initial}}</view>
+      <view class="profile__info">
+        <text class="profile__name">{{nickname}}</text>
+        <text wx:if="{{createdText}}" class="profile__since">自 {{createdText}} 起使用</text>
+      </view>
+    </view>
+
+    <view class="card summary">
+      <view class="summary__row">
+        <text class="summary__label">资料</text>
+        <text class="summary__value tabular">{{stats.records}}</text>
+      </view>
+      <view class="divider"></view>
+      <view class="summary__row">
+        <text class="summary__label">附件</text>
+        <text class="summary__value tabular">{{stats.attachments}}</text>
+      </view>
+      <view class="divider"></view>
+      <view class="summary__row">
+        <text class="summary__label">纪念日</text>
+        <text class="summary__value tabular">{{stats.anniversaries}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{error}}" class="errorline">{{error}}</view>
+
+    <view class="group">
+      <view class="row" bindtap="onOpenCategories" hover-class="row--hover">
+        <text class="row__label">分类管理</text>
+        <view class="row__arrow"></view>
+      </view>
+      <view class="row" bindtap="onOpenTemplates" hover-class="row--hover">
+        <text class="row__label">模板管理</text>
+        <view class="row__arrow"></view>
+      </view>
+      <view class="row" bindtap="onOpenSettings" hover-class="row--hover">
+        <text class="row__label">设置</text>
+        <view class="row__arrow"></view>
+      </view>
+      <view class="row" bindtap="onOpenAbout" hover-class="row--hover">
+        <text class="row__label">关于拾录与已知限制</text>
+        <view class="row__arrow"></view>
+      </view>
+    </view>
+
+    <view wx:if="{{!cloudReady}}" class="warnbox">
+      云开发环境未配置，当前无法读写云端数据。请在 miniprogram/config/env.ts 填写环境 ID。
+    </view>
+
+    <view class="footer">拾录 v{{version}}</view>
+  </block>
+
+  <custom-tabbar current="mine" />
+</view>

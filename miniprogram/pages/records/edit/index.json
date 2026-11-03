@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "资料",
+  "usingComponents": {
+    "loading": "/components/loading/index",
+    "empty-state": "/components/empty-state/index",
+    "field-renderer": "/components/field-renderer/index"
+  }
+}

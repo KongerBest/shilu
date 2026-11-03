@@ -1,0 +1,75 @@
+.tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: stretch;
+  /* 全局 view 是 border-box，height 必须把安全区加进去，
+     否则 padding-bottom 会从 108rpx 里扣掉 34px，图标与文字被压扁 */
+  height: calc(var(--tabbar-height) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(20rpx);
+  border-top: 1rpx solid var(--c-line);
+}
+
+.tabbar__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  position: relative;
+  transition: opacity 120ms ease;
+}
+
+.tabbar__item--hover {
+  opacity: 0.6;
+}
+
+.tabbar__label {
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  letter-spacing: 0.04em;
+}
+
+.tabbar__item.is-active .tabbar__label {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+/* 几何标记构成统一图标语言：不依赖图片资源，任何分辨率下都清晰 */
+.tabbar__mark {
+  width: 18rpx;
+  height: 18rpx;
+  border: 2rpx solid var(--c-text-3);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.tabbar__item.is-active .tabbar__mark {
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+}
+
+.tabbar__mark--square {
+  border-radius: 4rpx;
+}
+
+.tabbar__mark--stack {
+  border-radius: 2rpx;
+  border-left-width: 2rpx;
+  box-shadow: 0 -5rpx 0 -1rpx transparent, 0 5rpx 0 -1rpx transparent;
+}
+
+.tabbar__mark--ring {
+  border-radius: 50%;
+  background: transparent !important;
+  border-width: 3rpx;
+}
+
+.tabbar__mark--dot {
+  border-radius: 50%;
+}

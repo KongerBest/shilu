@@ -1,0 +1,63 @@
+/**
+ * 设计令牌。所有颜色/字号/间距/圆角只从这里取，页面里不写字面量。
+ * 保险箱页在根节点加 .theme-dark 覆盖为深色。
+ */
+page {
+  /* 色彩：暖白纸感 + 墨绿主色，避免纯白纯黑的廉价感 */
+  --c-bg: #f7f7f5;
+  --c-surface: #ffffff;
+  --c-surface-sunken: #f1f1ed;
+  --c-text: #1a1a18;
+  --c-text-2: #54544f;
+  --c-text-3: #9c9c96;
+  --c-line: #e8e8e3;
+  --c-accent: #2f5d50;
+  --c-accent-soft: #eaf0ed;
+  --c-danger: #c24c3f;
+  --c-warn: #c08a2e;
+
+  /* 字体 */
+  --font-sans: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'SF Mono', Menlo, Consolas, monospace;
+  --fs-display: 56rpx;
+  --fs-h1: 40rpx;
+  --fs-title: 32rpx;
+  --fs-body: 28rpx;
+  --fs-caption: 24rpx;
+  --fs-micro: 20rpx;
+  --lh-body: 1.6;
+
+  /* 间距：8 的倍数体系 */
+  --sp-1: 8rpx;
+  --sp-2: 12rpx;
+  --sp-3: 16rpx;
+  --sp-4: 24rpx;
+  --sp-5: 32rpx;
+  --sp-6: 48rpx;
+  --sp-7: 64rpx;
+
+  /* 圆角 */
+  --radius-sm: 8rpx;
+  --radius-card: 20rpx;
+  --radius-sheet: 28rpx;
+  --radius-pill: 999rpx;
+
+  /* 阴影：极轻，靠边框分层 */
+  --shadow-card: 0 2rpx 8rpx rgba(26, 26, 24, 0.04);
+
+  --tabbar-height: 108rpx;
+}
+
+/* 保险箱深色主题 */
+.theme-dark {
+  --c-bg: #14161a;
+  --c-surface: #1c1f25;
+  --c-surface-sunken: #24282f;
+  --c-text: #eceef1;
+  --c-text-2: #a8adb6;
+  --c-text-3: #6d727b;
+  --c-line: #2c313a;
+  --c-accent: #4f9e86;
+  --c-accent-soft: #1d2b27;
+  --c-danger: #d4675a;
+}

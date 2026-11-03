@@ -1,0 +1,36 @@
+{
+  "CreateIndexes": [
+    {
+      "IndexName": "idx_owner_deleted_sort",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "sort_order", "Direction": "1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_system_key",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "system_key", "Direction": "1" }
+        ],
+        "MgoIsUnique": false
+      }
+    },
+    {
+      "IndexName": "idx_owner_deleted_updated",
+      "MgoKeySchema": {
+        "MgoIndexKeys": [
+          { "Name": "owner_openid", "Direction": "1" },
+          { "Name": "is_deleted", "Direction": "1" },
+          { "Name": "updated_at", "Direction": "-1" }
+        ],
+        "MgoIsUnique": false
+      }
+    }
+  ]
+}

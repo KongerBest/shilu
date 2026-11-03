@@ -1,0 +1,252 @@
+<view class="page">
+  <loading wx:if="{{loading}}" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <view class="section">
+      <view class="section__head">
+        <text class="section__title">基本信息</text>
+        <text wx:if="{{isEdit}}" class="section__action">当前第 {{version}} 版</text>
+      </view>
+      <view class="card">
+        <view class="form-row">
+          <text class="form-label">模板名称</text>
+          <input
+            class="form-input"
+            value="{{name}}"
+            maxlength="20"
+            placeholder="如：证件信息"
+            placeholder-class="form-placeholder"
+            bindinput="onNameInput"
+          />
+        </view>
+        <view class="form-row">
+          <text class="form-label">绑定分类</text>
+          <picker range="{{categoryChoices}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="form-picker">
+              <text class="form-picker-text">{{categoryChoices[categoryIndex]}}</text>
+              <text class="chevron">›</text>
+            </view>
+          </picker>
+        </view>
+        <text wx:if="{{nameError}}" class="form-error">{{nameError}}</text>
+        <text wx:if="{{isSystem}}" class="form-hint">系统预设模板，字段可以自由调整；删除后该分类新建资料会退回无模板状态。</text>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section__head">
+        <text class="section__title">字段（{{fieldRows.length}}）</text>
+        <text class="section__action" bindtap="onAddField">+ 添加字段</text>
+      </view>
+
+      <view class="card" wx:if="{{fieldRows.length === 0}}">
+        <text class="muted">还没有字段。至少添加一个字段才能保存模板。</text>
+      </view>
+
+      <view class="card" wx:else>
+        <view wx:for="{{fieldRows}}" wx:key="key" class="field-row">
+          <view class="field-main" data-index="{{index}}" bindtap="onEditField">
+            <view class="field-title">
+              <text class="field-label">{{item.label}}</text>
+              <text wx:if="{{item.required}}" class="tag tag--danger">必填</text>
+              <text wx:if="{{item.sensitive}}" class="tag tag--warn">敏感</text>
+            </view>
+            <text class="field-meta">{{item.meta}}</text>
+          </view>
+          <view class="field-actions">
+            <view class="icon-btn" data-index="{{index}}" data-delta="-1" catchtap="onMoveField">↑</view>
+            <view class="icon-btn" data-index="{{index}}" data-delta="1" catchtap="onMoveField">↓</view>
+            <view class="icon-btn icon-btn--danger" data-index="{{index}}" catchtap="onDeleteField">✕</view>
+          </view>
+        </view>
+      </view>
+
+      <text class="form-hint">
+        敏感字段不会进入搜索索引与列表摘要，详情页默认掩码显示。字段级加密要等密钥体系接入后才真正启用，当前只是"不索引 + 掩码"。
+      </text>
+    </view>
+
+    <view class="section" wx:if="{{isEdit}}">
+      <view class="section__head">
+        <text class="section__title">版本记录</text>
+        <text class="section__action" bindtap="onToggleVersions">{{showVersions ? '收起' : '查看'}}</text>
+      </view>
+      <view class="card" wx:if="{{showVersions}}">
+        <text wx:if="{{versionItems.length === 0}}" class="muted">
+          还没有历史版本。修改字段并保存后会生成新版本。
+        </text>
+        <view wx:for="{{versionItems}}" wx:key="version" class="version-row">
+          <view class="version-main">
+            <text class="version-title">第 {{item.version}} 版 · {{item.field_count}} 个字段</text>
+            <text class="version-meta">{{item.labelsText}}</text>
+          </view>
+          <text class="link" data-version="{{item.version}}" bindtap="onRestoreVersion">回滚</text>
+        </view>
+      </view>
+    </view>
+
+    <button class="btn-primary" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+      {{saving ? '保存中…' : '保存模板'}}
+    </button>
+  </block>
+</view>
+
+<!-- 字段编辑弹层 -->
+<view class="sheet-mask" wx:if="{{sheetVisible}}" bindtap="onSheetClose"></view>
+<view class="sheet" wx:if="{{sheetVisible}}">
+  <view class="sheet-head">
+    <text class="sheet-title">{{sheetIsNew ? '添加字段' : '编辑字段'}}</text>
+    <text class="sheet-close" bindtap="onSheetClose">关闭</text>
+  </view>
+
+  <scroll-view class="sheet-body" scroll-y>
+    <view class="form-row">
+      <text class="form-label">字段名称</text>
+      <input
+        class="form-input"
+        value="{{draft.label}}"
+        maxlength="20"
+        placeholder="如：手机号"
+        placeholder-class="form-placeholder"
+        bindinput="onSheetLabel"
+      />
+    </view>
+
+    <view class="form-row">
+      <text class="form-label">字段类型</text>
+      <picker range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onSheetType">
+        <view class="form-picker">
+          <text class="form-picker-text">{{typeLabels[typeIndex]}}</text>
+          <text class="chevron">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <text class="form-label">必填</text>
+      <switch checked="{{draft.required}}" color="#2F5D50" bindchange="onSheetRequired" />
+    </view>
+
+    <view class="form-row">
+      <view class="form-label-group">
+        <text class="form-label">敏感</text>
+        <text class="form-label-desc">不进索引、详情页掩码</text>
+      </view>
+      <switch checked="{{draft.sensitive}}" color="#C08A2E" bindchange="onSheetSensitive" />
+    </view>
+
+    <view
+      class="form-row"
+      wx:if="{{draft.type !== 'switch' && draft.type !== 'select' && draft.type !== 'multi_select' && draft.type !== 'date' && draft.type !== 'datetime'}}"
+    >
+      <text class="form-label">占位提示</text>
+      <input
+        class="form-input"
+        value="{{draft.placeholder}}"
+        maxlength="40"
+        placeholder="输入框里的灰色提示"
+        placeholder-class="form-placeholder"
+        bindinput="onSheetPlaceholder"
+      />
+    </view>
+
+    <view class="form-row" wx:if="{{draft.type === 'text' || draft.type === 'textarea'}}">
+      <text class="form-label">字数上限</text>
+      <input
+        class="form-input"
+        value="{{draft.max_length}}"
+        type="number"
+        placeholder="留空用默认值"
+        placeholder-class="form-placeholder"
+        bindinput="onSheetMaxLength"
+      />
+    </view>
+
+    <!-- 选项编辑 -->
+    <view wx:if="{{draft.type === 'select' || draft.type === 'multi_select'}}" class="option-block">
+      <view class="option-head">
+        <text class="form-label">选项</text>
+        <text class="section__action" bindtap="onOptionAdd">+ 添加</text>
+      </view>
+      <view wx:if="{{draft.options.length === 0}}" class="muted">单选/多选至少需要一个选项</view>
+      <view wx:for="{{draft.options}}" wx:key="_id" class="option-row">
+        <input
+          class="option-input"
+          value="{{item.label}}"
+          maxlength="20"
+          placeholder="选项名称"
+          placeholder-class="form-placeholder"
+          data-index="{{index}}"
+          bindinput="onOptionLabel"
+        />
+        <text class="option-remove" data-index="{{index}}" bindtap="onOptionRemove">删除</text>
+      </view>
+    </view>
+
+    <!-- 默认值：按类型换控件 -->
+    <view wx:if="{{draftDefaultKind === 'text'}}" class="form-row">
+      <text class="form-label">默认值</text>
+      <input
+        class="form-input"
+        value="{{draft.default_value}}"
+        placeholder="新建资料时的预填内容"
+        placeholder-class="form-placeholder"
+        bindinput="onSheetDefaultText"
+      />
+    </view>
+
+    <view wx:elif="{{draftDefaultKind === 'number'}}" class="form-row">
+      <text class="form-label">默认值</text>
+      <input
+        class="form-input"
+        value="{{draft.default_value}}"
+        type="digit"
+        placeholder="默认数字"
+        placeholder-class="form-placeholder"
+        bindinput="onSheetDefaultText"
+      />
+    </view>
+
+    <view wx:elif="{{draftDefaultKind === 'date'}}" class="form-row">
+      <text class="form-label">默认值</text>
+      <picker mode="date" value="{{draft.default_value}}" bindchange="onSheetDefaultDate">
+        <view class="form-picker">
+          <text class="form-picker-text">{{draft.default_value || '不设置'}}</text>
+          <text class="chevron">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:elif="{{draftDefaultKind === 'select'}}" class="form-row">
+      <text class="form-label">默认值</text>
+      <picker range="{{defaultChoices}}" bindchange="onSheetDefaultSelect">
+        <view class="form-picker">
+          <text class="form-picker-text">{{draft.default_value || '不设置'}}</text>
+          <text class="chevron">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:elif="{{draftDefaultKind === 'switch'}}" class="form-row">
+      <text class="form-label">默认值</text>
+      <switch checked="{{draft.default_value}}" color="#2F5D50" bindchange="onSheetDefaultSwitch" />
+    </view>
+
+    <text wx:if="{{draftDefaultKind === 'none'}}" class="form-hint">
+      该类型暂不支持默认值。
+    </text>
+
+    <text wx:if="{{sheetError}}" class="form-error">{{sheetError}}</text>
+  </scroll-view>
+
+  <view class="sheet-foot">
+    <button class="btn-ghost" bindtap="onSheetClose">取消</button>
+    <button class="btn-primary btn-primary--half" bindtap="onSheetConfirm">确定</button>
+  </view>
+</view>

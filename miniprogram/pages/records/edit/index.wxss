@@ -1,0 +1,24 @@
+.title-input {
+  width: 100%;
+  height: 88rpx;
+  font-size: var(--fs-title);
+  font-weight: 500;
+  color: var(--c-text);
+}
+
+.title-placeholder {
+  color: var(--c-text-3);
+  font-weight: 400;
+}
+
+.record-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--sp-5);
+  padding: 0 var(--sp-1);
+}
+
+.link--danger {
+  color: var(--c-danger);
+}

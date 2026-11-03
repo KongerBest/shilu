@@ -1,0 +1,54 @@
+<view class="page">
+  <loading wx:if="{{loading}}" mode="block" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <view class="card">
+      <view class="detail-head">
+        <text class="detail-title">{{title}}</text>
+        <text wx:if="{{isArchived}}" class="tag tag--warn">已归档</text>
+      </view>
+      <text class="detail-meta">{{metaText}}</text>
+      <view class="detail-times">
+        <text class="detail-time">创建 {{createdText}}</text>
+        <text class="detail-time">更新 {{updatedText}}</text>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{rows.length > 0}}">
+      <view class="detail-rows-head" wx:if="{{hasSensitive}}">
+        <text class="form-hint">含敏感字段，默认掩码显示</text>
+        <text class="link" bindtap="onToggleReveal">{{revealSensitive ? '隐藏' : '显示'}}</text>
+      </view>
+      <view wx:for="{{rows}}" wx:key="key" class="detail-row">
+        <text class="detail-label">
+          {{item.label}}<text wx:if="{{item.sensitive}}" class="tag tag--warn">敏感</text>
+        </text>
+        <text class="detail-value">{{revealSensitive || !item.sensitive ? item.raw : item.text}}</text>
+      </view>
+    </view>
+
+    <view class="card" wx:else>
+      <text class="muted">这条资料还没有填写内容。</text>
+    </view>
+
+    <view class="card" wx:if="{{hasSensitive}}">
+      <text class="form-hint">
+        当前敏感字段只做了「不进搜索索引 + 详情页掩码」。字段级加密要等密钥体系接入后才真正生效，
+        在那之前云端仍能看到明文。
+      </text>
+    </view>
+
+    <button class="btn-primary" bindtap="onEditTap">编辑</button>
+
+    <view class="detail-actions">
+      <text class="link" bindtap="onFavoriteTap">{{isFavorite ? '取消收藏' : '收藏'}}</text>
+      <text class="link link--danger" bindtap="onDeleteTap">删除</text>
+    </view>
+  </block>
+</view>

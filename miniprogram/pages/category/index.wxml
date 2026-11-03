@@ -1,0 +1,124 @@
+<view class="page">
+  <loading wx:if="{{loading}}" mode="block" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <view class="section">
+      <view class="section__head">
+        <text class="section__title">分类</text>
+        <text class="section__action">共 {{rows.length}} 个</text>
+      </view>
+
+      <view class="card">
+        <view wx:for="{{rows}}" wx:key="_id" class="cat-row">
+          <view class="cat-main" data-id="{{item._id}}" bindtap="onRowTap">
+            <view class="cat-dot" style="background: {{item.color}}">{{item.initial}}</view>
+            <view class="cat-info">
+              <view class="cat-title">
+                <text class="cat-name">{{item.name}}</text>
+                <text wx:if="{{item.isSystem}}" class="tag tag--accent">系统</text>
+              </view>
+              <text class="cat-meta">{{item.recordCount}} 条资料 · {{item.templateName}}</text>
+            </view>
+          </view>
+          <view class="cat-actions">
+            <view class="icon-btn" data-index="{{index}}" data-delta="-1" catchtap="onMoveTap">↑</view>
+            <view class="icon-btn" data-index="{{index}}" data-delta="1" catchtap="onMoveTap">↓</view>
+            <view
+              wx:if="{{!item.isSystem}}"
+              class="icon-btn icon-btn--danger"
+              data-id="{{item._id}}"
+              catchtap="onDeleteTap"
+            >✕</view>
+          </view>
+        </view>
+      </view>
+
+      <text class="form-hint">点分类改名、换色、换默认模板；删除自定义分类时，里面的资料必须先迁到别的分类，不会凭空消失。</text>
+    </view>
+
+    <button class="btn-primary" bindtap="onCreateTap">新建分类</button>
+  </block>
+</view>
+
+<!-- 新建 / 编辑分类 -->
+<view class="sheet-mask" wx:if="{{sheetVisible}}" bindtap="onSheetClose"></view>
+<view class="sheet" wx:if="{{sheetVisible}}">
+  <view class="sheet-head">
+    <text class="sheet-title">{{sheetMode === 'create' ? '新建分类' : '编辑分类'}}</text>
+    <text class="sheet-close" bindtap="onSheetClose">关闭</text>
+  </view>
+
+  <view class="sheet-body">
+    <view class="form-row">
+      <text class="form-label">名称</text>
+      <input
+        class="form-input"
+        value="{{draftName}}"
+        maxlength="12"
+        disabled="{{editingIsSystem}}"
+        placeholder="最多 12 个字"
+        placeholder-class="form-placeholder"
+        bindinput="onNameInput"
+      />
+    </view>
+    <text wx:if="{{editingIsSystem}}" class="form-hint">系统分类不支持改名，但可以换颜色和默认模板。</text>
+
+    <view class="form-row">
+      <text class="form-label">颜色</text>
+      <view class="palette">
+        <view
+          wx:for="{{palette}}"
+          wx:key="*this"
+          class="swatch {{draftColor === item ? 'swatch--on' : ''}}"
+          style="background: {{item}}"
+          data-color="{{item}}"
+          bindtap="onColorTap"
+        ></view>
+      </view>
+    </view>
+
+    <view class="form-row">
+      <text class="form-label">默认模板</text>
+      <picker range="{{templateChoices}}" value="{{templateIndex}}" bindchange="onTemplateChange">
+        <view class="form-picker">
+          <text class="form-picker-text">{{templateChoices[templateIndex]}}</text>
+          <text class="chevron">›</text>
+        </view>
+      </picker>
+    </view>
+
+    <text wx:if="{{sheetError}}" class="form-error">{{sheetError}}</text>
+  </view>
+
+  <view class="sheet-foot">
+    <button class="btn-ghost" bindtap="onSheetClose">取消</button>
+    <button class="btn-primary btn-primary--half" bindtap="onSheetConfirm">保存</button>
+  </view>
+</view>
+
+<!-- 删除前选择资料迁往哪个分类 -->
+<view class="sheet-mask" wx:if="{{migrateVisible}}" bindtap="onMigrateClose"></view>
+<view class="sheet" wx:if="{{migrateVisible}}">
+  <view class="sheet-head">
+    <text class="sheet-title">资料迁往哪里</text>
+    <text class="sheet-close" bindtap="onMigrateClose">取消</text>
+  </view>
+  <scroll-view class="sheet-body" scroll-y>
+    <view
+      wx:for="{{migrateRows}}"
+      wx:key="_id"
+      class="migrate-row"
+      data-id="{{item._id}}"
+      bindtap="onMigratePick"
+    >
+      <text class="migrate-name">{{item.name}}</text>
+      <text class="migrate-count">{{item.recordCount}} 条</text>
+    </view>
+  </scroll-view>
+</view>

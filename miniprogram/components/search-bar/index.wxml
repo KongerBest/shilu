@@ -1,0 +1,19 @@
+<view class="sbar" bindtap="onTapReadonly">
+  <view class="sbar__mark"></view>
+  <input
+    wx:if="{{!readonly}}"
+    class="sbar__input"
+    value="{{inner}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="sbar__ph"
+    confirm-type="search"
+    focus="{{focus}}"
+    bindinput="onInput"
+    bindconfirm="onConfirm"
+  />
+  <text wx:else class="sbar__input sbar__input--ro">{{value || placeholder}}</text>
+  <view wx:if="{{!readonly && inner}}" class="sbar__clear" catchtap="onClear">
+    <view class="sbar__clear-line"></view>
+    <view class="sbar__clear-line sbar__clear-line--r"></view>
+  </view>
+</view>

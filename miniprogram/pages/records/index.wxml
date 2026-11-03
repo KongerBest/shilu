@@ -1,0 +1,72 @@
+<view class="page">
+  <view class="toolbar">
+    <search-bar
+      value="{{keyword}}"
+      focus="{{focus}}"
+      placeholder="搜索标题或内容"
+      bind:input="onKeywordInput"
+      bind:confirm="onSearchConfirm"
+    />
+    <view class="chips">
+      <view
+        class="chip {{filter === 'all' ? 'is-active' : ''}}"
+        data-filter="all"
+        bindtap="onFilterTap"
+      >全部</view>
+      <view
+        class="chip {{filter === 'favorite' ? 'is-active' : ''}}"
+        data-filter="favorite"
+        bindtap="onFilterTap"
+      >收藏</view>
+      <view
+        class="chip {{filter === 'archived' ? 'is-active' : ''}}"
+        data-filter="archived"
+        bindtap="onFilterTap"
+      >归档</view>
+    </view>
+    <scroll-view wx:if="{{categoryChips.length > 1}}" class="cat-chips" scroll-x enable-flex>
+      <view
+        wx:for="{{categoryChips}}"
+        wx:key="_id"
+        class="chip chip--cat {{categoryId === item._id ? 'is-active' : ''}}"
+        data-id="{{item._id}}"
+        bindtap="onCategoryChipTap"
+      >{{item.name}}</view>
+    </scroll-view>
+  </view>
+
+  <loading wx:if="{{loading}}" mode="block" text="正在读取" />
+
+  <view wx:elif="{{error}}" class="errorbox">
+    <text class="errorbox__title">{{error}}</text>
+    <view class="errorbox__btn" bindtap="onRetry">重试</view>
+  </view>
+
+  <block wx:else>
+    <empty-state
+      wx:if="{{items.length === 0}}"
+      title="{{keyword ? '没有匹配的结果' : emptyTitle}}"
+      desc="{{keyword ? '换个关键词试试，或检查是否已被筛选条件排除' : emptyDesc}}"
+      actionText="{{keyword ? '' : '新建一条'}}"
+      bind:action="onNewTap"
+    />
+    <block wx:else>
+      <record-card
+        wx:for="{{items}}"
+        wx:key="_id"
+        item="{{item}}"
+        bind:tap="onRecordTap"
+        class="stack-item"
+      />
+      <loading wx:if="{{loadingMore}}" mode="inline" text="加载更多" />
+      <view wx:elif="{{!hasMore}}" class="listend">没有更多了</view>
+    </block>
+  </block>
+
+  <view class="fab" bindtap="onNewTap" hover-class="fab--hover">
+    <view class="fab__h"></view>
+    <view class="fab__v"></view>
+  </view>
+
+  <custom-tabbar current="records" />
+</view>

@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/records/index",
+    "pages/records/detail/index",
+    "pages/records/edit/index",
+    "pages/category/index",
+    "pages/template/index",
+    "pages/template/edit/index",
+    "pages/mine/index",
+    "pages/settings/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#F7F7F5",
+    "navigationBarTitleText": "拾录",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F7F7F5",
+    "enablePullDownRefresh": false
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {},
+  "requiredPrivateInfos": []
+}

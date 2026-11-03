@@ -1,0 +1,8 @@
+<view class="loading loading--{{mode}}">
+  <view class="loading__dots">
+    <view class="loading__dot"></view>
+    <view class="loading__dot"></view>
+    <view class="loading__dot"></view>
+  </view>
+  <text class="loading__text">{{text}}</text>
+</view>

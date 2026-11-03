@@ -1,0 +1,72 @@
+<view class="page">
+  <loading wx:if="{{loading}}" mode="block" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <empty-state
+      wx:if="{{systemRows.length === 0 && customRows.length === 0}}"
+      title="还没有模板"
+      desc="模板决定一条资料要填哪些字段，新建资料时按分类自动带出"
+      action-text="新建模板"
+      bind:action="onCreateTap"
+    />
+    <block wx:else>
+      <view class="section" wx:if="{{systemRows.length > 0}}">
+        <view class="section__head">
+          <text class="section__title">系统预设</text>
+          <text class="section__action">首次登录自动创建</text>
+        </view>
+        <view class="card">
+          <view
+            wx:for="{{systemRows}}"
+            wx:key="_id"
+            class="tpl-row"
+            data-id="{{item._id}}"
+            bindtap="onTemplateTap"
+          >
+            <view class="tpl-main">
+              <view class="tpl-head">
+                <text class="tpl-name">{{item.name}}</text>
+                <text class="tag tag--accent">预设</text>
+              </view>
+              <text class="tpl-meta">{{item.meta}}</text>
+            </view>
+            <view class="tpl-more" data-id="{{item._id}}" catchtap="onMoreTap">···</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section__head">
+          <text class="section__title">我创建的</text>
+          <text class="section__action">共 {{customRows.length}} 个</text>
+        </view>
+        <view class="card" wx:if="{{customRows.length === 0}}">
+          <text class="muted">还没有自定义模板。可以复制系统模板改字段，或直接新建。</text>
+        </view>
+        <view class="card" wx:else>
+          <view
+            wx:for="{{customRows}}"
+            wx:key="_id"
+            class="tpl-row"
+            data-id="{{item._id}}"
+            bindtap="onTemplateTap"
+          >
+            <view class="tpl-main">
+              <text class="tpl-name">{{item.name}}</text>
+              <text class="tpl-meta">{{item.meta}}</text>
+            </view>
+            <view class="tpl-more" data-id="{{item._id}}" catchtap="onMoreTap">···</view>
+          </view>
+        </view>
+      </view>
+
+      <button class="btn-primary" bindtap="onCreateTap">新建模板</button>
+    </block>
+  </block>
+</view>

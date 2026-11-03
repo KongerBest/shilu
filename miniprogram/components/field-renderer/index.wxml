@@ -1,0 +1,105 @@
+<view class="fr" wx:if="{{field}}">
+  <view class="fr-head">
+    <text class="fr-label">{{field.label}}</text>
+    <text wx:if="{{field.required}}" class="fr-required">必填</text>
+    <text wx:if="{{field.sensitive}}" class="fr-badge">敏感</text>
+    <text class="fr-type">{{typeLabel}}</text>
+  </view>
+
+  <!-- 文本类：单行 / 数字 / 电话 / 邮箱 / 链接 / 地点 -->
+  <input
+    wx:if="{{isInput}}"
+    class="fr-input {{error ? 'fr-input--error' : ''}}"
+    value="{{text}}"
+    type="{{inputType}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="fr-placeholder"
+    maxlength="{{maxlength}}"
+    disabled="{{disabled}}"
+    bindinput="onInput"
+    bindblur="onBlur"
+  />
+
+  <!-- 多行文本 -->
+  <textarea
+    wx:elif="{{field.type === 'textarea'}}"
+    class="fr-textarea {{error ? 'fr-input--error' : ''}}"
+    value="{{text}}"
+    placeholder="{{placeholder}}"
+    placeholder-class="fr-placeholder"
+    maxlength="{{maxlength}}"
+    disabled="{{disabled}}"
+    auto-height
+    bindinput="onInput"
+    bindblur="onBlur"
+  />
+
+  <!-- 日期 -->
+  <picker
+    wx:elif="{{field.type === 'date'}}"
+    mode="date"
+    value="{{text}}"
+    disabled="{{disabled}}"
+    bindchange="onDateChange"
+  >
+    <view class="fr-picker {{error ? 'fr-input--error' : ''}}">
+      <text class="{{text ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{text || placeholder}}</text>
+      <text class="fr-chevron">›</text>
+    </view>
+  </picker>
+
+  <!-- 日期时间：拆成日期与时间两个选择器，避免自造轮子 -->
+  <view wx:elif="{{field.type === 'datetime'}}" class="fr-datetime">
+    <picker mode="date" value="{{datePart}}" disabled="{{disabled}}" bindchange="onDatePart">
+      <view class="fr-picker fr-picker--half {{error ? 'fr-input--error' : ''}}">
+        <text class="{{datePart ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{datePart || '选择日期'}}</text>
+      </view>
+    </picker>
+    <picker mode="time" value="{{timePart}}" disabled="{{disabled}}" bindchange="onTimePart">
+      <view class="fr-picker fr-picker--half">
+        <text class="{{timePart ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{timePart || '选择时间'}}</text>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 单选 -->
+  <picker
+    wx:elif="{{field.type === 'select'}}"
+    range="{{optionLabels}}"
+    value="{{selectIndex}}"
+    disabled="{{disabled}}"
+    bindchange="onSelect"
+  >
+    <view class="fr-picker {{error ? 'fr-input--error' : ''}}">
+      <text class="{{selectLabel ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{selectLabel || placeholder}}</text>
+      <text class="fr-chevron">›</text>
+    </view>
+  </picker>
+
+  <!-- 多选 -->
+  <view wx:elif="{{field.type === 'multi_select'}}" class="fr-chips">
+    <view
+      wx:for="{{options}}"
+      wx:key="value"
+      class="fr-chip {{item.checked ? 'fr-chip--on' : ''}}"
+      data-value="{{item.value}}"
+      bindtap="onToggleMulti"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <!-- 开关 -->
+  <view wx:elif="{{field.type === 'switch'}}" class="fr-switch-row">
+    <text class="fr-switch-text">{{boolValue ? '是' : '否'}}</text>
+    <switch checked="{{boolValue}}" disabled="{{disabled}}" color="#2F5D50" bindchange="onSwitch" />
+  </view>
+
+  <!-- 附件类：阶段二还没有统一附件服务，明确标注而不是放个点不动的按钮 -->
+  <view wx:else class="fr-deferred">
+    <text class="fr-deferred-title">{{typeLabel}}字段暂未开放</text>
+    <text class="fr-deferred-desc">需要附件服务支持，将在下一阶段接入</text>
+  </view>
+
+  <text wx:if="{{error}}" class="fr-error">{{error}}</text>
+</view>

@@ -1,0 +1,71 @@
+<view class="page">
+  <loading wx:if="{{loading}}" mode="block" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <view class="card">
+      <input
+        class="title-input"
+        value="{{title}}"
+        maxlength="100"
+        placeholder="给它一个标题"
+        placeholder-class="title-placeholder"
+        bindinput="onTitleInput"
+      />
+      <text wx:if="{{titleError}}" class="form-error">{{titleError}}</text>
+    </view>
+
+    <view class="card">
+      <view class="form-row">
+        <text class="form-label">分类</text>
+        <picker range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+          <view class="form-picker">
+            <text class="form-picker-text">{{categoryNames[categoryIndex]}}</text>
+            <text class="chevron">›</text>
+          </view>
+        </picker>
+      </view>
+      <view class="form-row">
+        <text class="form-label">表单模板</text>
+        <picker range="{{templateOptions}}" value="{{templateIndex}}" bindchange="onTemplateChange">
+          <view class="form-picker">
+            <text class="form-picker-text">{{templateOptions[templateIndex]}}</text>
+            <text class="chevron">›</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{hasTemplate}}">
+      <field-renderer
+        wx:for="{{fieldViews}}"
+        wx:key="key"
+        field="{{item.field}}"
+        value="{{item.value}}"
+        error="{{item.error}}"
+        bind:change="onFieldChange"
+      />
+    </view>
+
+    <view class="card" wx:else>
+      <text class="muted">当前没有使用模板，只能保存标题。</text>
+      <text class="form-hint">
+        到「我的 → 分类管理」给这个分类选一个默认模板，或者在上面把表单模板换成别的。
+      </text>
+    </view>
+
+    <button class="btn-primary" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+      {{saving ? '保存中…' : '保存'}}
+    </button>
+
+    <view class="record-actions" wx:if="{{isEdit}}">
+      <text class="link" bindtap="onArchiveToggle">{{isArchived ? '取消归档' : '归档'}}</text>
+      <text class="link link--danger" bindtap="onDelete">删除这条资料</text>
+    </view>
+  </block>
+</view>

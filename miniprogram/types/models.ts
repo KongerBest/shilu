@@ -1,0 +1,153 @@
+/** 领域模型。字段与 docs/DATABASE.md 一一对应，新增字段先改文档。 */
+
+export interface UserSettings {
+  autoLockSeconds: number;
+  theme: 'light' | 'dark';
+  defaultCategoryId: string | null;
+}
+
+export interface User {
+  _id: string;
+  nickname: string;
+  avatarFileId: string;
+  settings: UserSettings;
+  created_at: number;
+  last_active_at: number;
+}
+
+export interface UserStats {
+  records_count: number;
+  attachments_count: number;
+  anniversaries_count: number;
+  vault_items_count: number;
+}
+
+export interface LoginResult {
+  user: User;
+  stats: UserStats;
+  isNew: boolean;
+}
+
+/** 系统预设分类的稳定标识，自定义分类为 null。 */
+export type SystemCategoryKey =
+  | 'person'
+  | 'work'
+  | 'document'
+  | 'memo'
+  | 'important'
+  | 'account'
+  | 'custom';
+
+export interface Category {
+  _id: string;
+  name: string;
+  icon: string;
+  color: string;
+  sort_order: number;
+  is_system: 0 | 1;
+  system_key: SystemCategoryKey | null;
+  template_id: string | null;
+  record_count: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export type FieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'date'
+  | 'datetime'
+  | 'phone'
+  | 'email'
+  | 'url'
+  | 'select'
+  | 'multi_select'
+  | 'switch'
+  | 'image'
+  | 'file'
+  | 'location_text';
+
+export interface TemplateFieldOption {
+  label: string;
+  value: string;
+}
+
+export interface TemplateField {
+  key: string;
+  label: string;
+  type: FieldType;
+  required: boolean;
+  sensitive: boolean;
+  /** 落库加密标志。阶段五密钥体系接入前恒为 false，UI 不得声称已加密。 */
+  encrypted?: boolean;
+  default_value: unknown;
+  placeholder?: string;
+  options?: TemplateFieldOption[];
+  max_length?: number;
+  sort: number;
+}
+
+export interface Template {
+  _id: string;
+  name: string;
+  category_id: string | null;
+  is_system: 0 | 1;
+  system_key: string | null;
+  version: number;
+  field_count: number;
+  /** 仅 detail / create / update 返回 */
+  fields?: TemplateField[];
+  created_at: number;
+  updated_at: number;
+}
+
+export interface TemplateVersionSummary {
+  version: number;
+  at: number;
+  field_count: number;
+  labels: string[];
+}
+
+/**
+ * 敏感字段的存储形态。见 docs/SECURITY.md §2.3。
+ * __enc 是哨兵，防止把明文误当密文解析。
+ */
+export interface Envelope {
+  __enc: 1;
+  ct: string;
+  iv: string;
+  kv: number;
+}
+
+export type RecordValues = Record<string, unknown>;
+
+export interface ShiluRecord {
+  _id: string;
+  category_id: string;
+  template_id: string | null;
+  template_version: number;
+  title: string;
+  summary: string;
+  values: RecordValues;
+  tags: string[];
+  contact_ids: string[];
+  is_favorite: 0 | 1;
+  is_archived: 0 | 1;
+  remind_at: number | null;
+  attachment_count: number;
+  created_at: number;
+  updated_at: number;
+}
+
+/** 列表项比详情少一些字段，避免无谓流量。 */
+export interface RecordListItem {
+  _id: string;
+  category_id: string;
+  title: string;
+  summary: string;
+  is_favorite: 0 | 1;
+  is_archived: 0 | 1;
+  attachment_count: number;
+  updated_at: number;
+}

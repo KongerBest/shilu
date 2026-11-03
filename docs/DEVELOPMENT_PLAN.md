@@ -1,0 +1,261 @@
+# 拾录 SHILU — 开发计划（DEVELOPMENT_PLAN）
+
+> 分七阶段。每阶段必须走完：目标 → 文件清单 → 写码 → 类型检查 → 跑测试 → 修问题 → 更新文档 → 输出完成情况与遗留。
+> **不允许跳过「跑测试」。无法跑的项必须标「未验证」，不得标「通过」。**
+
+---
+
+## 阶段总览
+
+| 阶段 | 主题 | 关键产出 | 依赖 | 状态 |
+|---|---|---|---|---|
+| P1 | 基础工程 + 登录 + 首页 + 导航 | 可编译骨架、design tokens、http 层、login/user 云函数 | — | ✅ 完成 |
+| P2 | 分类 + 模板 + 动态表单 + 资料 CRUD | `field-renderer` 12 类型可用、template 云函数、分类/模板管理页、动态表单编辑与详情 | P1 | ✅ 完成（附件类字段顺延 P3） |
+| P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | ⬜ |
+| P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | ⬜ |
+| P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | ⬜ |
+| P5-PoC | Argon2id WASM 验证 | 可行性结论 | 需真机 | ⬜ |
+| P6 | 搜索 + 收藏 + 备份恢复 + 导出 | search/backup 云函数 | P2~P5 | ⬜ |
+| P7 | 测试 + 安全体检 + 性能 + 发布 | TEST_REPORT、发布包 | 全部 | ⬜ |
+
+---
+
+## P1 — 基础工程（本轮）
+
+### 目标
+1. 工程可被开发者工具打开、可编译、可跑通类型检查与单测。
+2. 打通「云函数调用 → 统一响应解包 → 错误映射」全链路。
+3. 首页、信息库占位、我的 三个页面有真实数据来源（用户信息 + 统计），不是静态文案。
+4. 底部导航可用，视觉基线（色彩/字号/间距/圆角）落地。
+
+### 文件清单
+
+```
+shilu/
+├─ package.json  tsconfig.json  vitest.config.ts  project.config.json
+├─ docs/PRD.md DATABASE.md API.md SECURITY.md DEPLOYMENT.md DEVELOPMENT_PLAN.md
+├─ scripts/sync-shared.js
+├─ miniprogram/
+│  ├─ app.ts app.json app.wxss sitemap.json
+│  ├─ config/env.ts          # 环境 ID、模板 ID、构建开关
+│  ├─ config/features.ts     # VAULT_ENABLED 等能力开关
+│  ├─ styles/tokens.wxss     # 色彩/字号/间距/圆角/阴影 变量
+│  ├─ types/                 # common.ts user.ts category.ts template.ts record.ts ...
+│  ├─ utils/
+│  │  ├─ logger.ts           # 白名单脱敏日志
+│  │  ├─ errors.ts           # AppError + 错误码映射
+│  │  ├─ cursor.ts           # 游标编解码
+│  │  ├─ validate.ts         # 前端校验（L1，非安全边界）
+│  │  ├─ date.ts             # 日期/倒计时计算
+│  │  └─ uuid.ts
+│  ├─ services/
+│  │  ├─ transport.ts        # callFunction 封装：超时/重试/解包/错误映射
+│  │  ├─ auth.service.ts     # 登录态
+│  │  ├─ user.service.ts     # profile/stats/settings
+│  │  └─ category.service.ts # 列表（首页快捷入口用）
+│  ├─ components/
+│  │  ├─ custom-tabbar/  search-bar/  empty-state/  loading/  record-card/
+│  │  └─ (其余 8 个在 P2~P4 落地)
+│  └─ pages/
+│     ├─ home/     # 完整
+│     ├─ records/  # 列表骨架（真实分页接口就位，P2 补筛选 UI）
+│     ├─ mine/     # 完整
+│     └─ settings/ # 协议/关于/未完成项声明
+├─ cloudfunctions/
+│  ├─ _shared/              # dispatcher/auth/validate/response/logger/db
+│  ├─ login/                # 兼容保留，内部转调 user.login
+│  └─ user/
+└─ tests/
+   ├─ cursor.test.ts  validate.test.ts  logger.test.ts  date.test.ts
+   └─ dispatcher.test.ts    # 云函数纯逻辑（Node 直接 require）
+```
+
+### 验收
+- [ ] `npm run typecheck` 0 error
+- [ ] `npm run test` 全绿，且用例覆盖：游标往返、校验边界、日志脱敏、倒计时闰年、响应封装
+- [ ] 首页三项统计来自 `user_stats`，非硬编码
+- [ ] 云函数 `user.login` 首次调用自动建用户 + 建 stats
+- [ ] 无 TODO 注释、无空页面、无无效按钮
+- [ ] `VAULT_ENABLED=false` 时首页不渲染保险箱入口
+
+### 本阶段已知不做
+- 资料 CRUD（P2）
+- 附件上传（P3）
+- 保险箱（P5）
+- 搜索（P6）
+
+---
+
+## P2 — 分类 / 模板 / 动态表单 / 资料 CRUD
+
+### 目标
+一个完整的表单驱动闭环：建分类 → 建模板 → 按模板填资料 → 列表分页 → 详情查看 → 编辑/归档/收藏/删除。
+
+### 关键实现点（实际实现）
+
+1. **`field-renderer` 是唯一渲染入口**：一个组件内部按 `field.type` 分支，页面只管收集 `values`。没有为任何分类写死表单。
+2. **字段规则单一来源**：`cloudfunctions/_shared/template-schema.js` 是权威实现，`miniprogram/utils/field-rules.ts` 是客户端镜像，`tests/field-parity.test.ts` 用同一批用例跑两边比对错误码——避免"前端过了后端拒"这类最难排查的问题。
+3. **服务端重校验**：`record.create/update` 按 `templates.fields` 再校验一遍，含真实日历日期校验（`2026-02-30` 会被拒）。
+4. **`search_text` 重算**：排除 `sensitive` 字段与信封对象，截断 2000 字。
+5. **模板版本**：`fields` 变化 → `version+1` + 写 `field_history`（保留 10 版），支持回滚；回滚本身也产生新版本。
+6. **默认模板链路**：`categories.template_id` 是唯一入口，新建资料不传 `templateId` 就取它；分类页可换绑，模板页可复制。
+7. **输入不打断光标**：`field-renderer` 内部维护显示态，只在外部值与内部不一致时回写，避免逐字输入被 `setData` 重置。
+
+### 交付文件
+
+| 类别 | 文件 |
+|---|---|
+| 共享层 | `_shared/template-schema.js`、`_shared/presets.js`、`_shared/seed.js`（双向回填分类↔模板） |
+| 云函数 | `template/{index,handlers,package}.js`；`record/handlers.js`、`category/handlers.js` 改造 |
+| 类型/服务 | `types/models.ts`（Template/TemplateVersionSummary）、`services/template.service.ts`、`services/category.service.ts`、`services/record.service.ts` |
+| 工具 | `utils/field-rules.ts`（校验+格式化+掩码+归一化） |
+| 组件 | `components/field-renderer/*` |
+| 页面 | `pages/category/index`、`pages/template/index`、`pages/template/edit`、`pages/records/edit`（重写）、`pages/records/detail`（新增）、`pages/records/index`（分类筛选）、`pages/mine`（入口） |
+| 测试 | `tests/template-schema.test.ts`、`tests/field-parity.test.ts`、`tests/field-rules.test.ts` |
+
+### 测试（真实执行结果见 TEST_REPORT.md）
+- 模板字段校验：缺 label、非法 type、重复 label、重复 key 重生成、select 无选项、选项重复、超 40 字段、默认值类型不符
+- 记录校验：必填、超长、非真实日期、邮箱/链接/手机号、选项越界、开关类型、信封跳过
+- 端云一致性：26 个用例两边错误码逐一相等
+- 预设模板自检：6 份预设全部通过 `normalizeFields`，且不含密码字段
+
+### 遗留风险
+- **字段删除会让老数据变成孤儿**：`values` 里仍留着旧键，但模板不再渲染它。选择「软隐藏」而非物理删除，用户改回同一 key 就能重新看到。
+- **`image` / `file` 字段类型未开放**：需要 P3 的统一附件服务。当前在模板编辑器的类型选择器与服务端 `normalizeFields` 双重拦截，不会产生填不了的字段。
+- **敏感字段尚未加密**：只做到「不入索引 + 掩码」。P5 必须做一次加密回填，见 `SECURITY.md §3.2`。
+- **模板被资料引用时不能删**：这是有意的约束，避免详情页只剩裸 key。用户想清理需先迁移或删除资料。
+
+---
+
+## P3 — 附件 / 证件 / 加密附件
+
+### 目标
+统一 `file-uploader`，普通资料、头像、证件全部复用；证件图片客户端加密。
+
+### 关键实现点
+1. `file-uploader` 状态机：`idle → reading → encrypting → uploading(progress) → confirming → done | failed`。
+2. 失败重试保留已加密的临时文件，避免重复加密（加密慢）。
+3. 加密模块 `utils/crypto/` 独立，含 `kdf.ts` / `aesgcm.ts` / `envelope.ts` / `filecipher.ts`，全部有单测。
+4. 证件页正/反/其他三区，支持排序、替换、删除。
+5. EXIF 剥离（canvas 重绘）。
+
+### 测试
+- 加解密往返（含空文件、20MB 边界、1 字节）
+- nonce 唯一性（1000 次）
+- 篡改密文 → 抛错
+- AAD 不匹配 → 抛错
+
+### 遗留风险
+- 无流式加密 → 20MB 上限；低端机大图可能 OOM，需真机实测。
+
+---
+
+## P4 — 人物 / 纪念日 / 日历 / 提醒
+
+### 目标
+人物与纪念日双联动；倒计时准确；订阅额度可见。
+
+### 关键实现点
+1. 重复规则推进在云函数算（闰年 2/29 → 平年按月末对齐取 2/28，不跨到 3 月，避免与 3/1 生日撞车）。
+2. `upcoming` 只返回 20 条，按天数升序。
+3. 日历视图自绘（不引第三方库，控制体积）。
+4. 订阅额度 UI：显示「剩余 N 次」，每次主动操作（保存纪念日）时顺带请求授权。
+
+### 测试
+- 闰年 2/29、跨年、月末 31 号、每月重复
+- 倒计时边界（今天 = 0 天，显示「今天」而非「0 天后」）
+
+### 遗留风险
+- 一次性订阅额度易耗尽，产品上必须诚实展示，不做「已开启自动提醒」的假状态。
+
+---
+
+## P5 — 密码保险箱
+
+### 目标
+`features.VAULT_ENABLED=true` 下完整可用；`false` 下彻底不可达。
+
+### 关键实现点
+1. `kdf.ts`：PBKDF2-HMAC-SHA512 600k，`@noble/hashes`。**参数存入 `vaults.kdf_params`**，不硬编码。
+2. `aesgcm.ts`：`@noble/ciphers`，12B 随机 nonce，AAD 绑定。
+3. 初始化：生成 MK → 双包裹（主密码 / 恢复码）→ 上传 verifier + recovery_wrap。
+4. 解锁：KDF → 解 verifier → 比对 → MK 驻内存。
+5. 自动锁：`onHide` + 定时器 + 路由栈变化。
+6. 密钥轮换：分批 20 条，可中断续做。
+7. 安全日志：每次操作写一条，`detail` 只写元信息。
+
+### 测试
+- KDF 确定性（同密码同 salt → 同 KEK）
+- 错误密码 → verifier 不匹配
+- 恢复码可解出 MK
+- 轮换后旧密文仍可解（按 `kv` 选 MK）
+- `public` 构建 → 403
+
+### 遗留风险
+- Argon2id 未实现（P5-PoC 单独验证）
+- JS 内存无法清零（已在 SECURITY.md §5.1 披露）
+
+---
+
+## P5-PoC — Argon2id WASM 可行性（独立于主线）
+
+### 目标
+给出**可验证的结论**，而非猜测。
+
+### 步骤
+1. 用 Emscripten `-s STANDALONE_WASM=1 -s EXPORTED_FUNCTIONS=['_argon2id_hash_raw']` 编译 `phc-winner-argon2`（`ARGON2_NO_THREADS=1`）。
+2. 检查产出 wasm 的 import 段是否含 `wasi_snapshot_preview1`。
+3. 放入包内，`WXWebAssembly.instantiate('/assets/argon2.wasm', {})`。
+4. 真机（低端安卓 + iOS）测 m=64MB,t=3,p=1 的耗时与内存峰值。
+
+### 判定
+- 通过 → 切 `kdf_algo='Argon2id'`，按 `key_version` 迁移。
+- 失败 → 维持 PBKDF2，`SECURITY.md §7.1` 保留说明，不吹嘘。
+
+---
+
+## P6 — 搜索 / 收藏 / 备份恢复 / 导出
+
+### 关键实现点
+1. 搜索走 `search_text` 正则，必须带 `owner_openid` + 可选 `category_id` 强过滤（正则不走索引，靠强过滤缩小扫描）。
+2. 关键词转义正则元字符，长度 ≤ 30。
+3. 返回体带 `meta.excludedSensitiveFields`，UI 明示。
+4. 备份：客户端聚合 → 加密 → 上传 → `backup.create`。恢复分批 100 条，显示进度。
+5. 导出 JSON 含 `schema_version`，敏感字段保持密文。
+
+### 测试
+- 正则注入（`.*`、`(`、`[`）不导致全表返回或报错
+- 备份 → 恢复往返数据一致（字段级 diff）
+- 分批恢复中断后续做
+
+### 遗留风险
+- 搜索性能依赖数据量；>10⁴ 条时需引入分词或外部索引，本期不做。
+
+---
+
+## P7 — 测试 / 安全 / 性能 / 发布
+
+### 目标
+产出 `TEST_REPORT.md`，逐项标注「通过 / 未验证 / 不通过」，不含模糊表述。
+
+### 必跑
+- 单测全量 + 覆盖率（目标 crypto/validate/cursor ≥ 90%）
+- 越权用例（每个云函数）
+- 安全检查清单（SECURITY.md §9）逐条勾
+- 首页冷启动耗时、列表翻页耗时、加密 5MB 图耗时
+- 双构建切换验证：`public` 下 vault 完全不可达
+
+### 发布
+- 按 DEPLOYMENT.md §10 检查
+- 隐私政策 / 用户协议页面上线
+- 「关于」页列出未完成项
+
+---
+
+## 全局纪律
+
+1. **不写 TODO 留坑**。做不到就写进 `PRD.md §8` 并在 UI 明示。
+2. **不造假数据**。占位一律显示 `empty-state`，不用 mock 数组冒充。
+3. **不留无效按钮**。未实现的功能入口直接不渲染，不 render 一个点了没反应的按钮。
+4. **每个阶段结束更新文档**，文档与代码不一致视为 bug。
+5. **测试跑不了就写「未验证」**，写「通过」等于造假。

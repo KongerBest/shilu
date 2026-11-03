@@ -1,0 +1,12 @@
+node_modules/
+project.private.config.json
+.DS_Store
+*.log
+coverage/
+# WorkBuddy 的会话记忆与临时产物，不进版本库
+.workbuddy/
+# 云函数依赖由开发者工具在云端安装，不入库
+cloudfunctions/*/node_modules/
+# 由 scripts/sync-shared.js 生成的副本
+cloudfunctions/*/common/
+.vitest-tmp/

@@ -1,0 +1,43 @@
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-7) var(--sp-4);
+  text-align: center;
+}
+
+/* 空心方框作为"空档案格"的隐喻，与 tabbar 的几何标记同语言 */
+.empty__mark {
+  width: 56rpx;
+  height: 56rpx;
+  border: 2rpx dashed var(--c-line);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--sp-4);
+}
+
+.empty__title {
+  font-size: var(--fs-body);
+  color: var(--c-text-2);
+}
+
+.empty__desc {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  max-width: 480rpx;
+  line-height: 1.5;
+}
+
+.empty__action {
+  margin-top: var(--sp-4);
+  padding: 16rpx 40rpx;
+  border-radius: var(--radius-pill);
+  border: 1rpx solid var(--c-accent);
+  color: var(--c-accent);
+  font-size: var(--fs-caption);
+}
+
+.empty__action--hover {
+  background: var(--c-accent-soft);
+}
