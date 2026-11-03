@@ -69,6 +69,36 @@ vaults  secure_items  security_logs  backups
 
 即前端**完全禁止直连数据库**，一切读写经云函数。这样归属校验只有一处实现，不会漏。代价是所有列表都要经云函数（多一次函数调用开销，可接受）。
 
+### 2.3 多用户隔离
+
+每个微信用户在小程序内有一个稳定的 `openid`（同一 AppID 下永久不变），它同时是**身份**和**数据分区键**：
+
+| 层 | 实现 |
+|---|---|
+| 身份来源 | `cloudfunctions/_shared/auth.js` → `requireOpenid()`，只读 `cloud.getWXContext().OPENID`；`payload` 里出现 `openid` / `user_id` / `owner_openid` 会被 `warnIfIdentityInjected` 记录并忽略 |
+| 用户建档 | `ensureUser(openid)`，`users.owner_openid` 建**唯一索引**，并发首登靠唯一约束兜底 |
+| 写入 | 所有 `add()` 的文档都带 `owner_openid: openid`（分类、模板、资料、收藏、统计） |
+| 列表 | 所有 `where()` 的第一项是 `owner_openid`，见 `category.list` / `template.list` / `record.list` |
+| 单条读写 | `loadOwned()` / `loadOwnedCategory()` / `loadOwnedRecord()` 先按 `_id` 取，再比对 `owner_openid`，不一致抛 **403** |
+| 关联引用 | 绑定模板、迁移分类、收藏资料前都先校验目标文档归属，避免用另一个用户的 `_id` 做越权入口 |
+| 计数 | `user_stats._id = user._id`，`categories.record_count` 只统计本用户资料 |
+
+**不变量**：任何一次云函数调用，只能看到 `owner_openid === 调用者 openid` 的文档。违反它的写法只有两种——`where` 漏了 `owner_openid`，或按 `_id` 取回后忘了比对归属。新增 action 时先自问这两条。
+
+#### 验证方法
+
+1. **客户端直读**：在模拟器里执行 `wx.cloud.database().collection('categories').get()`，返回空（云函数同一集合返回 7 条）→ 安全规则生效。
+2. **跨用户读写**：用控制台向 `categories` / `records` 插入一条 `owner_openid` 为其他值的文档，再用当前账号调用：
+
+| 调用 | 期望 |
+|---|---|
+| `category.list` | 列表里没有那条 |
+| `category.update` / `category.remove`（传对方 `_id`） | `code: 403`，对方文档不变 |
+| `record.detail` / `record.update` / `record.remove`（传对方 `_id`） | `code: 403` |
+| `template.update`（传对方模板 `_id`） | `code: 403` |
+
+3. **真机双账号**：用 A 微信扫码预览建几条资料，换 B 微信扫码，首页统计应为 0/0/0、分类是 B 自己的预设；A 再登回应仍能看到自己的数据。
+
 ---
 
 ## 3. 集合定义

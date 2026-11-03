@@ -8,6 +8,14 @@ import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../..
  * 已知限制。这份清单与 docs/PRD.md §8 同步维护，
  * 不允许为了"看起来更完整"而从界面上删掉。
  */
+/**
+ * 账号指纹：取用户文档 _id 的后 8 位，仅用于在设备上区分不同微信号。
+ * 不展示 openid，也不参与任何鉴权。
+ */
+function accountTag(id: string): string {
+  return (id || '').replace(/[^0-9a-zA-Z]/g, '').slice(-8).toUpperCase();
+}
+
 const KNOWN_LIMITS: string[] = [
   '密码保险箱在当前上架构建中关闭：平台规则禁止小程序收集或存储用户密码，与加密方式无关。',
   '纪念日每年自动提醒未实现：个人主体只有一次性订阅权限，一次授权仅一条额度。',
@@ -26,6 +34,7 @@ Page({
     themeClass: themeClass(),
     themeMode: getTheme(),
     nickname: '',
+    accountTag: '',
     version: APP_VERSION,
     cloudReady: isCloudConfigured(),
     vaultEnabled: VAULT_ENABLED,
@@ -39,7 +48,10 @@ Page({
     }
     try {
       const session = await userService.login();
-      this.setData({ nickname: session.user.nickname || '' });
+      this.setData({
+        nickname: session.user.nickname || '',
+        accountTag: accountTag(session.user._id)
+      });
     } catch (error) {
       wx.showToast({ title: toAppError(error).message, icon: 'none' });
     }
@@ -53,7 +65,8 @@ Page({
     this.setData({ themeMode: mode, themeClass: themeClass(mode) });
   },
 
-  onEditNickname() {    wx.showModal({
+  onEditNickname() {
+    wx.showModal({
       title: '修改昵称',
       editable: true,
       placeholderText: `最多 ${24} 个字符`,
