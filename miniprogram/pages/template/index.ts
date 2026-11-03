@@ -3,6 +3,7 @@ import { templateService } from '../../services/template.service';
 import type { Category, Template } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { syncTheme, themeClass } from '../../utils/theme';
 
 interface TemplateRow {
   _id: string;
@@ -33,6 +34,7 @@ function toRow(template: Template, categoryName: string): TemplateRow {
 
 Page({
   data: {
+    themeClass: themeClass(),
     loading: true,
     error: '',
     systemRows: [] as TemplateRow[],
@@ -41,6 +43,7 @@ Page({
   } as TemplateListData,
 
   onShow() {
+    syncTheme(this);
     void this.load();
   },
 

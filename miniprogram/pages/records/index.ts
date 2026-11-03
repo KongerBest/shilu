@@ -4,6 +4,7 @@ import { recordService } from '../../services/record.service';
 import type { Category, RecordListItem } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { syncTheme, themeClass } from '../../utils/theme';
 
 type FilterKey = 'all' | 'favorite' | 'archived';
 
@@ -28,6 +29,7 @@ let searchTimer: number | null = null;
 
 Page({
   data: {
+    themeClass: themeClass(),
     keyword: '',
     focus: false,
     filter: 'all' as FilterKey,
@@ -58,6 +60,7 @@ Page({
   },
 
   onShow() {
+    syncTheme(this);
     // 从编辑页返回时刷新，避免列表与数据不一致
     if (!this.data.loading) {
       void this.loadCategories(this.data.categoryId);

@@ -6,6 +6,7 @@ import type { Category, RecordListItem } from '../../types/models';
 import { greeting } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { syncTheme, themeClass } from '../../utils/theme';
 
 interface HomeStats {
   records: number;
@@ -29,6 +30,7 @@ interface HomeData {
 
 Page({
   data: {
+    themeClass: themeClass(),
     loading: true,
     error: '',
     initial: '拾',
@@ -42,6 +44,7 @@ Page({
   } as HomeData,
 
   onShow() {
+    syncTheme(this);
     // 每次回到首页都刷新，保证新建/删除后数字同步
     void this.load();
   },

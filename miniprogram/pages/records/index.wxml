@@ -1,4 +1,4 @@
-<view class="page">
+<view class="page {{themeClass}}">
   <view class="toolbar">
     <search-bar
       value="{{keyword}}"
@@ -24,14 +24,16 @@
         bindtap="onFilterTap"
       >归档</view>
     </view>
-    <scroll-view wx:if="{{categoryChips.length > 1}}" class="cat-chips" scroll-x enable-flex>
-      <view
-        wx:for="{{categoryChips}}"
-        wx:key="_id"
-        class="chip chip--cat {{categoryId === item._id ? 'is-active' : ''}}"
-        data-id="{{item._id}}"
-        bindtap="onCategoryChipTap"
-      >{{item.name}}</view>
+    <scroll-view wx:if="{{categoryChips.length > 1}}" class="cat-chips" scroll-x>
+      <view class="cat-track">
+        <view
+          wx:for="{{categoryChips}}"
+          wx:key="_id"
+          class="chip chip--cat {{categoryId === item._id ? 'is-active' : ''}}"
+          data-id="{{item._id}}"
+          bindtap="onCategoryChipTap"
+        >{{item.name}}</view>
+      </view>
     </scroll-view>
   </view>
 

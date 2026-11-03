@@ -1,6 +1,10 @@
 /**
  * 设计令牌。所有颜色/字号/间距/圆角只从这里取，页面里不写字面量。
- * 保险箱页在根节点加 .theme-dark 覆盖为深色。
+ *
+ * 主题机制：
+ * - `page` 上是浅色（默认）
+ * - 页面根节点加 `.theme-dark` 覆盖为深色，由 `utils/theme.ts` 控制
+ * - 自定义组件（tabbar / 卡片）不写颜色字面量，一律用变量，靠 CSS 变量继承穿透样式隔离
  */
 page {
   /* 色彩：暖白纸感 + 墨绿主色，避免纯白纯黑的廉价感 */
@@ -15,6 +19,15 @@ page {
   --c-accent-soft: #eaf0ed;
   --c-danger: #c24c3f;
   --c-warn: #c08a2e;
+  --c-warn-soft: #fdf6e8;
+  --c-warn-line: #f0e0bd;
+  --c-warn-text: #8a6a1f;
+
+  /* 组件专用：不透明值，避免 rgba 在深色下泛白 */
+  --c-tabbar-bg: rgba(255, 255, 255, 0.94);
+  --c-fab-fg: #ffffff;
+  --c-shadow-card: 0 2rpx 8rpx rgba(26, 26, 24, 0.04);
+  --c-shadow-fab: 0 8rpx 24rpx rgba(47, 93, 80, 0.28);
 
   /* 字体 */
   --font-sans: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
@@ -42,13 +55,14 @@ page {
   --radius-sheet: 28rpx;
   --radius-pill: 999rpx;
 
-  /* 阴影：极轻，靠边框分层 */
-  --shadow-card: 0 2rpx 8rpx rgba(26, 26, 24, 0.04);
+  /* 控件尺寸：按钮/输入统一高度，避免各页各写一套 */
+  --h-control: 64rpx;
+  --h-chip: 56rpx;
 
   --tabbar-height: 108rpx;
 }
 
-/* 保险箱深色主题 */
+/* 深色主题：不是把浅色反相，而是降饱和 + 抬升层级靠亮度差 */
 .theme-dark {
   --c-bg: #14161a;
   --c-surface: #1c1f25;
@@ -60,4 +74,13 @@ page {
   --c-accent: #4f9e86;
   --c-accent-soft: #1d2b27;
   --c-danger: #d4675a;
+  --c-warn: #d8a24a;
+  --c-warn-soft: #2b2416;
+  --c-warn-line: #45391f;
+  --c-warn-text: #d8b06a;
+
+  --c-tabbar-bg: rgba(20, 22, 26, 0.94);
+  --c-fab-fg: #0e1512;
+  --c-shadow-card: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
+  --c-shadow-fab: 0 8rpx 24rpx rgba(0, 0, 0, 0.55);
 }

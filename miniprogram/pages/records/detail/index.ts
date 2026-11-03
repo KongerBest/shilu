@@ -6,6 +6,7 @@ import { relativeTime } from '../../../utils/date';
 import { toAppError } from '../../../utils/errors';
 import { formatValue, isBlank, MASK_TEXT } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
+import { syncTheme, themeClass } from '../../../utils/theme';
 
 interface DetailRow {
   key: string;
@@ -38,6 +39,7 @@ interface DetailData {
 
 Page({
   data: {
+    themeClass: themeClass(),
     id: '',
     loading: true,
     error: '',
@@ -61,6 +63,7 @@ Page({
   },
 
   onShow() {
+    syncTheme(this);
     // 从编辑页返回时重新拉，保证展示的是最新值
     if (this.data.id) void this.load();
   },

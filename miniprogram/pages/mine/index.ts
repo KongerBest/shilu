@@ -2,6 +2,7 @@ import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { userService } from '../../services/user.service';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { syncTheme, themeClass } from '../../utils/theme';
 
 interface MineData {
   loading: boolean;
@@ -22,6 +23,7 @@ function formatDate(timestamp: number): string {
 
 Page({
   data: {
+    themeClass: themeClass(),
     loading: true,
     error: '',
     initial: '拾',
@@ -33,6 +35,7 @@ Page({
   } as MineData,
 
   onShow() {
+    syncTheme(this);
     void this.load();
   },
 

@@ -6,6 +6,7 @@ import { toAppError } from '../../../utils/errors';
 import { coerceValue, isBlank, validateValues } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
 import { LIMITS } from '../../../utils/validate';
+import { syncTheme, themeClass } from '../../../utils/theme';
 
 interface FieldView {
   key: string;
@@ -21,6 +22,7 @@ interface EditData {
   saving: boolean;
   deleting: boolean;
   error: string;
+  themeClass: string;
 
   title: string;
   titleError: string;
@@ -50,6 +52,7 @@ function emptyData(): EditData {
     saving: false,
     deleting: false,
     error: '',
+    themeClass: themeClass(),
     title: '',
     titleError: '',
     categories: [],
@@ -66,6 +69,10 @@ function emptyData(): EditData {
 }
 
 Page({
+  onShow() {
+    syncTheme(this);
+  },
+
   data: { ...emptyData() } as EditData,
 
   async onLoad(options: Record<string, string | undefined>) {

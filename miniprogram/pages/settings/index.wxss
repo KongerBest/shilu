@@ -114,3 +114,58 @@
   line-height: 1.6;
   text-align: center;
 }
+
+/* 外观切换：两个等宽选项，用色点暗示效果，避免只靠文字 */
+.theme-picker {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+
+.theme-opt {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  height: 88rpx;
+  border: 1rpx solid var(--c-line);
+  border-radius: var(--radius-card);
+  background: var(--c-surface-sunken);
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.theme-opt--hover {
+  opacity: 0.7;
+}
+
+.theme-opt.is-active {
+  border-color: var(--c-accent);
+  background: var(--c-accent-soft);
+}
+
+.theme-opt__dot {
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+}
+
+.theme-opt__dot--light {
+  background: #f7f7f5;
+  border: 1rpx solid #d8d8d2;
+}
+
+.theme-opt__dot--dark {
+  background: #14161a;
+  border: 1rpx solid #3a4049;
+}
+
+.theme-opt__label {
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+}
+
+.theme-opt.is-active .theme-opt__label {
+  color: var(--c-accent);
+  font-weight: 600;
+}

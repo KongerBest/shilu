@@ -4,6 +4,7 @@ import type { Category, FieldType, TemplateField, TemplateVersionSummary } from 
 import { toAppError } from '../../../utils/errors';
 import { ATTACHMENT_FIELDS_ENABLED, FIELD_TYPE_LABELS, FIELD_TYPES } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
+import { syncTheme, themeClass } from '../../../utils/theme';
 
 interface OptionDraft {
   /** 仅用于 wx:key 的本地标识，提交前剔除 */
@@ -141,7 +142,12 @@ function defaultKindOf(type: FieldType): 'text' | 'number' | 'date' | 'switch' |
 }
 
 Page({
+  onShow() {
+    syncTheme(this);
+  },
+
   data: {
+    themeClass: themeClass(),
     id: '',
     isEdit: false,
     loading: false,

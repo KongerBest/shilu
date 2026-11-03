@@ -17,9 +17,13 @@ button {
   box-sizing: border-box;
 }
 
-/* 页面统一内边距与底部给自定义 tabbar 留白（tabbar 实际高度 = 108rpx + 安全区） */
+/* 页面统一内边距与底部给自定义 tabbar 留白（tabbar 实际高度 = 108rpx + 安全区）
+   注意：深色主题下必须自己铺底色。原生 page 的背景来自 page{} 选择器，
+   拿不到 .theme-dark 上的变量，只靠它会留下浅色底 + 浅色文字的「隐形文字」。 */
 .page {
   min-height: 100vh;
+  background: var(--c-bg);
+  color: var(--c-text);
   padding: var(--sp-4) var(--sp-4)
     calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--sp-6));
 }

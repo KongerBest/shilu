@@ -1,4 +1,31 @@
-<view class="page page--plain">
+<view class="page page--plain {{themeClass}}">
+  <view class="section">
+    <view class="section__head">
+      <text class="section__title">外观</text>
+      <text class="section__action">全局生效</text>
+    </view>
+    <view class="card theme-picker">
+      <view
+        class="theme-opt {{themeMode === 'light' ? 'is-active' : ''}}"
+        data-mode="light"
+        bindtap="onThemeTap"
+        hover-class="theme-opt--hover"
+      >
+        <view class="theme-opt__dot theme-opt__dot--light"></view>
+        <text class="theme-opt__label">浅色</text>
+      </view>
+      <view
+        class="theme-opt {{themeMode === 'dark' ? 'is-active' : ''}}"
+        data-mode="dark"
+        bindtap="onThemeTap"
+        hover-class="theme-opt--hover"
+      >
+        <view class="theme-opt__dot theme-opt__dot--dark"></view>
+        <text class="theme-opt__label">深色</text>
+      </view>
+    </view>
+  </view>
+
   <view class="group">
     <view class="row" bindtap="onEditNickname" hover-class="row--hover">
       <text class="row__label">昵称</text>

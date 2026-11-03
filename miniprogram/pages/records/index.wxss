@@ -7,16 +7,26 @@
 
 .chips {
   display: flex;
+  align-items: center;
   gap: var(--sp-2);
 }
 
+/* 固定高度 + 行内居中：此前只写 padding，高度跟着 line-height 走，
+   且 scroll-view 里的 chip 会被拉伸成高矮不一的方块 */
 .chip {
-  padding: 10rpx 28rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--h-chip);
+  padding: 0 28rpx;
   border-radius: var(--radius-pill);
   border: 1rpx solid var(--c-line);
   background: var(--c-surface);
   font-size: var(--fs-caption);
+  line-height: 1;
   color: var(--c-text-2);
+  flex-shrink: 0;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .chip.is-active {
@@ -52,7 +62,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8rpx 24rpx rgba(47, 93, 80, 0.28);
+  box-shadow: var(--c-shadow-fab);
   z-index: 90;
 }
 
@@ -63,7 +73,7 @@
 .fab__h,
 .fab__v {
   position: absolute;
-  background: #ffffff;
+  background: var(--c-fab-fg);
   border-radius: 2rpx;
 }
 
@@ -102,13 +112,24 @@
   font-size: var(--fs-caption);
 }
 
-/* 分类横向筛选条 */
+/* 分类横向筛选条。
+   scroll-view 内部走行内布局时，inline-flex 的 chip 会按基线对齐被顶出容器（顶部被裁），
+   所以里面再包一层 flex 轨道，让 chip 变成普通 flex item。 */
 .cat-chips {
-  display: flex;
   white-space: nowrap;
+}
+
+.cat-track {
+  display: flex;
+  align-items: center;
+  padding: 2rpx;
 }
 
 .chip--cat {
   flex-shrink: 0;
   margin-right: var(--sp-2);
+}
+
+.chip--cat:last-child {
+  margin-right: 0;
 }

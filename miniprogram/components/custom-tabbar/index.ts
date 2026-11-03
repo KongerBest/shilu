@@ -4,14 +4,14 @@ interface TabItem {
   key: string;
   label: string;
   url: string;
-  mark: 'square' | 'stack' | 'ring' | 'dot';
+  icon: 'home' | 'library' | 'calendar' | 'user';
 }
 
 const ALL_TABS: TabItem[] = [
-  { key: 'home', label: '首页', url: '/pages/home/index', mark: 'square' },
-  { key: 'records', label: '信息库', url: '/pages/records/index', mark: 'stack' },
-  { key: 'anniversaries', label: '纪念日', url: '/pages/anniversaries/index', mark: 'ring' },
-  { key: 'mine', label: '我的', url: '/pages/mine/index', mark: 'dot' }
+  { key: 'home', label: '首页', url: '/pages/home/index', icon: 'home' },
+  { key: 'records', label: '信息库', url: '/pages/records/index', icon: 'library' },
+  { key: 'anniversaries', label: '纪念日', url: '/pages/anniversaries/index', icon: 'calendar' },
+  { key: 'mine', label: '我的', url: '/pages/mine/index', icon: 'user' }
 ];
 
 Component({

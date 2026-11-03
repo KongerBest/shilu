@@ -8,7 +8,7 @@
     hover-class="tabbar__item--hover"
     hover-stay-time="60"
   >
-    <view class="tabbar__mark tabbar__mark--{{item.mark}}"></view>
+    <view class="tabbar__icon tabbar__icon--{{item.icon}}"></view>
     <text class="tabbar__label">{{item.label}}</text>
   </view>
 </view>

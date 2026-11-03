@@ -119,6 +119,8 @@ Test Files  10 passed (10)
 | 详情页 | ✅ 字段按模板顺序渲染，模板不可用时降级为裸 key |
 | 索引建立 | ✅ 19 个（`records` 10、`categories` 3、`templates` 3、`users` 2、`user_stats` 1），定义固化为 `scripts/ops/indexes/*.json` |
 | 软删除 | ✅ `record.remove` 后 `is_deleted=1`，`user_stats.records_count` 由 1 回退到 0，`categories.record_count` 同步 |
+| 深色 / 浅色主题 | ✅ 设置页可切换，9 个页面与 tabbar 全部跟随；导航栏与页面底色同步刷新 |
+| 底栏线性图标 | ✅ SVG mask 换色，选中态为主色，深浅色下均清晰 |
 
 ### 3.2 仍未验证
 
@@ -213,3 +215,30 @@ padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--
 **现象**：预设模板与分类同名时，副标题渲染成「人物档案 · 人物档案」。
 
 **修复**：`pages/records/detail` 新增 `metaText`，两者同名时只显示一次。
+
+### 6.4 筛选胶囊尺寸不一 / 第二行被裁切
+
+**现象**：信息库两行筛选按钮高矮不一致，第二行分类胶囊顶部被削平。
+
+**原因**：`.chip` 只写了 `padding`，高度跟着 `line-height` 走；scroll-view 内部是行内布局，
+`inline-flex` 的 chip 按基线对齐，被顶出容器上方约 8px，`overflow: hidden` 就把顶部切掉了。
+
+**修复**：
+
+- `.chip` 固定 `height: var(--h-chip)` + `inline-flex` 居中，尺寸不再随字体行高漂移；
+- scroll-view 内再包一层 `.cat-track { display:flex }`，让 chip 成为普通 flex item，消除基线偏移。
+
+### 6.5 深色模式下「隐形文字」
+
+**现象**：切到深色后，卡片是深色、文字也是深色，页面上大量浅色块与看不见的标题。
+
+**原因**：原生 `page` 元素的背景只能来自 `page{}` 选择器，拿不到 `.theme-dark` 上的 CSS 变量，
+所以整页底色仍是浅色；而文字已经变成深色的浅色值 → 浅底浅字。
+
+**修复**：`.page` 自己铺 `background: var(--c-bg)`；`utils/theme.ts` 额外调
+`wx.setBackgroundColor` 刷原生 page 底色（管下拉回弹区域），并逐页 `wx.setNavigationBarColor`。
+
+### 6.6 底栏图标改为线性图标
+
+原先是纯 CSS 几何标记（方块/圆环），辨识度低。改成 SVG `mask-image` + `background-color`，
+同一套图形靠 CSS 变量换色，深浅色主题不必各准备一份资源。切换 tab 时图标与文字同步变主色。

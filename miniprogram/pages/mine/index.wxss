@@ -104,9 +104,9 @@
   margin-top: var(--sp-4);
   padding: var(--sp-4);
   border-radius: var(--radius-card);
-  background: #fdf6e8;
-  border: 1rpx solid #f0e0bd;
-  color: #8a6a1f;
+  background: var(--c-warn-soft);
+  border: 1rpx solid var(--c-warn-line);
+  color: var(--c-warn-text);
   font-size: var(--fs-caption);
   line-height: 1.6;
 }

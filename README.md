@@ -19,6 +19,7 @@
 | 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer（6 个） |
 | AppID / 云环境 | `wx46dfc697b1c986c0` / `cloud1-d3gx6yqxpb924f4cf` |
 | 模拟器验证 | 首页渲染、底栏安全区、7 个预设分类 + 6 个模板播种、四个云函数 `code: 0` |
+| 外观 | 浅色 / 深色双主题，设置页切换，全部页面与 tabbar 跟随；底栏为线性图标（SVG mask 换色） |
 
 **仍未验证**：`field-renderer` 逐字输入/observers 时序、数据库索引命中、模板版本回滚、云存储、订阅消息、真机加密耗时与键盘遮挡。详见 `docs/TEST_REPORT.md`。
 

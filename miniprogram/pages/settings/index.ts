@@ -2,6 +2,7 @@ import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { VAULT_ENABLED } from '../../config/features';
 import { userService } from '../../services/user.service';
 import { toAppError } from '../../utils/errors';
+import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../../utils/theme';
 
 /**
  * 已知限制。这份清单与 docs/PRD.md §8 同步维护，
@@ -17,7 +18,13 @@ const KNOWN_LIMITS: string[] = [
 ];
 
 Page({
+  onShow() {
+    syncTheme(this);
+  },
+
   data: {
+    themeClass: themeClass(),
+    themeMode: getTheme(),
     nickname: '',
     version: APP_VERSION,
     cloudReady: isCloudConfigured(),
@@ -38,8 +45,15 @@ Page({
     }
   },
 
-  onEditNickname() {
-    wx.showModal({
+  onThemeTap(e: WechatMiniprogram.TouchEvent) {
+    const mode = e.currentTarget.dataset.mode as ThemeMode;
+    if (mode !== 'light' && mode !== 'dark') return;
+    if (mode === this.data.themeMode) return;
+    setTheme(mode);
+    this.setData({ themeMode: mode, themeClass: themeClass(mode) });
+  },
+
+  onEditNickname() {    wx.showModal({
       title: '修改昵称',
       editable: true,
       placeholderText: `最多 ${24} 个字符`,

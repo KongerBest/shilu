@@ -3,6 +3,7 @@ import { templateService } from '../../services/template.service';
 import type { Category, Template } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { syncTheme, themeClass } from '../../utils/theme';
 
 interface CategoryRow {
   _id: string;
@@ -53,6 +54,7 @@ const PALETTE = [
 
 Page({
   data: {
+    themeClass: themeClass(),
     loading: true,
     error: '',
     rows: [] as CategoryRow[],
@@ -76,6 +78,7 @@ Page({
   } as CategoryData,
 
   onShow() {
+    syncTheme(this);
     void this.load();
   },
 
