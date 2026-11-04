@@ -138,6 +138,7 @@ shilu/
 - 资料详情页接入图片区（9 张）与文件区（5 个）。
 - 路径即归属：`cloudPath` 内嵌 `sha256(openid)` 前 16 位，`confirmUpload` 校验前缀，实测跨用户 403。
 - 计数联动：`records.attachment_count` 与 `user_stats.attachments_count` 随上传/删除增减。
+- 加密模块 `utils/crypto/`（P3 地基，P5 密钥体系直接复用）：`random`（跨环境 CSPRNG，小程序走 `wx.getUserCryptoManager`）/ `kdf`（PBKDF2-HMAC-SHA512 600k，同步 + `pbkdf2Async`）/ `aesgcm`（AES-256-GCM，key 32B、nonce 12B、ct||tag）/ `envelope`（密钥信封 + AAD 绑定 `userId:itemId:fieldKey:vKv`）/ `filecipher`（20B 头 + 密文||tag，AAD 绑定业务上下文）。25 项单测覆盖往返、篡改抛错、AAD 不匹配、nonce 唯一性 1000 次、边界。
 
 ### 关键实现点
 1. `file-uploader` 状态机：`idle → reading → encrypting → uploading(progress) → confirming → done | failed`。

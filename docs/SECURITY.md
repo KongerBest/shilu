@@ -141,7 +141,7 @@ interface Envelope {
 | 敏感字段不进 `search_text` / `summary` | ✅ 已实现（P2） | `normalize.js` 的 `flattenValues` 跳过 `sensitive` 字段与信封对象 |
 | 敏感字段详情页掩码 | ✅ 已实现（P2） | `maskValue`，需用户主动点「显示」才渲染原值 |
 | 敏感字段落库加密 | ❌ **未实现（P5）** | `TemplateField.encrypted` 恒为 `false`。现阶段云端存的是明文，UI 与文档均不得声称"已加密" |
-| 附件内容加密 | ❌ 未实现（P3） | |
+| 附件内容加密 | 🟡 算法层就绪（P3） | `utils/crypto/`（`random` / `kdf` / `aesgcm` / `envelope` / `filecipher`）已实现并 25 项单测覆盖；端到端上线仍待 P5 密钥来源（主密码 → KEK → MK 信封），在此之前云端不存任何 `encrypted=1` 的附件 |
 | 保险箱整条加密 | ❌ 未实现（P5） | |
 
 > **阶段五的迁移义务**：P5 接入 MK 后，需要对所有 `encrypted=false` 的敏感字段值做一次加密回填（读明文 → 写信封 → 置 `encrypted=true`）。在回填完成前，这些字段依然是明文。这条不是可选项，是 P5 的验收条件之一。
