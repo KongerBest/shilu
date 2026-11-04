@@ -1,4 +1,5 @@
 import { ANNIVERSARY_ENABLED } from '../../config/features';
+import { haptic } from '../../utils/haptics';
 
 interface TabItem {
   key: string;
@@ -14,6 +15,13 @@ const ALL_TABS: TabItem[] = [
   { key: 'mine', label: '我的', url: '/pages/mine/index', icon: 'user' }
 ];
 
+/**
+ * 收缩阈值带滞回：往下滑过 48px 收，回到 24px 以内才展。
+ * 单一阈值会在边界上反复横跳，看起来像抖动。
+ */
+const SHRINK_AT = 48;
+const EXPAND_AT = 24;
+
 Component({
   properties: {
     current: {
@@ -23,7 +31,9 @@ Component({
   },
 
   data: {
-    tabs: [] as TabItem[]
+    tabs: [] as TabItem[],
+    /** 滚动时收成只留图标的窄胶囊 */
+    compact: false
   },
 
   lifetimes: {
@@ -36,11 +46,22 @@ Component({
   },
 
   methods: {
+    /**
+     * 由页面 onPageScroll 调用。
+     * 状态放在组件实例里，页面重建时自然归零，不用外部记。
+     */
+    setCompactByScroll(scrollTop: number) {
+      const next = this.data.compact ? scrollTop > EXPAND_AT : scrollTop > SHRINK_AT;
+      if (next === this.data.compact) return;
+      this.setData({ compact: next });
+    },
+
     onTap(e: WechatMiniprogram.TouchEvent) {
       const key = e.currentTarget.dataset.key as string;
       if (key === this.data.current) return;
       const tab = this.data.tabs.find((item) => item.key === key);
       if (!tab) return;
+      haptic('light');
       // 自定义 tabbar 无原生 tab 栈，用 reLaunch 保证栈不无限增长
       wx.reLaunch({ url: tab.url });
     }

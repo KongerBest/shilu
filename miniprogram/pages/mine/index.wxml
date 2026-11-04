@@ -55,5 +55,5 @@
     <view class="footer">拾录 v{{version}}</view>
   </block>
 
-  <custom-tabbar current="mine" />
+  <custom-tabbar id="tabbar" current="mine" />
 </view>

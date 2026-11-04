@@ -26,6 +26,7 @@ page {
   /* 组件专用：不透明值，避免 rgba 在深色下泛白 */
   --c-tabbar-bg: rgba(255, 255, 255, 0.94);
   --c-fab-fg: #ffffff;
+  --c-knob: #ffffff;
   --c-shadow-card: 0 2rpx 8rpx rgba(26, 26, 24, 0.04);
   --c-shadow-fab: 0 8rpx 24rpx rgba(47, 93, 80, 0.28);
 
@@ -59,6 +60,12 @@ page {
   /* 悬浮层的投影要明显重于内容卡片，否则「浮起来」的感觉出不来 */
   --shadow-float: 0 18rpx 44rpx rgba(24, 38, 33, 0.16), 0 2rpx 8rpx rgba(24, 38, 33, 0.06);
   --glass-tabbar: rgba(252, 252, 250, 0.72);
+
+  /* 动效：整套界面只用这两条曲线，避免每个组件各写一个时长导致节奏散掉
+     --ease-out 是 iOS 那类「起步快、收尾稳」的曲线，适合位移与形态变化 */
+  --dur-fast: 140ms;
+  --dur-base: 260ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* 字体 */
   --font-sans: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;

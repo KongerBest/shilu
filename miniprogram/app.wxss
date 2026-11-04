@@ -34,6 +34,18 @@ button {
   color: var(--c-text);
   padding: var(--sp-4) var(--sp-4)
     calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--sp-6));
+  /* 切 tab 走 reLaunch，原生层会闪一下；整页淡入把它盖住。
+     只动 opacity 不动 transform —— 带 transform 会让 fixed 的 tabbar 以容器为参照跑偏 */
+  animation: page-fade-in var(--dur-base) var(--ease-out);
+}
+
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .page--flush {

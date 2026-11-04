@@ -2,6 +2,7 @@ import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { VAULT_ENABLED } from '../../config/features';
 import { userService } from '../../services/user.service';
 import { toAppError } from '../../utils/errors';
+import { getHapticsEnabled, haptic, setHapticsEnabled } from '../../utils/haptics';
 import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../../utils/theme';
 
 /**
@@ -33,6 +34,7 @@ Page({
   data: {
     themeClass: themeClass(),
     themeMode: getTheme(),
+    hapticsEnabled: getHapticsEnabled(),
     nickname: '',
     accountTag: '',
     version: APP_VERSION,
@@ -63,6 +65,14 @@ Page({
     if (mode === this.data.themeMode) return;
     setTheme(mode);
     this.setData({ themeMode: mode, themeClass: themeClass(mode) });
+  },
+
+  onToggleHaptics() {
+    const next = !this.data.hapticsEnabled;
+    setHapticsEnabled(next);
+    this.setData({ hapticsEnabled: next });
+    // 开启时立刻震一下，让用户当场确认设备支持；关闭时自然静默
+    if (next) haptic('medium');
   },
 
   onEditNickname() {

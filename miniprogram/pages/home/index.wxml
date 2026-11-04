@@ -101,5 +101,5 @@
     </view>
   </block>
 
-  <custom-tabbar current="home" />
+  <custom-tabbar id="tabbar" current="home" />
 </view>

@@ -28,6 +28,24 @@
 
   <view class="section">
     <view class="section__head">
+      <text class="section__title">交互</text>
+      <text class="section__action">仅本机</text>
+    </view>
+    <view class="group">
+      <view class="row" bindtap="onToggleHaptics" hover-class="row--hover">
+        <text class="row__label">轻触反馈</text>
+        <view class="row__right">
+          <text class="row__value">{{hapticsEnabled ? '已开启' : '已关闭'}}</text>
+          <view class="toggle {{hapticsEnabled ? 'is-on' : ''}}">
+            <view class="toggle__knob"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section__head">
       <text class="section__title">账号</text>
       <text class="section__action">数据按微信账号隔离</text>
     </view>

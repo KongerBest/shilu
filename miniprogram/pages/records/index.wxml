@@ -70,5 +70,5 @@
     <view class="fab__v"></view>
   </view>
 
-  <custom-tabbar current="records" />
+  <custom-tabbar id="tabbar" current="records" />
 </view>

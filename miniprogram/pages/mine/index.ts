@@ -3,6 +3,7 @@ import { userService } from '../../services/user.service';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTabbarCompact } from '../../utils/tabbar';
 
 interface MineData {
   loading: boolean;
@@ -37,6 +38,10 @@ Page({
   onShow() {
     syncTheme(this);
     void this.load();
+  },
+
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncTabbarCompact(this, e.scrollTop);
   },
 
   async load() {

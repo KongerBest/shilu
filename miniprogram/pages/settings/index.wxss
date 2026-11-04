@@ -178,3 +178,39 @@
   color: var(--c-accent);
   font-weight: 600;
 }
+
+/* 自定义开关：不用原生 switch，它的 color 只接受字面量，深色下会和主题色脱节 */
+.toggle {
+  position: relative;
+  width: 88rpx;
+  height: 50rpx;
+  border-radius: var(--radius-pill);
+  /* 关闭态必须是「看得见的凹槽」：玻璃底色几乎全透，白滑块会浮在空气里 */
+  background: var(--c-surface-sunken);
+  border: 1rpx solid var(--c-line);
+  transition:
+    background-color var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+
+.toggle__knob {
+  position: absolute;
+  top: 3rpx;
+  left: 3rpx;
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 50%;
+  background: var(--c-knob);
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.18), 0 0 0 1rpx rgba(0, 0, 0, 0.03);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.toggle.is-on {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.22);
+}
+
+.toggle.is-on .toggle__knob {
+  transform: translateX(40rpx);
+}

@@ -4,7 +4,9 @@ import { recordService } from '../../services/record.service';
 import type { Category, RecordListItem } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { haptic } from '../../utils/haptics';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTabbarCompact } from '../../utils/tabbar';
 
 type FilterKey = 'all' | 'favorite' | 'archived';
 
@@ -68,6 +70,10 @@ Page({
     }
   },
 
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncTabbarCompact(this, e.scrollTop);
+  },
+
   onPullDownRefresh() {
     void this.reload().then(() => wx.stopPullDownRefresh());
   },
@@ -101,6 +107,7 @@ Page({
   onCategoryChipTap(e: WechatMiniprogram.TouchEvent) {
     const categoryId = e.currentTarget.dataset.id as string;
     if (categoryId === this.data.categoryId) return;
+    haptic('light');
     this.setData({
       categoryId,
       categoryName: '',
@@ -180,6 +187,7 @@ Page({
   onFilterTap(e: WechatMiniprogram.TouchEvent) {
     const filter = e.currentTarget.dataset.filter as FilterKey;
     if (filter === this.data.filter) return;
+    haptic('light');
     this.setData({ filter });
     void this.reload();
   },

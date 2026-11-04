@@ -7,6 +7,12 @@ import { greeting } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { tweenProgress, type TweenHandle } from '../../utils/tween';
+import { syncTabbarCompact } from '../../utils/tabbar';
+
+// 统计动画的句柄挂在模块级：每次重新加载前先取消上一段，
+// 否则两个 tween 会同时改同一组数字，末值取决于谁最后跑完。
+let statsTween: TweenHandle | null = null;
 
 interface HomeStats {
   records: number;
@@ -49,6 +55,10 @@ Page({
     void this.load();
   },
 
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncTabbarCompact(this, e.scrollTop);
+  },
+
   onPullDownRefresh() {
     void this.load().then(() => wx.stopPullDownRefresh());
   },
@@ -62,12 +72,13 @@ Page({
 
       this.setData({
         initial: nickname ? nickname.slice(0, 1) : '拾',
-        displayName,
-        stats: {
-          records: session.stats.records_count,
-          attachments: session.stats.attachments_count,
-          anniversaries: session.stats.anniversaries_count
-        }
+        displayName
+      });
+
+      this.animateStats({
+        records: session.stats.records_count,
+        attachments: session.stats.attachments_count,
+        anniversaries: session.stats.anniversaries_count
       });
 
       const categories = await categoryService.list();
@@ -89,6 +100,44 @@ Page({
       const appError = toAppError(error);
       logger.warn('home', 'load failed', { code: appError.code });
       this.setData({ loading: false, error: appError.message });
+    }
+  },
+
+  /**
+   * 统计数字滚到新值。
+   * 三项共用一个进度，保证「资料/附件/纪念日」同步收尾；
+   * 数值没变时直接返回，避免每次回到首页都白跑一遍。
+   */
+  animateStats(next: HomeStats) {
+    const from = this.data.stats;
+    const unchanged =
+      from.records === next.records &&
+      from.attachments === next.attachments &&
+      from.anniversaries === next.anniversaries;
+    if (unchanged) return;
+
+    if (statsTween) statsTween.cancel();
+    const delta = {
+      records: next.records - from.records,
+      attachments: next.attachments - from.attachments,
+      anniversaries: next.anniversaries - from.anniversaries
+    };
+
+    statsTween = tweenProgress((progress) => {
+      this.setData({
+        stats: {
+          records: Math.round(from.records + delta.records * progress),
+          attachments: Math.round(from.attachments + delta.attachments * progress),
+          anniversaries: Math.round(from.anniversaries + delta.anniversaries * progress)
+        }
+      });
+    });
+  },
+
+  onUnload() {
+    if (statsTween) {
+      statsTween.cancel();
+      statsTween = null;
     }
   },
 
