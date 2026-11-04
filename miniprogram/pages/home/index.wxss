@@ -1,3 +1,70 @@
+/* 分区标题：主色竖条作视觉锚点，避免整页纯文字 */
+.section__head {
+  align-items: center;
+}
+
+.section__title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--c-text);
+  letter-spacing: 0.02em;
+}
+
+.section__title::before {
+  content: '';
+  width: 8rpx;
+  height: 30rpx;
+  border-radius: 4rpx;
+  background: linear-gradient(180deg, var(--c-accent-bright), var(--c-accent));
+}
+
+/* 分区右上角动作：胶囊按钮（主操作实心 + 次操作描边），替代纯文字链接 */
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  height: 52rpx;
+  padding: 0 20rpx;
+  border-radius: var(--radius-pill);
+  border: 1rpx solid var(--glass-border-soft);
+  background: var(--glass-bg-soft);
+  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
+  box-shadow: var(--glass-highlight);
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+  transition: transform 120ms ease, opacity 120ms ease;
+}
+
+.action-btn--hover {
+  opacity: 0.7;
+  transform: scale(0.96);
+}
+
+.action-btn--primary {
+  color: var(--c-on-accent);
+  border-color: var(--c-accent);
+  background: var(--c-accent);
+  background-image: linear-gradient(180deg, var(--c-accent-bright), var(--c-accent));
+  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.26);
+}
+
+.action-btn__plus {
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.action-btn__arrow {
+  width: 11rpx;
+  height: 11rpx;
+  border-right: 2rpx solid currentColor;
+  border-bottom: 2rpx solid currentColor;
+  transform: rotate(-45deg);
+}
+
 .hero {
   display: flex;
   align-items: center;
