@@ -6,7 +6,7 @@
 .section__title {
   display: flex;
   align-items: center;
-  gap: 18rpx;
+  gap: 28rpx;
   font-size: var(--fs-title);
   font-weight: 600;
   color: var(--c-text);
@@ -25,9 +25,9 @@
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 10rpx;
+  gap: 16rpx;
   height: 52rpx;
-  padding: 0 22rpx;
+  padding: 0 26rpx;
   border-radius: var(--radius-pill);
   border: 1rpx solid var(--glass-border-soft);
   background: var(--glass-bg-soft);
