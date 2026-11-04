@@ -121,6 +121,14 @@ Test Files  10 passed (10)
 | 软删除 | ✅ `record.remove` 后 `is_deleted=1`，`user_stats.records_count` 由 1 回退到 0，`categories.record_count` 同步 |
 | 深色 / 浅色主题 | ✅ 设置页可切换，9 个页面与 tabbar 全部跟随；导航栏与页面底色同步刷新 |
 | 底栏线性图标 | ✅ SVG mask 换色，选中态为主色，深浅色下均清晰 |
+| 账号唯一性 | ✅ `users.idx_owner_openid_unique` 为 `Unique: true`，同 openid 不会建出两个用户 |
+| 客户端直读数据库 | ✅ 被安全规则拦截：`categories` 客户端读 0 条，同一集合云函数读 7 条 |
+| 跨用户读单条 | ✅ 传他人 `_id` 调 `record.detail` → `403` |
+| 跨用户写 | ✅ `category.update` / `category.remove` / `record.update` / `record.remove` / `record.setFavorite` 传他人 `_id` → 全部 `403`；事后回查对方文档 `is_deleted=0`、`name` / `title` / `is_favorite` 均未被改动 |
+| 跨用户可见性 | ✅ `category.list` / `record.list` 均不含他人文档 |
+
+> 隔离测试用的两条文档由控制台直接写入（`owner_openid` 为 `oFOREIGN_TEST_OPENID_0001`），
+> 未经云函数创建，因此不受"写入时补归属"逻辑影响，能真实模拟另一个用户的数据。
 
 ### 3.2 仍未验证
 
