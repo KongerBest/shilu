@@ -108,6 +108,10 @@ interface Envelope {
 
 零知识前提下，能解开 MK 的路径只有两条：主密码、恢复码。若再引入"客服重置"或"安全问题"，就必须有一个持有密钥的第三方——那就不再是零知识。**本产品选择宁可丢数据也不留后门。** 该取舍在首次初始化时以二次确认弹窗明确告知。
 
+### 2.8 放弃式重置（reset）
+
+当「主密码 + 恢复码」双双丢失时，提供唯一的兜底：`vault.reset` 删除云端 vault 记录，回到未初始化状态。这是"丢数据"而非"找回"——重置后所有 `encrypted=1` 的附件因 MK 丢失而永久无法解密（服务端无 MK，无法代解）。触发前以二次确认弹窗明示，并写 `security_logs.action='reset'` 留痕。
+
 ---
 
 ## 3. 加密范围（逐字段决定）
@@ -141,7 +145,7 @@ interface Envelope {
 | 敏感字段不进 `search_text` / `summary` | ✅ 已实现（P2） | `normalize.js` 的 `flattenValues` 跳过 `sensitive` 字段与信封对象 |
 | 敏感字段详情页掩码 | ✅ 已实现（P2） | `maskValue`，需用户主动点「显示」才渲染原值 |
 | 敏感字段落库加密 | ❌ **未实现（P5）** | `TemplateField.encrypted` 恒为 `false`。现阶段云端存的是明文，UI 与文档均不得声称"已加密" |
-| 附件内容加密 | ✅ 已实现（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/audit）+ `file-uploader` 端到端接入（加密上传 / 解密预览）。加密附件在云存储为密文（`*.enc`），元数据里 `encrypted=1` 并携带 `enc_meta={alg,kv,ctx}`；文件名加密为 `name_enc` 信封 |
+| 附件内容加密 | ✅ 已实现（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/reset/audit）+ `file-uploader` 端到端接入（加密上传 / 解密预览）。加密附件在云存储为密文（`*.enc`），元数据里 `encrypted=1` 并携带 `enc_meta={alg,kv,ctx}`；文件名加密为 `name_enc` 信封 |
 | 保险箱整条加密 | ❌ 未实现（P5） | |
 
 > **阶段五的迁移义务**：P5 接入 MK 后，需要对所有 `encrypted=false` 的敏感字段值做一次加密回填（读明文 → 写信封 → 置 `encrypted=true`）。在回填完成前，这些字段依然是明文。这条不是可选项，是 P5 的验收条件之一。

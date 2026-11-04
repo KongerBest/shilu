@@ -53,6 +53,7 @@
     </view>
     <text wx:if="{{error}}" class="vault-error">{{error}}</text>
     <button class="btn-primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">解锁</button>
+    <view class="vault-reset" bindtap="onReset">忘记密码？重置保险箱</view>
   </block>
 
   <!-- 恢复码 -->

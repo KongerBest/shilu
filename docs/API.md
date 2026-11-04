@@ -201,6 +201,8 @@ getWXContext().OPENID
 
 ### 5.10 `vault`（public 构建整体 403）
 
+> 当前已实现的「密钥前置 vault」（加密附件用，不挂闸门）action 为：`status / init / changePassword / recover / reset / audit`。下表为 P5 密码保险箱（`secure_items` CRUD）的规划，届时在 `SHILU_BUILD=public` 下整体 403。
+
 | action | payload | 返回 |
 |---|---|---|
 | `status` | — | `{ initialized, locked, autoLockSeconds, keyVersion }` |

@@ -175,6 +175,17 @@ async function recover({ openid, payload }) {
   return { ok: true };
 }
 
+/** 重置保险库：删除 vault 文档，回到「未初始化」。
+ *  零知识下服务端无 MK，删除后所有已加密附件将永久无法解密，
+ *  仅用于「忘记主密码且丢失恢复码」时的放弃式兜底。 */
+async function reset({ openid }) {
+  const vault = await loadVault(openid);
+  if (!vault) throw notFound('尚未初始化');
+  await db.collection(COLLECTIONS.vaults).doc(vault._id).remove();
+  await log(openid, vault.user_id, 'reset', null, null);
+  return { ok: true };
+}
+
 /** 客户端上报本地安全事件（解锁/锁定/自动锁/复制/导出），用于审计。 */
 const AUDIT_ACTIONS = ['unlock', 'unlock_failed', 'lock', 'auto_lock', 'copy', 'export'];
 
@@ -187,4 +198,4 @@ async function audit({ openid, payload }) {
   return { ok: true };
 }
 
-module.exports = { init, status, changePassword, recover, audit };
+module.exports = { init, status, changePassword, recover, reset, audit };

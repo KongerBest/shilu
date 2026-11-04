@@ -1,4 +1,5 @@
 import { vaultSession, VaultLockedError } from '../../services/vault-session';
+import { vaultService } from '../../services/vault.service';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { syncTheme, themeClass } from '../../utils/theme';
@@ -90,6 +91,28 @@ Page({
     wx.setClipboardData({
       data: this.data.recoveryCode,
       success: () => wx.showToast({ title: '已复制', icon: 'none' })
+    });
+  },
+
+  /** 忘记密码的放弃式兜底：重置保险库，回到「设置主密码」。 */
+  onReset() {
+    wx.showModal({
+      title: '重置保险箱',
+      content: '重置后所有已加密附件将永久无法解密，且无法找回。确定要重置吗？',
+      confirmText: '确认重置',
+      confirmColor: '#C2453D',
+      success: async (res) => {
+        if (!res.confirm) return;
+        try {
+          await vaultService.reset();
+          vaultSession.lock(); // 清空本地残留 MK，避免旧密钥继续加密新附件
+          haptic('medium');
+          this.setData({ mode: 'setup', password: '', confirmPassword: '', error: '' });
+          wx.showToast({ title: '已重置，请重新设置', icon: 'none' });
+        } catch (error) {
+          this.setData({ error: toAppError(error).message });
+        }
+      }
     });
   },
 

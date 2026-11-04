@@ -51,6 +51,18 @@
   color: var(--c-danger);
 }
 
+/* 忘记密码：放弃式重置入口 */
+.vault-reset {
+  margin-top: var(--sp-5);
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.vault-reset:active {
+  opacity: 0.7;
+}
+
 /* 恢复码 */
 .recovery {
   display: flex;

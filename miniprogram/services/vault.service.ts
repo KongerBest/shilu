@@ -52,6 +52,12 @@ export const vaultService = {
     return call<{ ok: boolean }>('vault', 'recover', { secrets });
   },
 
+  /** 重置保险库：删除云端 vault 记录，回到未初始化。
+   *  零知识下无法恢复 MK，重置后所有已加密附件将永久无法解密。 */
+  reset(): Promise<{ ok: boolean }> {
+    return call<{ ok: boolean }>('vault', 'reset');
+  },
+
   /** 上报本地安全事件（解锁/锁定/自动锁/复制/导出），用于审计。 */
   audit(action: AuditAction, detail?: string): Promise<{ ok: boolean }> {
     return call<{ ok: boolean }>('vault', 'audit', { action, detail });
