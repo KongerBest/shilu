@@ -8,21 +8,21 @@
 
 ## 当前状态
 
-**阶段二已完成**（分类系统 / 模板系统 / 动态表单 / 资料 CRUD），**阶段三进行中**（附件服务基础已跑通，加密与证件页待做）。**已在微信开发者工具 + 真实云环境跑通**。
+**阶段一 ~ 三已完成**：基础工程 + 登录 + 分类/模板/动态表单/资料 CRUD + 附件服务 + 证件正反面 + 端到端加密附件 + 微信头像/昵称授权。**已在微信开发者工具 + 真实云环境跑通**。
 
 | 项 | 结果 |
 |---|---|
 | `npm run typecheck` | 0 error |
-| `npm run check` | 131 / 131 通过（10 个文件，单进程串行） |
-| 云函数 | `user`、`category`、`template`、`record`、`attachment`（共 5 个，均已部署并验证） |
-| 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings（9 个） |
+| `npm run check` | 174 / 174 通过（13 个文件） |
+| 云函数 | `user`、`category`、`template`、`record`、`attachment`、`vault`（共 6 个，均已部署并验证） |
+| 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings、vault（10 个） |
 | 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer、file-uploader（7 个） |
 | AppID / 云环境 | `wx46dfc697b1c986c0` / `cloud1-d3gx6yqxpb924f4cf` |
-| 模拟器验证 | 首页渲染、底栏安全区、7 个预设分类 + 6 个模板播种、五个云函数 `code: 0`、附件上传/签名/删除全链路 |
+| 加密 | 端到端加密附件（PBKDF2 600k + AES-256-GCM + 主密码/恢复码双信封，云端零明文）；微信头像/昵称授权 + EXIF 剥离 |
 | 外观 | 浅色 / 深色双主题；液态玻璃材质（环境光渐变 + 半透明卡片 + 顶部高光）；悬浮胶囊底栏；线性图标（SVG mask 换色） |
 | 动效 | 页面淡入、统计数字滚动、底栏随滚动收缩成窄胶囊、触感反馈（可关） |
 
-**仍未验证**：`field-renderer` 逐字输入/observers 时序、数据库索引命中、模板版本回滚、附件客户端加密、订阅消息、真机加密耗时与键盘遮挡。详见 `docs/TEST_REPORT.md`。
+**仍未验证**：`field-renderer` 逐字输入/observers 时序、数据库索引命中、模板版本回滚、真机加密耗时与键盘遮挡、订阅消息。详见 `docs/TEST_REPORT.md`。
 
 ---
 
@@ -94,7 +94,7 @@ scripts/
 
 ---
 
-## 三个必须知道的限制
+## 必须知道的限制
 
 1. **Argon2id 未实现**。小程序无 `crypto.subtle`，只能走 WXWebAssembly；Emscripten 产出依赖小程序不支持的 `wasi_snapshot_preview1`。当前用 PBKDF2-HMAC-SHA512 600k，KDF 可插拔，PoC 通过后按 `key_version` 迁移。
 2. **JS 无法安全擦除内存**。"锁定时清除明文"只能做到置空引用 + 缩短存活窗口。
