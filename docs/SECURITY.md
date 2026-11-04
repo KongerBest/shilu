@@ -141,7 +141,7 @@ interface Envelope {
 | 敏感字段不进 `search_text` / `summary` | ✅ 已实现（P2） | `normalize.js` 的 `flattenValues` 跳过 `sensitive` 字段与信封对象 |
 | 敏感字段详情页掩码 | ✅ 已实现（P2） | `maskValue`，需用户主动点「显示」才渲染原值 |
 | 敏感字段落库加密 | ❌ **未实现（P5）** | `TemplateField.encrypted` 恒为 `false`。现阶段云端存的是明文，UI 与文档均不得声称"已加密" |
-| 附件内容加密 | 🟡 算法层 + 密钥来源就绪（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/audit）已就绪并单测覆盖；端到端「加密上传 / 解密预览」待接入 `file-uploader`，在此之前云端不存任何 `encrypted=1` 的附件 |
+| 附件内容加密 | ✅ 已实现（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/audit）+ `file-uploader` 端到端接入（加密上传 / 解密预览）。加密附件在云存储为密文（`*.enc`），元数据里 `encrypted=1` 并携带 `enc_meta={alg,kv,ctx}`；文件名加密为 `name_enc` 信封 |
 | 保险箱整条加密 | ❌ 未实现（P5） | |
 
 > **阶段五的迁移义务**：P5 接入 MK 后，需要对所有 `encrypted=false` 的敏感字段值做一次加密回填（读明文 → 写信封 → 置 `encrypted=true`）。在回填完成前，这些字段依然是明文。这条不是可选项，是 P5 的验收条件之一。
@@ -239,7 +239,7 @@ this.plainCache = null; // 对象引用置空，依赖 GC
 | 数据库权限 | 15 个集合统一 `{"read": false, "write": false}`，前端零直连 |
 | 鉴权 | 唯一可信来源 `cloud.getWXContext().OPENID`；payload 中的 `openid`/`user_id` 一律忽略并告警 |
 | 归属校验 | 所有 `where` 第一项 `owner_openid`；单条读取后二次比对，不等即 403 |
-| 构建黑名单 | `vault` 云函数在 `SHILU_BUILD=public` 时全部 action 返回 403 |
+| 构建黑名单 | `vault` 云函数为「加密附件」的密钥前置，不挂闸门；P5 的「密码保险箱」（secure_items CRUD）在 `SHILU_BUILD=public` 时返回 403（`assertFeatureAllowed('vault')` 由届时新增的 secure_items action 触发） |
 | 参数校验 | 服务端白名单字段 + 类型 + 长度 + 枚举，禁止透传未知字段入库 |
 | 输入净化 | 正则元字符转义；`search_text` 长度截断；禁止用户输入拼入 `db.RegExp` 未转义 |
 | 越权测试 | 每个云函数必须有「用 A 的 openid 读 B 的 docId」用例，断言 403 |

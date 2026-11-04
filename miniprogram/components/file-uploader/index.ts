@@ -1,10 +1,21 @@
 import { attachmentService, type AttachmentBiz, type AttachmentRole } from '../../services/attachment.service';
 import { initCloud } from '../../services/transport';
+import { vaultSession, VaultLockedError } from '../../services/vault-session';
 import type { Attachment } from '../../types/models';
 import { toAppError } from '../../utils/errors';
+import {
+  buildFileContext,
+  decryptFileToTemp,
+  downloadFile,
+  encryptFileToTemp,
+  sealName,
+  unlinkTemp,
+  type EncMeta
+} from '../../utils/crypto/attachments';
+import type { Envelope } from '../../utils/crypto/envelope';
 
 interface UploadItem extends Attachment {
-  /** 临时访问链接，图片用于缩略图、文件用于下载 */
+  /** 临时访问链接，图片用于缩略图、文件用于下载（加密附件恒为空，改为占位卡片） */
   url: string;
   sizeText: string;
 }
@@ -35,6 +46,9 @@ const MIME_BY_EXT: Record<string, string> = {
   xls: 'application/vnd.ms-excel',
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 };
+
+/** 解密预览产生的明文临时文件，组件销毁时统一回收。 */
+let plainTempPaths: string[] = [];
 
 /** 从临时路径里取扩展名；取不到或非法时退回 bin。 */
 function extOf(path: string): string {
@@ -100,11 +114,20 @@ function chooseDocs(count: number): Promise<PickFile[]> {
   });
 }
 
+function confirmModal(title: string, content: string, confirmText: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    wx.showModal({ title, content, confirmText, success: (res) => resolve(!!res.confirm) });
+  });
+}
+
 /**
  * 附件上传器。
  *
- * 状态机：idle → uploading(progress) → confirming → done | failed。
+ * 状态机：idle → uploading(encrypting | progress) → confirming → done | failed。
  * 失败时保留错误文案与重试入口，不静默吞掉；已成功的文件不会重复上传。
+ *
+ * 加密模式（encrypt=true）：上传前先确保保险库解锁，文件全量读入内存加密后
+ * 直传云存储，云端只登记 enc_meta（零明文）；列表显示占位卡片，点击时解密预览。
  */
 Component({
   properties: {
@@ -114,13 +137,17 @@ Component({
     /** image = 只允许图片；file = 只允许文件 */
     accept: { type: String, value: 'image' },
     max: { type: Number, value: 9 },
-    readonly: { type: Boolean, value: false }
+    readonly: { type: Boolean, value: false },
+    /** 是否端到端加密（默认关闭，由调用方按功能开关决定） */
+    encrypt: { type: Boolean, value: false }
   },
 
   data: {
     items: [] as UploadItem[],
     loading: false,
     uploading: false,
+    /** 加密/解密阶段的文案，如「加密中」「解密中」；为空时显示进度百分比 */
+    encryptStep: '',
     progress: 0,
     error: '',
     acceptImage: true,
@@ -150,6 +177,10 @@ Component({
         limit: Math.min(this.properties.max || (acceptImage ? MAX_IMAGE : MAX_FILE), acceptImage ? MAX_IMAGE : MAX_FILE)
       });
       if (this.properties.bizId) this.scheduleLoad();
+    },
+    detached() {
+      plainTempPaths.forEach(unlinkTemp);
+      plainTempPaths = [];
     }
   },
 
@@ -185,9 +216,9 @@ Component({
       }
     },
 
-    /** 图片与文件都需要临时链接；一次性换取，避免每个附件一次云调用。 */
+    /** 仅明文附件需要临时链接；加密附件不换链接，改为点击时解密预览。 */
     async refreshUrls() {
-      const missing = this.data.items.filter((item) => item.encrypted === 0 && !item.url);
+      const missing = this.data.items.filter((item) => item.encrypted !== 1 && !item.url);
       if (missing.length === 0) return;
       try {
         const res = await attachmentService.reSign(missing.map((item) => item._id));
@@ -205,6 +236,35 @@ Component({
       }
     },
 
+    /**
+     * 加密模式下，上传/预览前确保保险库可用。
+     * 未初始化 / 已锁定都会弹窗引导去 vault 页面，返回 false（本次操作中止）。
+     */
+    async ensureReady(): Promise<boolean> {
+      if (!this.properties.encrypt) return true;
+      try {
+        const status = await vaultSession.status();
+        if (!status.initialized) {
+          const go = await confirmModal(
+            '开启加密附件',
+            '附件将以客户端加密存储，云端只保存密文，只有输入你的主密码才能查看。首次使用需要先设置主密码。',
+            '去设置'
+          );
+          if (go) wx.navigateTo({ url: '/pages/vault/index?mode=setup' });
+          return false;
+        }
+        if (!vaultSession.isUnlocked()) {
+          const go = await confirmModal('需要解锁', '上传或查看加密附件前，需要输入主密码解锁。', '去解锁');
+          if (go) wx.navigateTo({ url: '/pages/vault/index?mode=unlock' });
+          return false;
+        }
+        return true;
+      } catch (error) {
+        this.setData({ error: toAppError(error).message });
+        return false;
+      }
+    },
+
     async onAdd() {
       if (this.data.uploading || this.properties.readonly) return;
       const remain = this.data.limit - this.data.items.length;
@@ -212,6 +272,8 @@ Component({
         wx.showToast({ title: `最多 ${this.data.limit} 个`, icon: 'none' });
         return;
       }
+      // 加密模式先确保解锁，避免选完文件才发现没密钥
+      if (!(await this.ensureReady())) return;
 
       let files: PickFile[] = [];
       try {
@@ -228,7 +290,7 @@ Component({
     },
 
     async uploadAll(files: PickFile[]) {
-      this.setData({ uploading: true, error: '', progress: 0 });
+      this.setData({ uploading: true, error: '', progress: 0, encryptStep: '' });
       let failed = 0;
 
       for (let i = 0; i < files.length; i++) {
@@ -240,7 +302,7 @@ Component({
         }
       }
 
-      this.setData({ uploading: false, progress: 0 });
+      this.setData({ uploading: false, progress: 0, encryptStep: '' });
       await this.load();
       if (failed > 0) {
         wx.showToast({ title: `${failed} 个上传失败`, icon: 'none' });
@@ -260,40 +322,105 @@ Component({
         ext
       });
 
-      if (file.size > prep.maxSize) {
+      const isEncrypted = this.properties.encrypt;
+      // 密文体积 = 明文 + 36 字节（20B 头 + 16B tag），留 64 字节余量避免顶满 20MB
+      if (file.size > prep.maxSize || (isEncrypted && file.size + 64 > prep.maxSize)) {
         throw new Error(`单个文件不能超过 ${Math.floor(prep.maxSize / 1024 / 1024)}MB`);
       }
 
-      const uploaded = await new Promise<{ fileID: string }>((resolve, reject) => {
-        const task = wx.cloud.uploadFile({
-          cloudPath: prep.cloudPath,
-          filePath: file.path,
-          success: (res) => resolve({ fileID: res.fileID }),
-          fail: reject
-        });
-        // 进度回调挂在 UploadTask 上，不是入参
-        task.onProgressUpdate((res: { progress: number }) => {
-          this.setData({ progress: res.progress });
-        });
-      });
+      let uploadPath = file.path;
+      let uploadSize = file.size;
+      let encMeta: EncMeta | undefined;
+      let nameEnc: Envelope | undefined;
+      let nameMask: string;
 
-      await attachmentService.confirmUpload({
-        bizType: this.properties.bizType as AttachmentBiz,
-        bizId,
-        role: this.properties.role as AttachmentRole,
-        fileId: uploaded.fileID,
-        nameMask: this.data.acceptImage ? `图片 ${ordinal}` : (file.name || `附件 ${ordinal}`).slice(0, 60),
-        mime: file.mime,
-        size: file.size,
-        width: file.width || null,
-        height: file.height || null
-      });
+      if (isEncrypted) {
+        const key = vaultSession.getKey();
+        const kv = vaultSession.keyVersion();
+        const ctx = buildFileContext(this.properties.bizType as AttachmentBiz, bizId, prep.cloudPath);
+
+        this.setData({ encryptStep: '加密中' });
+        const result = await encryptFileToTemp(key, kv, ctx, file.path);
+        uploadPath = result.encPath;
+        uploadSize = result.cipherSize;
+        encMeta = { alg: 'A256GCM', kv, ctx };
+
+        // 图片没有真实文件名，不加密名；文件类型加密原始文件名并掩码
+        if (this.data.acceptImage) {
+          nameMask = `加密图片 ${ordinal}`;
+        } else {
+          nameEnc = await sealName(key, kv, ctx, (file.name || `附件 ${ordinal}`).slice(0, 60));
+          nameMask = `加密附件 ${ordinal}`;
+        }
+        this.setData({ encryptStep: '' });
+      } else {
+        nameMask = this.data.acceptImage ? `图片 ${ordinal}` : (file.name || `附件 ${ordinal}`).slice(0, 60);
+      }
+
+      try {
+        const uploaded = await new Promise<{ fileID: string }>((resolve, reject) => {
+          const task = wx.cloud.uploadFile({
+            cloudPath: prep.cloudPath,
+            filePath: uploadPath,
+            success: (res) => resolve({ fileID: res.fileID }),
+            fail: reject
+          });
+          // 进度回调挂在 UploadTask 上，不是入参
+          task.onProgressUpdate((res: { progress: number }) => {
+            this.setData({ progress: res.progress });
+          });
+        });
+
+        await attachmentService.confirmUpload({
+          bizType: this.properties.bizType as AttachmentBiz,
+          bizId,
+          role: this.properties.role as AttachmentRole,
+          fileId: uploaded.fileID,
+          nameMask,
+          mime: file.mime,
+          size: uploadSize,
+          width: file.width || null,
+          height: file.height || null,
+          encrypted: isEncrypted ? 1 : 0,
+          encMeta,
+          nameEnc
+        });
+      } finally {
+        // 加密产生的临时密文文件立即回收（明文临时文件只存在于解密预览，走 detached 清理）
+        if (isEncrypted) unlinkTemp(uploadPath);
+      }
+    },
+
+    /** 下载并解密一个加密附件到本地明文临时文件。 */
+    async decryptItem(item: UploadItem): Promise<string> {
+      const key = vaultSession.getKey();
+      const meta = item.enc_meta;
+      if (!meta || !meta.ctx) throw new Error('缺少加密元数据');
+      const cipherPath = await downloadFile(item.file_id);
+      const { plainPath } = await decryptFileToTemp(key, meta.ctx, cipherPath, item.mime);
+      plainTempPaths.push(plainPath);
+      return plainPath;
     },
 
     async onPreview(e: WechatMiniprogram.TouchEvent) {
       const index = Number(e.currentTarget.dataset.index);
       const item = this.data.items[index];
       if (!item) return;
+
+      if (item.encrypted === 1) {
+        if (!(await this.ensureReady())) return;
+        this.setData({ encryptStep: '解密中' });
+        try {
+          const plainPath = await this.decryptItem(item);
+          this.setData({ encryptStep: '' });
+          wx.previewImage({ urls: [plainPath], current: plainPath });
+        } catch (error) {
+          this.setData({ encryptStep: '', error: toAppError(error).message });
+          wx.showToast({ title: this.friendlyDecryptError(error), icon: 'none' });
+        }
+        return;
+      }
+
       if (!item.url) await this.refreshUrls();
       const urls = this.data.items.filter((it) => it.url).map((it) => it.url);
       const current = this.data.items[index] && this.data.items[index].url;
@@ -320,10 +447,30 @@ Component({
       });
     },
 
-    onFileTap(e: WechatMiniprogram.TouchEvent) {
+    async onFileTap(e: WechatMiniprogram.TouchEvent) {
       const index = Number(e.currentTarget.dataset.index);
       const item = this.data.items[index];
-      if (!item || !item.url) return;
+      if (!item) return;
+
+      if (item.encrypted === 1) {
+        if (!(await this.ensureReady())) return;
+        this.setData({ encryptStep: '解密中' });
+        try {
+          const plainPath = await this.decryptItem(item);
+          this.setData({ encryptStep: '' });
+          wx.openDocument({
+            filePath: plainPath,
+            showMenu: true,
+            fail: () => wx.showToast({ title: '无法打开该文件', icon: 'none' })
+          });
+        } catch (error) {
+          this.setData({ encryptStep: '', error: toAppError(error).message });
+          wx.showToast({ title: this.friendlyDecryptError(error), icon: 'none' });
+        }
+        return;
+      }
+
+      if (!item.url) return;
       wx.showLoading({ title: '打开中' });
       wx.downloadFile({
         url: item.url,
@@ -344,6 +491,13 @@ Component({
           wx.showToast({ title: '下载失败', icon: 'none' });
         }
       });
+    },
+
+    /** 解密失败时给用户可读的文案，不暴露密钥细节。 */
+    friendlyDecryptError(error: unknown): string {
+      if (error instanceof VaultLockedError) return error.message;
+      const msg = toAppError(error).message;
+      return msg.indexOf('bad magic') >= 0 || msg.indexOf('tag') >= 0 ? '无法解密：内容可能已损坏' : msg;
     },
 
     emitChange() {

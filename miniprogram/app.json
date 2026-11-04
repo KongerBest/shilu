@@ -8,7 +8,8 @@
     "pages/template/index",
     "pages/template/edit/index",
     "pages/mine/index",
-    "pages/settings/index"
+    "pages/settings/index",
+    "pages/vault/index"
   ],
   "window": {
     "backgroundTextStyle": "dark",

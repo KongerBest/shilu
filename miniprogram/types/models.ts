@@ -154,6 +154,8 @@ export interface Attachment {
   width: number | null;
   height: number | null;
   encrypted: 0 | 1;
+  /** 加密元数据：{ alg: 'A256GCM', kv, ctx }，ctx 是解密 AAD 上下文（仅加密附件存在）。 */
+  enc_meta: { alg: string; kv: number; ctx: string } | null;
   sort_order: number;
   status: 'uploading' | 'ready' | 'failed';
   created_at: number;

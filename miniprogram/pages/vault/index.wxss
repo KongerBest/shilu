@@ -1,0 +1,108 @@
+.page--plain {
+  padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--sp-6));
+}
+
+.vault-hint {
+  display: block;
+  padding: var(--sp-6) 0;
+  text-align: center;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.vault-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 var(--sp-4);
+}
+
+.vault-title {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  color: var(--c-text);
+  letter-spacing: 0.01em;
+}
+
+.vault-desc {
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  line-height: 1.6;
+}
+
+.vault-form {
+  padding: var(--sp-2) var(--sp-4);
+}
+
+.vault-input {
+  height: 96rpx;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+
+.vault-placeholder {
+  color: var(--c-text-3);
+}
+
+.vault-error {
+  display: block;
+  margin-top: var(--sp-3);
+  font-size: var(--fs-caption);
+  color: var(--c-danger);
+}
+
+/* 恢复码 */
+.recovery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-6) var(--sp-4);
+}
+
+.recovery__code {
+  font-family: var(--font-mono);
+  font-size: var(--fs-title);
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  color: var(--c-accent);
+  text-align: center;
+  word-break: break-all;
+}
+
+.recovery__copy {
+  padding: var(--sp-2) var(--sp-5);
+  border: 1rpx solid var(--glass-border-soft);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg-soft);
+  box-shadow: var(--glass-highlight);
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+}
+
+.recovery__copy:active {
+  opacity: 0.7;
+}
+
+.vault-warn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1rpx solid var(--c-warn-line);
+  border-radius: var(--radius-card);
+  background: var(--c-warn-soft);
+}
+
+.vault-warn__title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-warn-text);
+}
+
+.vault-warn__text {
+  font-size: var(--fs-caption);
+  color: var(--c-warn-text);
+  line-height: 1.6;
+}

@@ -1,0 +1,74 @@
+<view class="page page--plain {{themeClass}}">
+  <view wx:if="{{mode === 'loading'}}" class="vault-hint">加载中…</view>
+
+  <!-- 首次设置主密码 -->
+  <block wx:elif="{{mode === 'setup'}}">
+    <view class="vault-head">
+      <text class="vault-title">设置主密码</text>
+      <text class="vault-desc">附件将用主密码在本地加密，云端只保存密文。密码不会上传，忘记后只能靠恢复码找回。</text>
+    </view>
+    <view class="card vault-form">
+      <input
+        class="vault-input"
+        password
+        placeholder="主密码（至少 8 位）"
+        placeholder-class="vault-placeholder"
+        value="{{password}}"
+        maxlength="64"
+        bindinput="onPasswordInput"
+      />
+      <view class="divider"></view>
+      <input
+        class="vault-input"
+        password
+        placeholder="再次输入主密码"
+        placeholder-class="vault-placeholder"
+        value="{{confirmPassword}}"
+        maxlength="64"
+        bindinput="onConfirmInput"
+        bindconfirm="onSubmit"
+      />
+    </view>
+    <text wx:if="{{error}}" class="vault-error">{{error}}</text>
+    <button class="btn-primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">设置并生成恢复码</button>
+  </block>
+
+  <!-- 解锁 -->
+  <block wx:elif="{{mode === 'unlock'}}">
+    <view class="vault-head">
+      <text class="vault-title">解锁</text>
+      <text class="vault-desc">输入主密码以解锁加密附件。密钥只存在内存中，一段时间无操作会自动锁定。</text>
+    </view>
+    <view class="card vault-form">
+      <input
+        class="vault-input"
+        password
+        placeholder="主密码"
+        placeholder-class="vault-placeholder"
+        value="{{password}}"
+        maxlength="64"
+        bindinput="onPasswordInput"
+        bindconfirm="onSubmit"
+      />
+    </view>
+    <text wx:if="{{error}}" class="vault-error">{{error}}</text>
+    <button class="btn-primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">解锁</button>
+  </block>
+
+  <!-- 恢复码 -->
+  <block wx:elif="{{mode === 'recovery'}}">
+    <view class="vault-head">
+      <text class="vault-title">保存恢复码</text>
+      <text class="vault-desc">恢复码是忘记密码时唯一找回密钥的方式，请抄写或复制保存到安全的地方。</text>
+    </view>
+    <view class="card recovery">
+      <text class="recovery__code">{{recoveryCode}}</text>
+      <view class="recovery__copy" bindtap="onCopyRecovery">复制恢复码</view>
+    </view>
+    <view class="vault-warn">
+      <text class="vault-warn__title">重要提醒</text>
+      <text class="vault-warn__text">恢复码与主密码二选一即可解密。若两者都丢失，你的加密附件将永久无法解密，拾录无法帮你找回。</text>
+    </view>
+    <button class="btn-primary" bindtap="onFinish">我已保存，完成</button>
+  </block>
+</view>

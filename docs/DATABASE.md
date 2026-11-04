@@ -304,7 +304,7 @@ type FieldType =
 | `width` / `height` | number \| null | 图片才有；加密文件写入前读取 |
 | `sha256` | string | 明文内容的哈希，用于去重与完整性校验 |
 | `encrypted` | 0\|1 | |
-| `enc_meta` | `{ iv, kv, algo } \| null` | 文件级加密参数 |
+| `enc_meta` | `{ alg, kv, ctx } \| null` | 文件级加密参数：`ctx` 为解密 AAD 上下文（`bizType:bizId:cloudPath`），`iv` 内嵌于密文头部（`filecipher` 20B 头） |
 | `sort_order` | number | |
 | `status` | `'uploading' \| 'ready' \| 'failed'` | |
 | `retry_count` | number | |

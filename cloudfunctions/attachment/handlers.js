@@ -47,6 +47,34 @@ function ownerTag(openid) {
   return crypto.createHash('sha256').update(openid).digest('hex').slice(0, 16);
 }
 
+const BASE64URL_RE = /^[A-Za-z0-9_-]{1,4096}$/;
+
+function isBase64Url(value) {
+  return typeof value === 'string' && BASE64URL_RE.test(value);
+}
+
+/** 校验客户端上报的加密元数据。ctx 是解密 AAD 上下文（非敏感，明文存储）。 */
+function validateEncMeta(meta) {
+  if (!meta || typeof meta !== 'object') throw param('enc_meta 格式不正确');
+  if (meta.alg !== 'A256GCM') throw param('不支持的加密算法');
+  const kv = Number(meta.kv);
+  if (!Number.isInteger(kv) || kv < 1) throw param('enc_meta.kv 不合法');
+  const ctx = meta.ctx;
+  if (typeof ctx !== 'string' || ctx.length === 0 || ctx.length > 512) throw param('enc_meta.ctx 不合法');
+  return { alg: 'A256GCM', kv, ctx: ctx.slice(0, 512) };
+}
+
+/** 校验加密文件名信封（name_enc）。 */
+function validateNameEnvelope(env) {
+  if (!env || typeof env !== 'object') throw param('name_enc 格式不正确');
+  if (env.__enc !== 1) throw param('name_enc 不是加密信封');
+  const kv = Number(env.kv);
+  if (!Number.isInteger(kv) || kv < 1) throw param('name_enc.kv 不合法');
+  if (!isBase64Url(env.iv) || env.iv.length > 64) throw param('name_enc.iv 不合法');
+  if (!isBase64Url(env.ct) || env.ct.length > 4096) throw param('name_enc.ct 不合法');
+  return { __enc: 1, iv: env.iv, ct: env.ct, kv };
+}
+
 function toPublic(doc) {
   return {
     _id: doc._id,
@@ -60,6 +88,7 @@ function toPublic(doc) {
     width: doc.width || null,
     height: doc.height || null,
     encrypted: doc.encrypted ? 1 : 0,
+    enc_meta: doc.enc_meta || null,
     sort_order: doc.sort_order || 0,
     status: doc.status || 'ready',
     created_at: doc.created_at
@@ -122,7 +151,15 @@ async function confirmUpload({ openid, payload }) {
   if (!Number.isFinite(size) || size <= 0 || size > MAX_SIZE) {
     throw param(`文件大小需在 1 字节到 ${MAX_SIZE / 1024 / 1024}MB 之间`);
   }
-  if (payload.encrypted) throw param('附件加密尚未开放');
+
+  // 加密附件：客户端已用 MK 加密文件内容，这里只登记元数据（enc_meta / name_enc 均为密文侧信息）
+  const encrypted = payload.encrypted ? 1 : 0;
+  let encMeta = null;
+  let nameEnc = null;
+  if (encrypted) {
+    encMeta = validateEncMeta(payload.encMeta);
+    nameEnc = payload.nameEnc ? validateNameEnvelope(payload.nameEnc) : null;
+  }
 
   const width = Number(payload.width);
   const height = Number(payload.height);
@@ -148,15 +185,15 @@ async function confirmUpload({ openid, payload }) {
     biz_id: bizId,
     role,
     file_id: fileId,
-    name_enc: null,
+    name_enc: nameEnc,
     name_mask: nameMask,
     mime,
     size,
     width: Number.isFinite(width) && width > 0 ? width : null,
     height: Number.isFinite(height) && height > 0 ? height : null,
     sha256,
-    encrypted: 0,
-    enc_meta: null,
+    encrypted,
+    enc_meta: encMeta,
     sort_order: sortOrder,
     status: 'ready',
     retry_count: 0,

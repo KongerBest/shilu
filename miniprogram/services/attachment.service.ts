@@ -1,5 +1,6 @@
 import { call } from './transport';
 import type { Attachment } from '../types/models';
+import type { Envelope } from '../utils/crypto/envelope';
 
 export type AttachmentBiz = 'record' | 'contact' | 'document';
 export type AttachmentRole = 'front' | 'back' | 'other' | 'avatar' | 'file';
@@ -9,6 +10,13 @@ export interface PrepareUploadResult {
   role: AttachmentRole;
   maxSize: number;
   ownerTag: string;
+}
+
+/** 加密附件元数据（上传时由客户端生成，云端校验后入库）。 */
+export interface EncMeta {
+  alg: 'A256GCM';
+  kv: number;
+  ctx: string;
 }
 
 export interface ConfirmUploadInput {
@@ -22,6 +30,11 @@ export interface ConfirmUploadInput {
   width?: number | null;
   height?: number | null;
   sha256?: string;
+  /** 1 = 内容已加密，须同时提供 encMeta；0 = 明文 */
+  encrypted?: 0 | 1;
+  encMeta?: EncMeta;
+  /** 加密文件名信封（仅文件类型有真实文件名时使用） */
+  nameEnc?: Envelope;
 }
 
 export interface SignedUrl {

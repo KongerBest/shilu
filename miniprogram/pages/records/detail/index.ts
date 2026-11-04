@@ -1,6 +1,7 @@
 import { categoryService } from '../../../services/category.service';
 import { recordService } from '../../../services/record.service';
 import { templateService, sortedFields } from '../../../services/template.service';
+import { ENCRYPTED_ATTACHMENT_ENABLED } from '../../../config/features';
 import type { Category, ShiluRecord, TemplateField } from '../../../types/models';
 import { relativeTime } from '../../../utils/date';
 import { toAppError } from '../../../utils/errors';
@@ -35,6 +36,7 @@ interface DetailData {
   hasSensitive: boolean;
   revealSensitive: boolean;
   attachmentCount: number;
+  encryptedAttachments: boolean;
 }
 
 Page({
@@ -55,7 +57,8 @@ Page({
     createdText: '',
     hasSensitive: false,
     revealSensitive: false,
-    attachmentCount: 0
+    attachmentCount: 0,
+    encryptedAttachments: ENCRYPTED_ATTACHMENT_ENABLED
   } as DetailData,
 
   onLoad(options: Record<string, string | undefined>) {

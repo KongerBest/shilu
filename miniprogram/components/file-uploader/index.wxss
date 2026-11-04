@@ -88,6 +88,45 @@
   color: var(--c-text-2);
 }
 
+/* 加密附件占位卡片：不生成缩略图，只给一个锁形占位，避免泄露图像内容 */
+.tile__enc {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: var(--c-surface-sunken);
+  color: var(--c-text-3);
+}
+
+.tile__lock {
+  position: relative;
+  width: 32rpx;
+  height: 24rpx;
+  margin-bottom: 12rpx;
+  border-radius: 5rpx;
+  background: currentColor;
+}
+
+.tile__lock::before {
+  content: '';
+  position: absolute;
+  top: -16rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18rpx;
+  height: 18rpx;
+  border: 4rpx solid currentColor;
+  border-bottom: none;
+  border-radius: 12rpx 12rpx 0 0;
+}
+
+.tile__enc-text {
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+}
+
 /* 文件列表 */
 .file {
   display: flex;
@@ -101,12 +140,42 @@
 }
 
 .file__icon {
+  position: relative;
   width: 56rpx;
   height: 64rpx;
   margin-right: var(--sp-3);
   border: 2rpx solid var(--c-line);
   border-radius: 6rpx;
   background: var(--c-surface-sunken);
+}
+
+/* 加密文件图标：文档占位换成锁形 */
+.file__icon--enc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-text-3);
+}
+
+.file__lock {
+  position: relative;
+  width: 22rpx;
+  height: 16rpx;
+  border-radius: 3rpx;
+  background: currentColor;
+}
+
+.file__lock::before {
+  content: '';
+  position: absolute;
+  top: -11rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 12rpx;
+  height: 12rpx;
+  border: 3rpx solid currentColor;
+  border-bottom: none;
+  border-radius: 8rpx 8rpx 0 0;
 }
 
 .file__main {

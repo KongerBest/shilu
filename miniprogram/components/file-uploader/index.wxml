@@ -4,17 +4,28 @@
   <view wx:if="{{acceptImage}}" class="grid">
     <view wx:for="{{items}}" wx:key="_id" class="tile">
       <image
+        wx:if="{{item.encrypted !== 1}}"
         class="tile__img"
         src="{{item.url}}"
         mode="aspectFill"
         data-index="{{index}}"
         bindtap="onPreview"
       />
+      <view
+        wx:else
+        class="tile__enc"
+        data-index="{{index}}"
+        bindtap="onPreview"
+        hover-class="tile--hover"
+      >
+        <view class="tile__lock"></view>
+        <text class="tile__enc-text">已加密</text>
+      </view>
       <view wx:if="{{!readonly}}" class="tile__del" data-id="{{item._id}}" catchtap="onRemove">×</view>
     </view>
 
     <view wx:if="{{uploading}}" class="tile tile--progress">
-      <text class="tile__progress tabular">{{progress}}%</text>
+      <text class="tile__progress tabular">{{encryptStep || (progress + '%')}}</text>
     </view>
     <view
       wx:elif="{{!readonly && items.length < limit}}"
@@ -35,17 +46,19 @@
       data-index="{{index}}"
       bindtap="onFileTap"
     >
-      <view class="file__icon"></view>
+      <view class="file__icon {{item.encrypted === 1 ? 'file__icon--enc' : ''}}">
+        <view wx:if="{{item.encrypted === 1}}" class="file__lock"></view>
+      </view>
       <view class="file__main">
         <text class="file__name">{{item.name_mask}}</text>
-        <text class="file__meta">{{item.sizeText}}</text>
+        <text class="file__meta">{{item.encrypted === 1 ? '已加密 · ' : ''}}{{item.sizeText}}</text>
       </view>
       <view wx:if="{{!readonly}}" class="file__del" data-id="{{item._id}}" catchtap="onRemove">删除</view>
     </view>
 
     <view wx:if="{{uploading}}" class="file file--progress">
       <view class="file__icon"></view>
-      <text class="file__name">上传中 {{progress}}%</text>
+      <text class="file__name">{{encryptStep || ('上传中 ' + progress + '%')}}</text>
     </view>
     <view
       wx:elif="{{!readonly && items.length < limit}}"
