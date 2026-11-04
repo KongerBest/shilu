@@ -11,11 +11,17 @@ const MAX_PER_BIZ = 20;
 const MAX_SIZE = 20 * 1024 * 1024;
 const MAX_REORDER = 50;
 
-const BIZ_TYPES = ['record', 'contact', 'document'];
+const BIZ_TYPES = ['record', 'contact', 'document', 'user'];
 const ROLES = ['front', 'back', 'other', 'avatar', 'file'];
 
 /** 业务归属校验。联系人与证件库尚未上线，先明确拒绝而不是静默放过。 */
 async function assertBizOwned(openid, bizType, bizId) {
+  // 头像：biz_id 必须是当前登录用户的 user._id
+  if (bizType === 'user') {
+    const { user } = await ensureUser(openid);
+    if (bizId !== user._id) throw forbidden('无法访问该用户');
+    return user;
+  }
   if (bizType !== 'record') {
     throw param('该业务类型的附件暂未开放');
   }
@@ -206,6 +212,25 @@ async function confirmUpload({ openid, payload }) {
 
   const added = await db.collection(COLLECTIONS.attachments).add({ data: doc });
 
+  // 头像：单张替换（软删旧头像），并同步 users.avatar_file_id 供用户模型直接读
+  if (bizType === 'user' && role === 'avatar') {
+    const oldAvatars = await db
+      .collection(COLLECTIONS.attachments)
+      .where({ owner_openid: openid, biz_type: 'user', role: 'avatar', is_deleted: 0, _id: _.neq(added._id) })
+      .limit(MAX_PER_BIZ)
+      .get();
+    await Promise.all(
+      oldAvatars.data.map((old) =>
+        db.collection(COLLECTIONS.attachments).doc(old._id).update({ data: { is_deleted: 1, deleted_at: now, updated_at: now } })
+      )
+    );
+    await db
+      .collection(COLLECTIONS.users)
+      .doc(user._id)
+      .update({ data: { avatar_file_id: fileId, updated_at: now } })
+      .catch((error) => logger.warn('attachment', 'sync avatar_file_id failed', { reason: String(error && error.message) }));
+  }
+
   if (bizType === 'record') {
     await db
       .collection(COLLECTIONS.records)
@@ -297,6 +322,13 @@ async function remove({ openid, payload }) {
       .collection(COLLECTIONS.records)
       .doc(existing.biz_id)
       .update({ data: { attachment_count: _.inc(-1), updated_at: now } })
+      .catch(() => undefined);
+  }
+  if (existing.biz_type === 'user' && existing.role === 'avatar') {
+    await db
+      .collection(COLLECTIONS.users)
+      .doc(existing.biz_id)
+      .update({ data: { avatar_file_id: '', updated_at: now } })
       .catch(() => undefined);
   }
   await bumpStat(openid, existing.user_id, 'attachments_count', -1);

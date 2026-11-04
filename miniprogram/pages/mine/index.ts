@@ -1,6 +1,9 @@
 import { APP_VERSION, isCloudConfigured } from '../../config/env';
+import { attachmentService } from '../../services/attachment.service';
 import { userService } from '../../services/user.service';
 import { toAppError } from '../../utils/errors';
+import { haptic } from '../../utils/haptics';
+import { stripExif } from '../../utils/image';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
@@ -10,6 +13,7 @@ interface MineData {
   error: string;
   initial: string;
   nickname: string;
+  avatarFileId: string;
   createdText: string;
   stats: { records: number; attachments: number; anniversaries: number };
   version: string;
@@ -29,6 +33,7 @@ Page({
     error: '',
     initial: '拾',
     nickname: '未命名',
+    avatarFileId: '',
     createdText: '',
     stats: { records: 0, attachments: 0, anniversaries: 0 },
     version: APP_VERSION,
@@ -53,6 +58,7 @@ Page({
         loading: false,
         nickname: nickname || '未命名',
         initial: nickname ? nickname.slice(0, 1) : '拾',
+        avatarFileId: session.user.avatarFileId || '',
         createdText: session.user.created_at ? formatDate(session.user.created_at) : '',
         stats: {
           records: session.stats.records_count,
@@ -64,6 +70,76 @@ Page({
       const appError = toAppError(error);
       logger.warn('mine', 'load failed', { code: appError.code });
       this.setData({ loading: false, error: appError.message });
+    }
+  },
+
+  /** 点头像：选图 → 剥离 EXIF → 上传 → 登记（复用 attachment 的 user 头像路径）。 */
+  onAvatarTap() {
+    void this.pickAvatar();
+  },
+
+  async pickAvatar() {
+    try {
+      const choose = await new Promise<WechatMiniprogram.ChooseMediaSuccessCallbackResult>((resolve, reject) => {
+        wx.chooseMedia({
+          count: 1,
+          mediaType: ['image'],
+          sizeType: ['compressed'],
+          success: resolve,
+          fail: reject
+        });
+      });
+      const tempFile = choose.tempFiles[0];
+      if (!tempFile) return;
+
+      wx.showLoading({ title: '上传中' });
+
+      // 剥离 EXIF（GPS 等）并等比缩放到 512 以内
+      const stripped = await stripExif(tempFile.tempFilePath, 512);
+
+      const size = await new Promise<number>((resolve, reject) => {
+        wx.getFileSystemManager().getFileInfo({
+          filePath: stripped,
+          success: (res) => resolve(res.size),
+          fail: reject
+        });
+      });
+
+      const session = await userService.login();
+      const userId = session.user._id;
+      const prep = await attachmentService.prepareUpload({
+        bizType: 'user',
+        bizId: userId,
+        role: 'avatar',
+        ext: 'jpg'
+      });
+
+      const uploaded = await new Promise<{ fileID: string }>((resolve, reject) => {
+        wx.cloud.uploadFile({
+          cloudPath: prep.cloudPath,
+          filePath: stripped,
+          success: (res) => resolve({ fileID: res.fileID }),
+          fail: reject
+        });
+      });
+
+      await attachmentService.confirmUpload({
+        bizType: 'user',
+        bizId: userId,
+        role: 'avatar',
+        fileId: uploaded.fileID,
+        nameMask: '头像',
+        mime: 'image/jpeg',
+        size
+      });
+
+      this.setData({ avatarFileId: uploaded.fileID });
+      haptic('light');
+      wx.showToast({ title: '头像已更新', icon: 'none' });
+    } catch (error) {
+      wx.showToast({ title: toAppError(error).message, icon: 'none' });
+    } finally {
+      wx.hideLoading();
     }
   },
 

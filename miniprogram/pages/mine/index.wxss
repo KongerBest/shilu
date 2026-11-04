@@ -18,12 +18,27 @@
   justify-content: center;
   border: 1rpx solid var(--glass-border);
   box-shadow: var(--glass-highlight), 0 10rpx 24rpx rgba(24, 38, 33, 0.08);
+  overflow: hidden;
+}
+
+.profile__avatar--hover {
+  opacity: 0.75;
+}
+
+.profile__avatar-img {
+  width: 100%;
+  height: 100%;
 }
 
 .profile__info {
   display: flex;
   flex-direction: column;
   gap: 8rpx;
+}
+
+.profile__hint {
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
 }
 
 .profile__name {

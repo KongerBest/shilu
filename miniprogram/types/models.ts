@@ -143,7 +143,7 @@ export interface ShiluRecord {
 /** 附件元数据。文件本身在云存储，这里只存登记信息。 */
 export interface Attachment {
   _id: string;
-  biz_type: 'record' | 'contact' | 'document';
+  biz_type: 'record' | 'contact' | 'document' | 'user';
   biz_id: string;
   role: 'front' | 'back' | 'other' | 'avatar' | 'file';
   file_id: string;

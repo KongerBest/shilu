@@ -136,7 +136,7 @@ interface Envelope {
 
 列表页/首页头像需要**批量展示**。若加密，每屏 20 个头像要下载 20 个密文并逐个解密，首屏延迟与流量不可接受，且解密需 MK 常驻内存（扩大暴露窗口）。
 
-**取舍**：头像不加密，但上传时强制客户端压缩到 ≤ 200×200 且裁剪为方形（去除背景信息）。用户若上传含敏感信息的照片作为头像，属自发行为，UI 在头像选择处提示"头像不加密，请勿使用证件照"。
+**取舍**：头像不加密，但上传时强制 canvas 重编码剥离 EXIF（GPS 等）并等比缩放到 ≤512（`utils/image.ts` 的 `stripExif`，显示时 `aspectFill` 方形裁剪）。用户若上传含敏感信息的照片作为头像，属自发行为，UI 在头像选择处提示"头像不加密，请勿使用证件照"。
 
 ### 3.2 实施状态（随阶段更新，不提前宣称）
 
@@ -147,6 +147,7 @@ interface Envelope {
 | 敏感字段落库加密 | ❌ **未实现（P5）** | `TemplateField.encrypted` 恒为 `false`。现阶段云端存的是明文，UI 与文档均不得声称"已加密" |
 | 附件内容加密 | ✅ 已实现（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/reset/audit）+ `file-uploader` 端到端接入（加密上传 / 解密预览）。加密附件在云存储为密文（`*.enc`），元数据里 `encrypted=1` 并携带 `enc_meta={alg,kv,ctx}`；文件名加密为 `name_enc` 信封 |
 | 保险箱整条加密 | ❌ 未实现（P5） | |
+| 头像 EXIF 剥离 + 缩放 | ✅ 已实现（P3） | `utils/image.ts` 的 `stripExif`：canvas 重编码剥离 GPS 等元数据 + 等比缩放 ≤512，用于明文头像上传 |
 
 > **阶段五的迁移义务**：P5 接入 MK 后，需要对所有 `encrypted=false` 的敏感字段值做一次加密回填（读明文 → 写信封 → 置 `encrypted=true`）。在回填完成前，这些字段依然是明文。这条不是可选项，是 P5 的验收条件之一。
 

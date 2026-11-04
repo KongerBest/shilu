@@ -3,10 +3,14 @@
 
   <block wx:else>
     <view class="profile">
-      <view class="profile__avatar">{{initial}}</view>
+      <view class="profile__avatar" bindtap="onAvatarTap" hover-class="profile__avatar--hover">
+        <image wx:if="{{avatarFileId}}" class="profile__avatar-img" src="{{avatarFileId}}" mode="aspectFill" />
+        <text wx:else>{{initial}}</text>
+      </view>
       <view class="profile__info">
         <text class="profile__name">{{nickname}}</text>
         <text wx:if="{{createdText}}" class="profile__since">自 {{createdText}} 起使用</text>
+        <text class="profile__hint">点击头像更换</text>
       </view>
     </view>
 

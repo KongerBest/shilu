@@ -293,7 +293,7 @@ type FieldType =
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `biz_type` | `'record' \| 'contact' \| 'document'` | |
+| `biz_type` | `'record' \| 'contact' \| 'document' \| 'user'` | `user` 为用户头像（`biz_id = user._id`，`role='avatar'` 单张替换） |
 | `biz_id` | string | 所属实体 id |
 | `role` | `'front' \| 'back' \| 'other' \| 'avatar' \| 'file'` | 正/反/其他 |
 | `file_id` | string | 云存储 fileID（密文时以 `.enc` 结尾） |

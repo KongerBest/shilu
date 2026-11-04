@@ -2,7 +2,7 @@ import { call } from './transport';
 import type { Attachment } from '../types/models';
 import type { Envelope } from '../utils/crypto/envelope';
 
-export type AttachmentBiz = 'record' | 'contact' | 'document';
+export type AttachmentBiz = 'record' | 'contact' | 'document' | 'user';
 export type AttachmentRole = 'front' | 'back' | 'other' | 'avatar' | 'file';
 
 export interface PrepareUploadResult {
