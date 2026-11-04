@@ -92,6 +92,12 @@
   flex-shrink: 0;
   border: 1rpx solid var(--glass-border);
   box-shadow: var(--glass-highlight), 0 8rpx 20rpx rgba(24, 38, 33, 0.08);
+  overflow: hidden;
+}
+
+.hero__avatar-img {
+  width: 100%;
+  height: 100%;
 }
 
 .hero__text {

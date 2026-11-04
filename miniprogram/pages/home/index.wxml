@@ -11,7 +11,10 @@
 
   <block wx:else>
     <view class="hero">
-      <view class="hero__avatar">{{initial}}</view>
+      <view class="hero__avatar" bindtap="onEditName" hover-class="hero__name--hover">
+        <image wx:if="{{avatarFileId}}" class="hero__avatar-img" src="{{avatarFileId}}" mode="aspectFill" />
+        <text wx:else>{{initial}}</text>
+      </view>
       <view class="hero__text">
         <text class="hero__greet">{{greet}}</text>
         <view class="hero__name" bindtap="onEditName" hover-class="hero__name--hover">

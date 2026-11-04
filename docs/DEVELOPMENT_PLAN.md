@@ -143,7 +143,7 @@ shilu/
 - 端到端加密接入（2026-11-04）：`vault.service` / `vault-session`（MK 内存会话 + 超时自动锁）+ `utils/crypto/attachments.ts`（全量读入 → 加密 → 落临时文件 → 上传 → 删临时文件；`enc_meta={alg,kv,ctx}`，`ctx` 为 AAD 上下文）+ `file-uploader` 加密上传/解密预览（加密项显示锁形占位卡片、点击解锁解密）+ `pages/vault` 设置主密码/解锁/展示恢复码页 + `confirmUpload` 云端校验 `enc_meta`/`name_enc`。新增 5 项单测覆盖 enc_meta 往返与跨上下文抛错。
 - 证件区（2026-11-04）：`file-uploader` 的 `load()` 改为**按 `role` 分区**（不再按 mime 分图片/文件）；资料详情页对「证件资料」分类（`system_key=document`）的记录渲染「正面 `role=front` / 反面 `role=back` / 其他 `role=other`」三个加密图片区，替换普通资料的「图片/文件」两区。证件即 record（预设分类 + 预设模板），附件 `biz_type` 仍为 `record`，无需新集合/新云函数。
 - **`@noble` 子路径 bug 修复**（2026-11-04，模拟器实测暴露）：`@noble` 入口 `index.js` 直接 `throw`（强制子路径导入），微信「构建 npm」只按 `main` 入口打包、不生成 `exports` 子路径文件，导致运行时 `require('@noble/ciphers/aes')` 失败、密钥模块加载崩溃（首页正常、vault 页导航 `Uncaught`）。修复：新增 `scripts/sync-noble-npm.js`（`npm run sync:noble-npm`）把 @noble 的 CJS 产物补齐进 `miniprogram_npm`，已写入 DEPLOYMENT.md §3。
-- 头像上传（2026-11-04）：`attachment` 云函数支持 `biz_type='user'`（`assertBizOwned` 校验 `biz_id === user._id`），`role='avatar'` 单张替换（`confirmUpload` 软删旧头像 + 同步 `users.avatar_file_id`，`remove` 清空）。`pages/mine` 点头像 → `chooseMedia` → `stripExif`（EXIF 剥离 + 缩放 512）→ `prepareUpload` → 直传 → `confirmUpload`，有头像显示图片、无头像显示首字。
+- 头像上传 + 微信授权（2026-11-04）：`attachment` 云函数支持 `biz_type='user'`（`assertBizOwned` 校验 `biz_id === user._id`），`role='avatar'` 单张替换（`confirmUpload` 软删旧头像 + 同步 `users.avatar_file_id`，`remove` 清空）。`pages/mine` 用微信官方能力授权：头像 `button open-type="chooseAvatar"`、昵称 `input type="nickname"`（替代已废弃的 `getUserProfile`），头像经 `stripExif`（EXIF 剥离 + 缩放 512）后 `prepareUpload` → 直传 → `confirmUpload`。首页 hero 同步显示头像（有头像显图、无头像显首字），点昵称跳「我的」页统一授权。
 
 ### 关键实现点
 1. `file-uploader` 状态机：`idle → reading → encrypting → uploading(progress) → confirming → done | failed`。

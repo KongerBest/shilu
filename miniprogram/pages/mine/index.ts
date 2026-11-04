@@ -73,29 +73,19 @@ Page({
     }
   },
 
-  /** 点头像：选图 → 剥离 EXIF → 上传 → 登记（复用 attachment 的 user 头像路径）。 */
-  onAvatarTap() {
-    void this.pickAvatar();
+  /** 微信头像授权（button open-type="chooseAvatar"）：拿到头像临时路径 → 剥离 EXIF → 上传登记。 */
+  onChooseAvatar(e: WechatMiniprogram.CustomEvent<{ avatarUrl: string }>) {
+    const avatarUrl = e.detail && e.detail.avatarUrl;
+    if (!avatarUrl) return;
+    void this.uploadAvatar(avatarUrl);
   },
 
-  async pickAvatar() {
+  async uploadAvatar(avatarUrl: string) {
     try {
-      const choose = await new Promise<WechatMiniprogram.ChooseMediaSuccessCallbackResult>((resolve, reject) => {
-        wx.chooseMedia({
-          count: 1,
-          mediaType: ['image'],
-          sizeType: ['compressed'],
-          success: resolve,
-          fail: reject
-        });
-      });
-      const tempFile = choose.tempFiles[0];
-      if (!tempFile) return;
-
       wx.showLoading({ title: '上传中' });
 
       // 剥离 EXIF（GPS 等）并等比缩放到 512 以内
-      const stripped = await stripExif(tempFile.tempFilePath, 512);
+      const stripped = await stripExif(avatarUrl, 512);
 
       const size = await new Promise<number>((resolve, reject) => {
         wx.getFileSystemManager().getFileInfo({
@@ -141,6 +131,19 @@ Page({
     } finally {
       wx.hideLoading();
     }
+  },
+
+  /** 微信昵称授权（input type="nickname"）：失焦时保存。 */
+  onNicknameBlur(e: WechatMiniprogram.Input) {
+    const nickname = (e.detail.value || '').trim().slice(0, 24);
+    if (!nickname || nickname === this.data.nickname) return;
+    userService
+      .updateProfile({ nickname })
+      .then(() => {
+        this.setData({ nickname, initial: nickname.slice(0, 1) });
+        haptic('light');
+      })
+      .catch((error) => wx.showToast({ title: toAppError(error).message, icon: 'none' }));
   },
 
   onOpenSettings() {

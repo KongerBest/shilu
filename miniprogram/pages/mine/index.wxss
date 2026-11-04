@@ -8,6 +8,9 @@
 .profile__avatar {
   width: 112rpx;
   height: 112rpx;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
   border-radius: 50%;
   background-image: linear-gradient(150deg, var(--glass-bg-strong), var(--c-accent-soft));
   color: var(--c-accent);
@@ -21,8 +24,13 @@
   overflow: hidden;
 }
 
-.profile__avatar--hover {
-  opacity: 0.75;
+/* 重置 button 默认样式 */
+.profile__avatar::after {
+  border: none;
+}
+
+.profile__avatar-text {
+  color: var(--c-accent);
 }
 
 .profile__avatar-img {
@@ -34,17 +42,22 @@
   display: flex;
   flex-direction: column;
   gap: 8rpx;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile__name-input {
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  color: var(--c-text);
+  height: 64rpx;
+  line-height: 64rpx;
+  padding: 0;
 }
 
 .profile__hint {
   font-size: var(--fs-micro);
   color: var(--c-text-3);
-}
-
-.profile__name {
-  font-size: var(--fs-h1);
-  font-weight: 600;
-  color: var(--c-text);
 }
 
 .profile__since {

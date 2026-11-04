@@ -3,14 +3,14 @@
 
   <block wx:else>
     <view class="profile">
-      <view class="profile__avatar" bindtap="onAvatarTap" hover-class="profile__avatar--hover">
+      <button class="profile__avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
         <image wx:if="{{avatarFileId}}" class="profile__avatar-img" src="{{avatarFileId}}" mode="aspectFill" />
-        <text wx:else>{{initial}}</text>
-      </view>
+        <text wx:else class="profile__avatar-text">{{initial}}</text>
+      </button>
       <view class="profile__info">
-        <text class="profile__name">{{nickname}}</text>
+        <input class="profile__name-input" type="nickname" value="{{nickname}}" placeholder="填写昵称" bindblur="onNicknameBlur" />
         <text wx:if="{{createdText}}" class="profile__since">自 {{createdText}} 起使用</text>
-        <text class="profile__hint">点击头像更换</text>
+        <text class="profile__hint">点头像授权微信头像 · 点昵称授权微信昵称</text>
       </view>
     </view>
 

@@ -23,8 +23,9 @@ interface HomeStats {
 interface HomeData {
   loading: boolean;
   error: string;
-  /** 首字母头像。阶段三接入头像上传后替换为真实图片 */
+  /** 首字头像（无头像时展示），有头像时展示 avatarFileId */
   initial: string;
+  avatarFileId: string;
   displayName: string;
   greet: string;
   stats: HomeStats;
@@ -40,6 +41,7 @@ Page({
     loading: true,
     error: '',
     initial: '拾',
+    avatarFileId: '',
     displayName: '未命名',
     greet: greeting(new Date().getHours()),
     stats: { records: 0, attachments: 0, anniversaries: 0 } as HomeStats,
@@ -72,6 +74,7 @@ Page({
 
       this.setData({
         initial: nickname ? nickname.slice(0, 1) : '拾',
+        avatarFileId: session.user.avatarFileId || '',
         displayName
       });
 
@@ -146,22 +149,8 @@ Page({
   },
 
   onEditName() {
-    wx.showModal({
-      title: '你的昵称',
-      editable: true,
-      placeholderText: '最多 24 个字',
-      success: async (res) => {
-        if (!res.confirm) return;
-        const nickname = (res.content || '').trim().slice(0, 24);
-        try {
-          await userService.updateProfile({ nickname });
-          wx.showToast({ title: '已保存', icon: 'none' });
-          void this.load();
-        } catch (error) {
-          wx.showToast({ title: toAppError(error).message, icon: 'none' });
-        }
-      }
-    });
+    // 头像与昵称统一在「我的」页用微信官方能力授权（chooseAvatar + nickname 输入）
+    wx.switchTab({ url: '/pages/mine/index' });
   },
 
   onSearchTap() {

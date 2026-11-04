@@ -191,7 +191,7 @@ cloudfunction（鉴权 → 参数校验 → 归属校验 → 数据访问 → �
 ### 8.2 平台能力缺口
 
 - 个人主体不可用 `wx.getPhoneNumber` → 人物手机号只能手输。
-- `wx.getUserProfile` 已不可用 → 头像昵称走 `chooseAvatar` + `input type="nickname"`。
+- `wx.getUserProfile` 已不可用 → 头像昵称已改为 `button open-type="chooseAvatar"` + `input type="nickname"` 微信官方能力（已实现，见「我的」页）。
 - 云数据库 `limit`：小程序端 20 / 云函数端 100；无 join；`skip` 深翻页性能差。
 
 ### 8.3 提醒能力缺口
