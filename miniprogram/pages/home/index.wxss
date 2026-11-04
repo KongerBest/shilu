@@ -10,7 +10,7 @@
   width: 92rpx;
   height: 92rpx;
   border-radius: 50%;
-  background: var(--c-accent-soft);
+  background-image: linear-gradient(150deg, var(--glass-bg-strong), var(--c-accent-soft));
   color: var(--c-accent);
   font-size: 36rpx;
   font-weight: 600;
@@ -18,6 +18,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 8rpx 20rpx rgba(24, 38, 33, 0.08);
 }
 
 .hero__text {
@@ -56,11 +58,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--c-surface);
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
+  /* 首页主视觉：玻璃 + 左上角一层主色雾，避免整块白得发空 */
+  background-color: var(--glass-bg);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 30%),
+    radial-gradient(120% 120% at 0% 0%, var(--c-accent-soft) 0%, rgba(0, 0, 0, 0) 58%),
+    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 66%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 28rpx;
   padding: var(--sp-4) var(--sp-3);
   margin-bottom: var(--sp-4);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
 }
 
 .stats__item {
@@ -75,6 +83,7 @@
   font-size: var(--fs-display);
   font-weight: 600;
   line-height: 1.1;
+  letter-spacing: -0.02em;
   color: var(--c-text);
 }
 
@@ -97,18 +106,24 @@
 
 .grid__item {
   width: calc((100% - var(--sp-2) * 3) / 4);
-  background: var(--c-surface);
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
+  background-color: var(--glass-bg);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 34%),
+    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 70%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 22rpx;
   padding: var(--sp-3) var(--sp-2);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6rpx;
+  box-shadow: var(--glass-highlight), 0 6rpx 16rpx rgba(24, 38, 33, 0.04);
+  transition: transform 140ms ease, background-color 140ms ease;
 }
 
 .grid__item--hover {
-  background: var(--c-surface-sunken);
+  background-color: var(--glass-bg-strong);
+  transform: scale(0.96);
 }
 
 .grid__dot {
@@ -142,11 +157,13 @@
 
 .errorbox {
   margin-top: 20vh;
-  background: var(--c-surface);
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
+  background-color: var(--glass-bg);
+  background-image: linear-gradient(158deg, var(--glass-bg-strong), var(--glass-bg));
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
   padding: var(--sp-5);
   text-align: center;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
 }
 
 .errorbox__title {

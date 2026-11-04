@@ -22,7 +22,15 @@ button {
    拿不到 .theme-dark 上的变量，只靠它会留下浅色底 + 浅色文字的「隐形文字」。 */
 .page {
   min-height: 100vh;
-  background: var(--c-bg);
+  background-color: var(--c-bg);
+  /* 三团环境光：让半透明卡片有可见的折射来源，也是「不空」的底层质感。
+     用 rgba(0,0,0,0) 而不是 transparent，避免部分 Android WebView 出现灰边。 */
+  background-image:
+    radial-gradient(145% 85% at 2% -8%, var(--glow-1) 0%, rgba(0, 0, 0, 0) 64%),
+    radial-gradient(105% 72% at 104% -2%, var(--glow-2) 0%, rgba(0, 0, 0, 0) 60%),
+    radial-gradient(140% 92% at 50% 106%, var(--glow-3) 0%, rgba(0, 0, 0, 0) 66%),
+    var(--bg-gradient);
+  background-repeat: no-repeat;
   color: var(--c-text);
   padding: var(--sp-4) var(--sp-4)
     calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--sp-6));
@@ -57,9 +65,17 @@ button {
 }
 
 .card {
-  background: var(--c-surface);
-  border-radius: var(--radius-card);
-  border: 1rpx solid var(--c-line);
+  /* 玻璃卡片：半透明渐变 + 顶部 1rpx 内高光 + 亮色描边，
+     模拟光线从上方掠过玻璃边缘的那道亮线。 */
+  background-color: var(--glass-bg);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
+    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 62%);
+  border-radius: 24rpx;
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   padding: var(--sp-4);
 }
 
@@ -198,14 +214,18 @@ button {
 /* ---------- 按钮 ---------- */
 .btn-primary {
   width: 100%;
-  height: 92rpx;
-  line-height: 92rpx;
+  height: 96rpx;
+  line-height: 96rpx;
   margin-top: var(--sp-4);
   font-size: var(--fs-body);
-  font-weight: 500;
-  color: #ffffff;
-  background: var(--c-accent);
-  border-radius: var(--radius-sm);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--c-on-accent);
+  background-color: var(--c-accent);
+  background-image: linear-gradient(180deg, var(--c-accent-bright) 0%, var(--c-accent) 100%);
+  border-radius: 22rpx;
+  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.26);
+  transition: transform 140ms ease, box-shadow 140ms ease;
 }
 
 .btn-primary::after {
@@ -214,8 +234,9 @@ button {
 
 .btn-primary[disabled] {
   opacity: 0.5;
-  color: #ffffff;
+  color: var(--c-on-accent);
   background: var(--c-accent);
+  box-shadow: none;
 }
 
 .btn-primary--half {
@@ -225,13 +246,16 @@ button {
 
 .btn-ghost {
   flex: 1;
-  height: 92rpx;
-  line-height: 92rpx;
+  height: 96rpx;
+  line-height: 96rpx;
   margin-right: var(--sp-2);
   font-size: var(--fs-body);
   color: var(--c-text-2);
-  background: var(--c-surface-sunken);
-  border-radius: var(--radius-sm);
+  background-color: var(--glass-bg-soft);
+  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
+  border: 1rpx solid var(--glass-border);
+  border-radius: 22rpx;
+  box-shadow: var(--glass-highlight);
 }
 
 .btn-ghost::after {
@@ -250,8 +274,9 @@ button {
   text-align: center;
   font-size: var(--fs-caption);
   color: var(--c-text-3);
-  background: var(--c-surface-sunken);
-  border-radius: var(--radius-sm);
+  background: var(--glass-bg-soft);
+  border: 1rpx solid var(--glass-border-soft);
+  border-radius: 16rpx;
 }
 
 .icon-btn--danger {
@@ -265,7 +290,9 @@ button {
   right: 0;
   bottom: 0;
   left: 0;
-  background: rgba(20, 20, 18, 0.4);
+  background: rgba(16, 18, 20, 0.34);
+  -webkit-backdrop-filter: blur(8rpx);
+  backdrop-filter: blur(8rpx);
   z-index: 90;
 }
 
@@ -279,8 +306,13 @@ button {
   flex-direction: column;
   max-height: 82vh;
   padding: var(--sp-4) var(--sp-4) calc(var(--sp-4) + env(safe-area-inset-bottom));
-  background: var(--c-surface);
-  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background-color: var(--glass-bg-strong);
+  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-top: 1rpx solid var(--glass-border);
+  border-radius: 32rpx 32rpx 0 0;
+  box-shadow: var(--glass-shadow-lg), var(--glass-highlight);
 }
 
 .sheet-head {

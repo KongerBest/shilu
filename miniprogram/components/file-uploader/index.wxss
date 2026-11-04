@@ -57,7 +57,7 @@
   align-items: center;
   justify-content: center;
   border: 2rpx dashed var(--c-line);
-  background: transparent;
+  background: var(--glass-bg-soft);
   color: var(--c-text-3);
 }
 
@@ -68,6 +68,7 @@
 .tile__plus {
   font-size: 52rpx;
   line-height: 1;
+  color: var(--c-accent);
 }
 
 .tile__hint {
@@ -141,8 +142,9 @@
   margin-top: var(--sp-2);
   border: 2rpx dashed var(--c-line);
   border-radius: var(--radius-sm);
+  background: var(--glass-bg-soft);
   font-size: var(--fs-caption);
-  color: var(--c-text-3);
+  color: var(--c-accent);
   text-align: center;
 }
 

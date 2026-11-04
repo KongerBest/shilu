@@ -131,6 +131,8 @@ Test Files  10 passed (10)
 | 附件删除 | ✅ `remove` 软删除（`is_deleted=1`），`records.attachment_count` 与 `user_stats.attachments_count` 由 1 回退到 0 |
 | 附件归属防护 | ✅ 用他人路径前缀 `confirmUpload` → `403`；`https://` 协议 → `400`；不存在的 `bizId` → `404`；`biz_type=contact` → `400` |
 | 附件界面 | ✅ 详情页出现「图片 / 文件」两区，缩略图、删除角标、`1/9` 计数、添加入口渲染正常 |
+| 液态玻璃视觉 | ✅ 深浅两套在首页 / 信息库 / 我的 / 设置 / 资料详情逐页走查；卡片、筛选胶囊、搜索框、悬浮底栏层次清楚，正文对比度足够 |
+| `backdrop-filter` 支持 | ⚠️ 模拟器计算值为 `none`（降级为「半透明 + 顶部高光 + 环境光」）；真机 iOS 可能生效，未验证 |
 
 > 隔离测试用的两条文档由控制台直接写入（`owner_openid` 为 `oFOREIGN_TEST_OPENID_0001`），
 > 未经云函数创建，因此不受"写入时补归属"逻辑影响，能真实模拟另一个用户的数据。

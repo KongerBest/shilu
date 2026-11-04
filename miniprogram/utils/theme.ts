@@ -12,8 +12,9 @@ export type ThemeMode = 'light' | 'dark';
 const STORAGE_KEY = 'shilu.theme';
 
 const NAV_BAR: Record<ThemeMode, { bg: string; front: '#ffffff' | '#000000' }> = {
-  light: { bg: '#f7f7f5', front: '#000000' },
-  dark: { bg: '#14161a', front: '#ffffff' }
+  // 与 --bg-gradient 的顶部色一致，避免导航栏和页面之间出现一条硬边
+  light: { bg: '#dcece5', front: '#000000' },
+  dark: { bg: '#101917', front: '#ffffff' }
 };
 
 export function getTheme(): ThemeMode {

@@ -1,11 +1,18 @@
+/* 设置页不挂自定义 tabbar，底部只需常规留白 */
 .page--plain {
   padding-bottom: var(--sp-6);
 }
 
 .group {
-  background: var(--c-surface);
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
+  background-color: var(--glass-bg);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
+    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   overflow: hidden;
 }
 
@@ -22,7 +29,7 @@
 }
 
 .row--hover {
-  background: var(--c-surface-sunken);
+  background: var(--glass-bg-strong);
 }
 
 .row__label {
@@ -129,9 +136,10 @@
   justify-content: center;
   gap: var(--sp-2);
   height: 88rpx;
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
-  background: var(--c-surface-sunken);
+  border: 1rpx solid var(--glass-border-soft);
+  border-radius: 18rpx;
+  background: var(--glass-bg-soft);
+  box-shadow: var(--glass-highlight);
   transition: border-color 120ms ease, background-color 120ms ease;
 }
 
@@ -142,6 +150,7 @@
 .theme-opt.is-active {
   border-color: var(--c-accent);
   background: var(--c-accent-soft);
+  box-shadow: inset 0 0 0 1rpx var(--c-accent), var(--glass-highlight);
 }
 
 .theme-opt__dot {

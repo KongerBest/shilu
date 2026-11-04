@@ -20,19 +20,24 @@
   height: var(--h-chip);
   padding: 0 28rpx;
   border-radius: var(--radius-pill);
-  border: 1rpx solid var(--c-line);
-  background: var(--c-surface);
+  border: 1rpx solid var(--glass-border);
+  background-color: var(--glass-bg-soft);
+  background-image: linear-gradient(180deg, var(--glass-bg) 0%, var(--glass-bg-soft) 100%);
   font-size: var(--fs-caption);
   line-height: 1;
   color: var(--c-text-2);
   flex-shrink: 0;
-  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+  box-shadow: var(--glass-highlight);
+  transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
 .chip.is-active {
-  background: var(--c-accent-soft);
+  background-color: var(--c-accent);
+  background-image: linear-gradient(180deg, var(--c-accent-bright) 0%, var(--c-accent) 100%);
   border-color: var(--c-accent);
-  color: var(--c-accent);
+  color: var(--c-on-accent);
+  font-weight: 600;
+  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.24);
 }
 
 .stack-item {
@@ -54,20 +59,23 @@
 .fab {
   position: fixed;
   right: var(--sp-4);
-  bottom: calc(var(--tabbar-height) + var(--sp-4) + env(safe-area-inset-bottom));
+  bottom: calc(var(--tabbar-height) + var(--sp-4) + env(safe-area-inset-bottom) + 12rpx);
   width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
-  background: var(--c-accent);
+  background-color: var(--c-accent);
+  background-image: linear-gradient(180deg, var(--c-accent-bright) 0%, var(--c-accent) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--c-shadow-fab);
+  border: 1rpx solid var(--glass-border-soft);
+  box-shadow: var(--c-shadow-fab), inset 0 2rpx 0 rgba(255, 255, 255, 0.3);
+  transition: transform 140ms ease;
   z-index: 90;
 }
 
 .fab--hover {
-  opacity: 0.85;
+  transform: scale(0.94);
 }
 
 .fab__h,
@@ -89,11 +97,13 @@
 
 .errorbox {
   margin-top: 16vh;
-  background: var(--c-surface);
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
+  background-color: var(--glass-bg);
+  background-image: linear-gradient(158deg, var(--glass-bg-strong), var(--glass-bg));
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
   padding: var(--sp-5);
   text-align: center;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
 }
 
 .errorbox__title {

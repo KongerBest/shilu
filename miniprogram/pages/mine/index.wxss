@@ -9,13 +9,15 @@
   width: 112rpx;
   height: 112rpx;
   border-radius: 50%;
-  background: var(--c-accent-soft);
+  background-image: linear-gradient(150deg, var(--glass-bg-strong), var(--c-accent-soft));
   color: var(--c-accent);
   font-size: 44rpx;
   font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-highlight), 0 10rpx 24rpx rgba(24, 38, 33, 0.08);
 }
 
 .profile__info {
@@ -59,9 +61,15 @@
 
 .group {
   margin-top: var(--sp-3);
-  background: var(--c-surface);
-  border: 1rpx solid var(--c-line);
-  border-radius: var(--radius-card);
+  background-color: var(--glass-bg);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
+    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   overflow: hidden;
 }
 
@@ -78,7 +86,7 @@
 }
 
 .row--hover {
-  background: var(--c-surface-sunken);
+  background: var(--glass-bg-strong);
 }
 
 .row__label {

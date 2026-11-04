@@ -13,7 +13,7 @@ page {
   --c-surface-sunken: #f1f1ed;
   --c-text: #1a1a18;
   --c-text-2: #54544f;
-  --c-text-3: #9c9c96;
+  --c-text-3: #8c8c86;
   --c-line: #e8e8e3;
   --c-accent: #2f5d50;
   --c-accent-soft: #eaf0ed;
@@ -28,6 +28,37 @@ page {
   --c-fab-fg: #ffffff;
   --c-shadow-card: 0 2rpx 8rpx rgba(26, 26, 24, 0.04);
   --c-shadow-fab: 0 8rpx 24rpx rgba(47, 93, 80, 0.28);
+
+  /* 强调色的渐变两端与上面的文字色。
+     深色下主色更亮，白字对比度不足，因此 on-accent 在深色里是近黑色。 */
+  --c-accent-deep: #24493f;
+  --c-accent-bright: #3d7362;
+  --c-on-accent: #ffffff;
+  --shadow-accent: 0 12rpx 28rpx rgba(47, 93, 80, 0.26);
+
+  /* 环境光：玻璃要有东西可折射，否则 blur 在纯色底上等于没做 */
+  --glow-1: #d5ebe1;
+  --glow-2: #f9e2cd;
+  --glow-3: #dfe6f7;
+  /* 整页色彩底：没有 backdrop-filter 时，靠它给半透明卡片「染色」 */
+  --bg-gradient: linear-gradient(165deg, #dcece5 0%, #f6e9dd 46%, #dbe3f4 100%);
+
+  /* 玻璃材质：内容卡片不透传 blur（列表里几十张会拖性能），
+     只靠「半透明 + 顶部内高光 + 边缘亮线」模拟折射。 */
+  --glass-bg: rgba(255, 255, 255, 0.32);
+  --glass-bg-strong: rgba(255, 255, 255, 0.52);
+  --glass-bg-soft: rgba(255, 255, 255, 0.22);
+  --glass-border: rgba(255, 255, 255, 0.88);
+  --glass-border-soft: rgba(255, 255, 255, 0.56);
+  --glass-highlight: inset 0 2rpx 0 rgba(255, 255, 255, 0.96), inset 0 -2rpx 0 rgba(255, 255, 255, 0.3);
+  --glass-shadow: 0 12rpx 32rpx rgba(24, 38, 33, 0.1), 0 2rpx 6rpx rgba(24, 38, 33, 0.04);
+  --glass-shadow-lg: 0 24rpx 64rpx rgba(24, 38, 33, 0.12);
+  /* 左上角斜向高光：浅色下是玻璃受光面，深色下必须很克制，否则糊成白雾 */
+  --glass-specular: rgba(255, 255, 255, 0.5);
+  --glass-blur: blur(28rpx) saturate(180%);
+  /* 悬浮层的投影要明显重于内容卡片，否则「浮起来」的感觉出不来 */
+  --shadow-float: 0 18rpx 44rpx rgba(24, 38, 33, 0.16), 0 2rpx 8rpx rgba(24, 38, 33, 0.06);
+  --glass-tabbar: rgba(252, 252, 250, 0.72);
 
   /* 字体 */
   --font-sans: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
@@ -69,7 +100,7 @@ page {
   --c-surface-sunken: #24282f;
   --c-text: #eceef1;
   --c-text-2: #a8adb6;
-  --c-text-3: #6d727b;
+  --c-text-3: #7f858f;
   --c-line: #2c313a;
   --c-accent: #4f9e86;
   --c-accent-soft: #1d2b27;
@@ -83,4 +114,26 @@ page {
   --c-fab-fg: #0e1512;
   --c-shadow-card: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
   --c-shadow-fab: 0 8rpx 24rpx rgba(0, 0, 0, 0.55);
+
+  --c-accent-deep: #6fb8a0;
+  --c-accent-bright: #3d7f6c;
+  --c-on-accent: #08120e;
+  --shadow-accent: 0 12rpx 28rpx rgba(0, 0, 0, 0.5);
+
+  --glow-1: #153830;
+  --glow-2: #1c2444;
+  --glow-3: #32202a;
+  --bg-gradient: linear-gradient(165deg, #101917 0%, #12141a 46%, #17151f 100%);
+
+  --glass-bg: rgba(40, 45, 54, 0.5);
+  --glass-bg-strong: rgba(48, 54, 64, 0.7);
+  --glass-bg-soft: rgba(36, 40, 48, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-border-soft: rgba(255, 255, 255, 0.09);
+  --glass-highlight: inset 0 1rpx 0 rgba(255, 255, 255, 0.16), inset 0 -1rpx 0 rgba(255, 255, 255, 0.04);
+  --glass-shadow: 0 14rpx 36rpx rgba(0, 0, 0, 0.42);
+  --glass-shadow-lg: 0 28rpx 70rpx rgba(0, 0, 0, 0.55);
+  --glass-tabbar: rgba(22, 25, 31, 0.72);
+  --glass-specular: rgba(255, 255, 255, 0.08);
+  --shadow-float: 0 18rpx 44rpx rgba(0, 0, 0, 0.55), 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
 }
