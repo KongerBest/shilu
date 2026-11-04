@@ -15,8 +15,13 @@
     "useCompilerPlugins": [
       "typescript"
     ],
-    "packNpmManually": false,
-    "packNpmRelationList": [],
+    "packNpmManually": true,
+    "packNpmRelationList": [
+      {
+        "packageJsonPath": "./package.json",
+        "miniprogramNpmDistDir": "./miniprogram/"
+      }
+    ],
     "ignoreUploadUnusedFiles": true,
     "babelSetting": {
       "ignore": [],

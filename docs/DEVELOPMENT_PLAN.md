@@ -139,6 +139,7 @@ shilu/
 - 路径即归属：`cloudPath` 内嵌 `sha256(openid)` 前 16 位，`confirmUpload` 校验前缀，实测跨用户 403。
 - 计数联动：`records.attachment_count` 与 `user_stats.attachments_count` 随上传/删除增减。
 - 加密模块 `utils/crypto/`（P3 地基，P5 密钥体系直接复用）：`random`（跨环境 CSPRNG，小程序走 `wx.getUserCryptoManager`）/ `kdf`（PBKDF2-HMAC-SHA512 600k，同步 + `pbkdf2Async`）/ `aesgcm`（AES-256-GCM，key 32B、nonce 12B、ct||tag）/ `envelope`（密钥信封 + AAD 绑定 `userId:itemId:fieldKey:vKv`）/ `filecipher`（20B 头 + 密文||tag，AAD 绑定业务上下文）。25 项单测覆盖往返、篡改抛错、AAD 不匹配、nonce 唯一性 1000 次、边界。
+- 密钥来源（P5 保险箱密钥生命周期提前到 P3，加密附件的前置）：`utils/crypto/base32.ts`（恢复码，去 0/O/1/I）+ `utils/crypto/keystore.ts`（`initVault` / `unlockVault` / `recoverVault` / `changePassword` / `verifyUnlocked`，主密码 + 恢复码 + MK 信封，AAD 绑定 userId）+ `vault` 云函数（`init` / `status` / `changePassword` / `recover` / `audit`，零知识：主密码/恢复码/MK 永不上传，云端只存包裹体）。13 项单测，`vault` 已在真实云环境验证 init/status/changePassword/recover/audit/非法算法 400。
 
 ### 关键实现点
 1. `file-uploader` 状态机：`idle → reading → encrypting → uploading(progress) → confirming → done | failed`。

@@ -9,4 +9,6 @@ coverage/
 cloudfunctions/*/node_modules/
 # 由 scripts/sync-shared.js 生成的副本
 cloudfunctions/*/common/
+# 小程序构建 npm 的产物（重新 clone 后需在开发者工具「构建 npm」）
+miniprogram/miniprogram_npm/
 .vitest-tmp/

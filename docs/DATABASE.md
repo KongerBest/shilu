@@ -324,15 +324,16 @@ type FieldType =
 
 > 与 `records.is_favorite` 冗余。前者服务"混合类型收藏列表"，后者服务"资料列表内的收藏筛选"。写入时同事务双写。
 
-### 3.12 `vaults`（仅 private 构建）
+### 3.12 `vaults`（密钥信封：加密附件与保险箱共用）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `kdf_algo` | `'PBKDF2-SHA512' \| 'Argon2id'` | |
-| `kdf_params` | `{ iterations?, memory?, parallelism?, salt: string }` | `salt` Base64，32 字节 |
+| `kdf_params` | `{ iterations, salt: string, rec_salt: string }` | 两个盐均 Base64，32 字节；`rec_salt` 用于恢复码派生 KEK |
 | `key_version` | number | 从 1 开始，轮换时 +1 |
-| `verifier` | `{ iv, ct }` | 用 MK 加密常量串 `SHILU_VERIFIER_v1`，用于校验主密码是否正确 |
-| `recovery_wrap` | `{ iv, ct }` | 用**恢复码派生的 KEK** 包裹 MK |
+| `pwd_wrap` | `{ iv, ct }` | 用**主密码派生的 KEK_pwd** 包裹 MK |
+| `verifier` | `{ iv, ct }` | 用 MK 加密常量串 `SHILU_VERIFIER_v1`，解锁后客户端自检 |
+| `recovery_wrap` | `{ iv, ct }` | 用**恢复码派生的 KEK_rec** 包裹 MK |
 | `auto_lock_seconds` | number | 默认 120 |
 | `failed_attempts` | number | 连续失败次数 |
 | `locked_until` | number \| null | 指数退避锁定 |

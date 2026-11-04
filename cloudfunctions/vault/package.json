@@ -1,0 +1,9 @@
+{
+  "name": "vault",
+  "version": "1.0.0",
+  "description": "拾录 - 密钥生命周期（加密附件的密钥前置）",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}
