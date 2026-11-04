@@ -3,7 +3,7 @@
 
   <block wx:else>
     <view class="profile">
-      <button class="profile__avatar" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+      <button class="profile__avatar" style="width: 112rpx; height: 112rpx;" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
         <image wx:if="{{avatarFileId}}" class="profile__avatar-img" src="{{avatarFileId}}" mode="aspectFill" />
         <text wx:else class="profile__avatar-text">{{initial}}</text>
       </button>
