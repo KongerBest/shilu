@@ -17,7 +17,7 @@
 | 云函数 | `user`、`category`、`template`、`record`、`attachment`、`vault`（共 6 个，均已部署并验证） |
 | 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings、vault（10 个） |
 | 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer、file-uploader（7 个） |
-| AppID / 云环境 | `wx46dfc697b1c986c0` / `cloud1-d3gx6yqxpb924f4cf` |
+| AppID / 云环境 | `wx46dfc697b1c986c0` / 本地注入（见 `config/env.local.example.ts`） |
 | 加密 | 端到端加密附件（PBKDF2 600k + AES-256-GCM + 主密码/恢复码双信封，云端零明文）；微信头像/昵称授权 + EXIF 剥离 |
 | 外观 | 浅色 / 深色双主题；液态玻璃材质（环境光渐变 + 半透明卡片 + 顶部高光）；悬浮胶囊底栏；线性图标（SVG mask 换色） |
 | 动效 | 页面淡入、统计数字滚动、底栏随滚动收缩成窄胶囊、触感反馈（可关） |
@@ -33,6 +33,8 @@ npm install
 npm run sync:shared   # 把 cloudfunctions/_shared 同步到各云函数的 common/
 npm run check         # 类型检查 + 单测
 ```
+
+复制 `miniprogram/config/env.local.example.ts` 为同目录 `env.local.ts`，填入你的云开发环境 ID（该文件不入库）。
 
 然后用微信开发者工具导入**本目录**（不是 `miniprogram/`）。
 

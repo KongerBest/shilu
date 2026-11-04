@@ -1,7 +1,7 @@
 # 拾录 SHILU — 测试报告
 
 > 更新时间：2026-11-03 ｜ 阶段：P2（分类 / 模板 / 动态表单 / 资料 CRUD）
-> 环境：Windows / Node v24.22.2（LTS）/ npm 11.19.1 / 微信开发者工具 + 云环境 `cloud1-d3gx6yqxpb924f4cf`
+> 环境：Windows / Node v24.22.2（LTS）/ npm 11.19.1 / 微信开发者工具 + 云环境（本地注入，见 `config/env.local.example.ts`）
 > 测试命令：`npm run check`（单进程串行，见 `vitest.config.ts` 注释）
 > 本报告只写实际执行结果。**没有执行过的，一律标「未验证」，不使用「通过」二字。**
 
@@ -101,7 +101,7 @@ Test Files  10 passed (10)
 
 ### 3.1 已在真机模拟器上验证（2026-11-03 23:00 起）
 
-微信开发者工具 3.x + AppID `wx46dfc697b1c986c0` + 云环境 `cloud1-d3gx6yqxpb924f4cf`：
+微信开发者工具 3.x + AppID `wx46dfc697b1c986c0` + 云环境（本地注入）：
 
 | 项 | 结果 |
 |---|---|

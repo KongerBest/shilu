@@ -58,7 +58,7 @@ npm run sync:noble-npm
 ## 4. 云开发开通
 
 1. 工具顶部「云开发」→ 开通 → 新建环境，记下**环境 ID**。
-2. 把环境 ID 填入 `miniprogram/config/env.ts`：
+2. 复制 `miniprogram/config/env.local.example.ts` 为同目录 `env.local.ts`，填入环境 ID（该文件已 `.gitignore`，不入库）：
 
 ```ts
 export const CLOUD_ENV = 'your-env-id';   // 必须替换
@@ -217,7 +217,7 @@ export const TMPL_ANNIVERSARY = 'your-template-id';
 
 | 现象 | 原因 | 解决 |
 |---|---|---|
-| `errCode: -501000` | 云环境 ID 错误或未初始化 | 检查 `config/env.ts` |
+| `errCode: -501000` | 云环境 ID 错误或未初始化 | 检查 `config/env.local.ts` |
 | 云函数报 `Cannot find module './common/dispatcher'` | 未同步共享代码 | `npm run sync:shared` 后重新上传 |
 | TS 报错但工具能跑 | 工具用的是自身 TS 版本 | 以 `npm run typecheck` 为准，工具报错可忽略语法层面差异 |
 | 列表读不到数据 | 集合权限仍为「仅创建者可读写」 | 改为 `read:false, write:false` + 全部走云函数 |

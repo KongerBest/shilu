@@ -1,5 +1,7 @@
 node_modules/
 project.private.config.json
+# 本地环境配置（含云环境 ID，构建时注入，不入库）
+miniprogram/config/env.local.ts
 .DS_Store
 *.log
 coverage/
