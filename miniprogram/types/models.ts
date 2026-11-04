@@ -140,6 +140,25 @@ export interface ShiluRecord {
   updated_at: number;
 }
 
+/** 附件元数据。文件本身在云存储，这里只存登记信息。 */
+export interface Attachment {
+  _id: string;
+  biz_type: 'record' | 'contact' | 'document';
+  biz_id: string;
+  role: 'front' | 'back' | 'other' | 'avatar' | 'file';
+  file_id: string;
+  /** 展示名，原始文件名不入库（后续加密版本才会存 name_enc） */
+  name_mask: string;
+  mime: string;
+  size: number;
+  width: number | null;
+  height: number | null;
+  encrypted: 0 | 1;
+  sort_order: number;
+  status: 'uploading' | 'ready' | 'failed';
+  created_at: number;
+}
+
 /** 列表项比详情少一些字段，避免无谓流量。 */
 export interface RecordListItem {
   _id: string;

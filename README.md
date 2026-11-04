@@ -8,20 +8,20 @@
 
 ## 当前状态
 
-**阶段二已完成**（分类系统 / 模板系统 / 动态表单 / 资料 CRUD），**已在微信开发者工具 + 真实云环境跑通**。
+**阶段二已完成**（分类系统 / 模板系统 / 动态表单 / 资料 CRUD），**阶段三进行中**（附件服务基础已跑通，加密与证件页待做）。**已在微信开发者工具 + 真实云环境跑通**。
 
 | 项 | 结果 |
 |---|---|
 | `npm run typecheck` | 0 error |
 | `npm run check` | 131 / 131 通过（10 个文件，单进程串行） |
-| 云函数 | `user`、`category`、`template`、`record`（共 4 个，均已部署并验证） |
+| 云函数 | `user`、`category`、`template`、`record`、`attachment`（共 5 个，均已部署并验证） |
 | 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings（9 个） |
-| 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer（6 个） |
+| 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer、file-uploader（7 个） |
 | AppID / 云环境 | `wx46dfc697b1c986c0` / `cloud1-d3gx6yqxpb924f4cf` |
-| 模拟器验证 | 首页渲染、底栏安全区、7 个预设分类 + 6 个模板播种、四个云函数 `code: 0` |
+| 模拟器验证 | 首页渲染、底栏安全区、7 个预设分类 + 6 个模板播种、五个云函数 `code: 0`、附件上传/签名/删除全链路 |
 | 外观 | 浅色 / 深色双主题，设置页切换，全部页面与 tabbar 跟随；底栏为线性图标（SVG mask 换色） |
 
-**仍未验证**：`field-renderer` 逐字输入/observers 时序、数据库索引命中、模板版本回滚、云存储、订阅消息、真机加密耗时与键盘遮挡。详见 `docs/TEST_REPORT.md`。
+**仍未验证**：`field-renderer` 逐字输入/observers 时序、数据库索引命中、模板版本回滚、附件客户端加密、订阅消息、真机加密耗时与键盘遮挡。详见 `docs/TEST_REPORT.md`。
 
 ---
 

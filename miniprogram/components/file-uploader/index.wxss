@@ -1,0 +1,151 @@
+.uploader {
+  display: block;
+}
+
+.uploader__hint {
+  display: block;
+  padding: var(--sp-2) 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.uploader__error {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-caption);
+  color: var(--c-danger);
+}
+
+/* 图片网格：三列等宽，正方形由固定高度保证，不依赖 aspect-ratio */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+.tile {
+  position: relative;
+  width: calc((100% - var(--sp-2) * 2) / 3);
+  height: 190rpx;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--c-surface-sunken);
+}
+
+.tile__img {
+  width: 100%;
+  height: 100%;
+}
+
+.tile__del {
+  position: absolute;
+  top: 6rpx;
+  right: 6rpx;
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #ffffff;
+  font-size: 30rpx;
+  line-height: 36rpx;
+  text-align: center;
+}
+
+.tile--add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx dashed var(--c-line);
+  background: transparent;
+  color: var(--c-text-3);
+}
+
+.tile--hover {
+  opacity: 0.6;
+}
+
+.tile__plus {
+  font-size: 52rpx;
+  line-height: 1;
+}
+
+.tile__hint {
+  margin-top: 4rpx;
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+}
+
+.tile--progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile__progress {
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+}
+
+/* 文件列表 */
+.file {
+  display: flex;
+  align-items: center;
+  padding: var(--sp-3) 0;
+  border-bottom: 1rpx solid var(--c-line);
+}
+
+.file:last-child {
+  border-bottom: none;
+}
+
+.file__icon {
+  width: 56rpx;
+  height: 64rpx;
+  margin-right: var(--sp-3);
+  border: 2rpx solid var(--c-line);
+  border-radius: 6rpx;
+  background: var(--c-surface-sunken);
+}
+
+.file__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.file__name {
+  display: block;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.file__meta {
+  display: block;
+  margin-top: 2rpx;
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+}
+
+.file__del {
+  flex-shrink: 0;
+  padding: 8rpx 0 8rpx var(--sp-3);
+  font-size: var(--fs-caption);
+  color: var(--c-danger);
+}
+
+.file-add {
+  padding: var(--sp-3);
+  margin-top: var(--sp-2);
+  border: 2rpx dashed var(--c-line);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  text-align: center;
+}
+
+.file--progress {
+  border-bottom: none;
+}

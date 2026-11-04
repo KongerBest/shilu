@@ -107,6 +107,18 @@ wechatide -c <clientName> cloud_db_write_struct --appid <APPID> --env <ENV> `
 > 每次 `updateCollection` 都要在开发者工具里人工确认一次，所以按模块逐步建，别一次性全建。
 > 索引创建是**异步**的，控制台显示「构建中」时查询仍走全表扫描，等状态变「正常」再压测。
 
+### 4.4 云存储权限（附件功能上线后必做）
+
+控制台 → **存储** → 权限设置 → 选「**仅创建者可读写**」。
+
+附件路径固定为 `attachments/<openid 指纹>/<yyyyMM>/<随机>.<ext>`，指纹是 `sha256(openid)` 前 16 位：
+
+- 客户端用 `wx.cloud.uploadFile` 直传，云存储会把文件所有者记为上传者 openid；
+- 云函数只负责签发路径、登记元数据、换临时链接，文件流从不经过函数；
+- `confirmUpload` 会校验路径前缀与调用者指纹一致，拿别人的 `fileID` 登记会被 **403** 拒绝。
+
+**不要**设成「所有用户可读」——那样任何拿到 `fileID` 的人都能下载，等于绕过归属校验。
+
 ---
 
 ## 5. 云函数部署
@@ -125,7 +137,13 @@ npm run sync:shared
 ### 5.2 上传
 
 工具左侧 `cloudfunctions/` → 右键目标函数 → 「上传并部署：云端安装依赖」。
-阶段二需上传：`user`、`category`、`template`、`record`（新增 `template`，其余三个有改动需重传）。
+阶段三需上传：`user`、`category`、`template`、`record`、`attachment`（新增 `attachment`）。
+
+命令行等价写法（首次创建函数时会返回 `Creating` 状态，等 30–60 秒重试即可）：
+
+```powershell
+cli cloud functions deploy -e <ENV> -p E:\SHILU\cloudfunctions\attachment -r --project E:\SHILU
+```
 
 每个函数的 `package.json` 依赖仅 `wx-server-sdk`，其余为内置 Node 模块。
 

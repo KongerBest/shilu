@@ -158,14 +158,22 @@ getWXContext().OPENID
 
 | action | payload | 返回 |
 |---|---|---|
+| `prepareUpload` | `{ bizType, bizId, role?, ext? }` | `{ cloudPath, role, maxSize, ownerTag }` |
 | `listByBiz` | `{ bizType, bizId }` | `{ items }` |
-| `confirmUpload` | `{ bizType, bizId, role, fileId, nameEnc, nameMask, mime, size, width?, height?, sha256, encrypted, encMeta? }` | `{ item }` |
-| `updateMeta` | `{ id, role?, sortOrder?, nameEnc?, nameMask? }` | `{ item }` |
+| `confirmUpload` | `{ bizType, bizId, role, fileId, nameMask, mime, size, width?, height?, sha256?, encrypted? }` | `{ item }` |
+| `updateMeta` | `{ id, role?, sortOrder?, nameMask? }` | `{ ok }` |
 | `reorder` | `{ ids: string[] }` | `{ ok }` |
 | `remove` | `{ id }` | `{ ok }`（软删除，文件 30 天后清） |
-| `reSign` | `{ id }` | `{ tempUrl, expiresAt }`（下载临时链接） |
+| `reSign` | `{ ids: string[] }`（≤ 20） | `{ items: [{ id, tempUrl, expiresAt }] }`（1 小时有效） |
 
-> **上传流程**：客户端加密 → `wx.cloud.uploadFile` 直传云存储 → 调 `confirmUpload` 落库。云函数**不参与文件流**，只登记元数据并校验归属（`biz_id` 必须属于本人）。
+> **上传流程**：`prepareUpload` 取路径 → `wx.cloud.uploadFile` 直传云存储 → `confirmUpload` 落库。云函数**不参与文件流**，只登记元数据并校验归属。
+>
+> **路径即归属**：`prepareUpload` 把 `sha256(openid)` 前 16 位写进 `cloudPath`，`confirmUpload` 再校验一次。
+> 这样即使猜到别人的 `fileID`，也无法登记成自己的附件（实测 403）。
+>
+> **实施状态（P3 基础版）**：`prepareUpload` / `confirmUpload` / `listByBiz` / `updateMeta` / `reorder` / `remove` / `reSign` 均已实现并在真实环境跑通。
+> 客户端加密未开放：`encrypted` 只能传 0，传 1 返回 400；`name_enc` / `enc_meta` 字段保留待用。
+> `biz_type` 当前只接受 `record`，`contact` / `document` 返回 400，避免出现"登记成功但业务不存在"的空挂附件。
 
 ### 5.8 `anniversary`
 

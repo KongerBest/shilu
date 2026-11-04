@@ -75,3 +75,18 @@
 .link--danger {
   color: var(--c-danger);
 }
+
+/* 附件区标题：与字段卡片的分隔头保持一致的视觉节奏 */
+.attach-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1rpx solid var(--c-line);
+}
+
+.attach-title {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--c-text);
+}

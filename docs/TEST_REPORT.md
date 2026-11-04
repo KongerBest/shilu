@@ -126,6 +126,11 @@ Test Files  10 passed (10)
 | 跨用户读单条 | ✅ 传他人 `_id` 调 `record.detail` → `403` |
 | 跨用户写 | ✅ `category.update` / `category.remove` / `record.update` / `record.remove` / `record.setFavorite` 传他人 `_id` → 全部 `403`；事后回查对方文档 `is_deleted=0`、`name` / `title` / `is_favorite` 均未被改动 |
 | 跨用户可见性 | ✅ `category.list` / `record.list` 均不含他人文档 |
+| 附件上传（端到端） | ✅ `prepareUpload` 发路径 → `wx.cloud.uploadFile` 直传 → `confirmUpload` 落库；`LIST=1` |
+| 附件临时链接 | ✅ `reSign` 返回 `tcb.qcloud.la` 域名的 1 小时临时链接 |
+| 附件删除 | ✅ `remove` 软删除（`is_deleted=1`），`records.attachment_count` 与 `user_stats.attachments_count` 由 1 回退到 0 |
+| 附件归属防护 | ✅ 用他人路径前缀 `confirmUpload` → `403`；`https://` 协议 → `400`；不存在的 `bizId` → `404`；`biz_type=contact` → `400` |
+| 附件界面 | ✅ 详情页出现「图片 / 文件」两区，缩略图、删除角标、`1/9` 计数、添加入口渲染正常 |
 
 > 隔离测试用的两条文档由控制台直接写入（`owner_openid` 为 `oFOREIGN_TEST_OPENID_0001`），
 > 未经云函数创建，因此不受"写入时补归属"逻辑影响，能真实模拟另一个用户的数据。
@@ -137,7 +142,9 @@ Test Files  10 passed (10)
 | **`field-renderer` 交互** | 尚未跑完动态表单 | 逐字输入是否跳光标、`observers` 触发顺序、`type: null` 属性透传——仍未实测 |
 | 云数据库索引生效 | 已建 19 个，未压测 | 是否真的命中、`limit` 20/100 边界未实测 |
 | 模板版本回滚 | 未造数据 | `field_history` 写入与 `restore` 未实测 |
-| 云存储上传/下载 | 阶段三才接 | — |
+| 云存储客户端权限 | 控制台权限项未能通过工具读取 | 已按「仅创建者可读写」部署，需人工确认该项；临时链接由云函数签发，不受影响 |
+| 附件客户端加密 | 密钥体系未接入（P5） | 当前附件明文存储，`encrypted` 强制为 0 |
+| 大文件与弱网 | 未实测 | 20MB 上限、断点重试、进度回退未验证 |
 | 订阅消息下发 | 无模板 ID | — |
 | 真机加密性能 | 只有模拟器 | PBKDF2 600k 迭代耗时未测 |
 | 真机安全区/键盘 | 只有模拟器 | 键盘弹起时输入框遮挡、不同机型安全区未实测 |

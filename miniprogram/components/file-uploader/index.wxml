@@ -1,0 +1,61 @@
+<view class="uploader">
+  <view wx:if="{{loading}}" class="uploader__hint">加载中…</view>
+
+  <view wx:if="{{acceptImage}}" class="grid">
+    <view wx:for="{{items}}" wx:key="_id" class="tile">
+      <image
+        class="tile__img"
+        src="{{item.url}}"
+        mode="aspectFill"
+        data-index="{{index}}"
+        bindtap="onPreview"
+      />
+      <view wx:if="{{!readonly}}" class="tile__del" data-id="{{item._id}}" catchtap="onRemove">×</view>
+    </view>
+
+    <view wx:if="{{uploading}}" class="tile tile--progress">
+      <text class="tile__progress tabular">{{progress}}%</text>
+    </view>
+    <view
+      wx:elif="{{!readonly && items.length < limit}}"
+      class="tile tile--add"
+      bindtap="onAdd"
+      hover-class="tile--hover"
+    >
+      <text class="tile__plus">+</text>
+      <text class="tile__hint">{{items.length}}/{{limit}}</text>
+    </view>
+  </view>
+
+  <block wx:else>
+    <view
+      wx:for="{{items}}"
+      wx:key="_id"
+      class="file"
+      data-index="{{index}}"
+      bindtap="onFileTap"
+    >
+      <view class="file__icon"></view>
+      <view class="file__main">
+        <text class="file__name">{{item.name_mask}}</text>
+        <text class="file__meta">{{item.sizeText}}</text>
+      </view>
+      <view wx:if="{{!readonly}}" class="file__del" data-id="{{item._id}}" catchtap="onRemove">删除</view>
+    </view>
+
+    <view wx:if="{{uploading}}" class="file file--progress">
+      <view class="file__icon"></view>
+      <text class="file__name">上传中 {{progress}}%</text>
+    </view>
+    <view
+      wx:elif="{{!readonly && items.length < limit}}"
+      class="file-add"
+      bindtap="onAdd"
+      hover-class="tile--hover"
+    >
+      + 添加文件（{{items.length}}/{{limit}}）
+    </view>
+  </block>
+
+  <text wx:if="{{error}}" class="uploader__error">{{error}}</text>
+</view>

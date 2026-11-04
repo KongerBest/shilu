@@ -11,7 +11,7 @@
 |---|---|---|---|---|
 | P1 | 基础工程 + 登录 + 首页 + 导航 | 可编译骨架、design tokens、http 层、login/user 云函数 | — | ✅ 完成 |
 | P2 | 分类 + 模板 + 动态表单 + 资料 CRUD | `field-renderer` 12 类型可用、template 云函数、分类/模板管理页、动态表单编辑与详情 | P1 | ✅ 完成（附件类字段顺延 P3） |
-| P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | ⬜ |
+| P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | 🚧 进行中：附件服务基础已完成（上传/签名/删除/归属校验），加密与证件页待做 |
 | P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | ⬜ |
 | P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | ⬜ |
 | P5-PoC | Argon2id WASM 验证 | 可行性结论 | 需真机 | ⬜ |
@@ -131,6 +131,13 @@ shilu/
 
 ### 目标
 统一 `file-uploader`，普通资料、头像、证件全部复用；证件图片客户端加密。
+
+### 已完成（2026-11-04）
+- `attachment` 云函数 7 个 action：`prepareUpload` / `confirmUpload` / `listByBiz` / `updateMeta` / `reorder` / `remove` / `reSign`。
+- `file-uploader` 组件：图片网格 + 文件列表，进度、失败提示、预览、删除；同一 `biz` 上按 `mime` 分图片/文件两类渲染。
+- 资料详情页接入图片区（9 张）与文件区（5 个）。
+- 路径即归属：`cloudPath` 内嵌 `sha256(openid)` 前 16 位，`confirmUpload` 校验前缀，实测跨用户 403。
+- 计数联动：`records.attachment_count` 与 `user_stats.attachments_count` 随上传/删除增减。
 
 ### 关键实现点
 1. `file-uploader` 状态机：`idle → reading → encrypting → uploading(progress) → confirming → done | failed`。
