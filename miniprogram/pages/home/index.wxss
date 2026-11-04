@@ -6,11 +6,11 @@
 .section__title {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 18rpx;
   font-size: var(--fs-title);
   font-weight: 600;
   color: var(--c-text);
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .section__title::before {
@@ -25,9 +25,9 @@
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 10rpx;
   height: 52rpx;
-  padding: 0 20rpx;
+  padding: 0 22rpx;
   border-radius: var(--radius-pill);
   border: 1rpx solid var(--glass-border-soft);
   background: var(--glass-bg-soft);
