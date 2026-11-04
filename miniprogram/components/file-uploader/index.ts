@@ -124,7 +124,11 @@ Component({
     progress: 0,
     error: '',
     acceptImage: true,
-    limit: MAX_IMAGE
+    limit: MAX_IMAGE,
+    /** 最近一次加载的 biz，用于去重（observer 与 attached 会各触发一次） */
+    lastBizId: '',
+    /** 请求序号，只有最新一次的结果允许落盘 */
+    loadToken: 0
   },
 
   observers: {
@@ -134,7 +138,7 @@ Component({
         acceptImage,
         limit: Math.min(max || (acceptImage ? MAX_IMAGE : MAX_FILE), acceptImage ? MAX_IMAGE : MAX_FILE)
       });
-      if (bizId) void this.load();
+      if (bizId) this.scheduleLoad();
     }
   },
 
@@ -145,17 +149,28 @@ Component({
         acceptImage,
         limit: Math.min(this.properties.max || (acceptImage ? MAX_IMAGE : MAX_FILE), acceptImage ? MAX_IMAGE : MAX_FILE)
       });
-      if (this.properties.bizId) void this.load();
+      if (this.properties.bizId) this.scheduleLoad();
     }
   },
 
   methods: {
+    /** observer 与 attached 都会触发首次加载，这里按 biz 去重，避免两次并发请求 */
+    scheduleLoad() {
+      const bizId = this.properties.bizId;
+      if (!bizId) return;
+      if (this.data.loading && this.data.lastBizId === bizId) return;
+      this.setData({ lastBizId: bizId });
+      void this.load();
+    },
+
     async load() {
       const bizId = this.properties.bizId;
       if (!bizId) return;
-      this.setData({ loading: true, error: '' });
+      const token = this.data.loadToken + 1;
+      this.setData({ loading: true, error: '', loadToken: token });
       try {
         const res = await attachmentService.listByBiz(this.properties.bizType as AttachmentBiz, bizId);
+        if (this.data.loadToken !== token) return;
         // 同一个 biz 上既有图片也有文件：两个实例各取自己那一类，互不干扰
         const acceptImage = this.properties.accept !== 'file';
         const items: UploadItem[] = res.items
@@ -165,6 +180,7 @@ Component({
         await this.refreshUrls();
         this.emitChange();
       } catch (error) {
+        if (this.data.loadToken !== token) return;
         this.setData({ loading: false, error: toAppError(error).message });
       }
     },
