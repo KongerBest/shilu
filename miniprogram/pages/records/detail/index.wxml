@@ -37,35 +37,84 @@
       <text class="muted">这条资料还没有填写内容。</text>
     </view>
 
-    <view class="card">
-      <view class="attach-head">
-        <text class="attach-title">图片</text>
-        <text class="form-hint">最多 9 张，单张 20MB</text>
+    <block wx:if="{{isDocument}}">
+      <view class="card">
+        <view class="attach-head">
+          <text class="attach-title">证件正面</text>
+          <text class="form-hint">加密存储 · 云端仅存密文</text>
+        </view>
+        <file-uploader
+          biz-type="record"
+          biz-id="{{id}}"
+          role="front"
+          accept="image"
+          max="1"
+          encrypt="{{encryptedAttachments}}"
+        />
       </view>
-      <file-uploader
-        biz-type="record"
-        biz-id="{{id}}"
-        role="other"
-        accept="image"
-        max="9"
-        encrypt="{{encryptedAttachments}}"
-      />
-    </view>
 
-    <view class="card">
-      <view class="attach-head">
-        <text class="attach-title">文件</text>
-        <text class="form-hint">PDF / 文档，最多 5 个</text>
+      <view class="card">
+        <view class="attach-head">
+          <text class="attach-title">证件反面</text>
+          <text class="form-hint">加密存储 · 云端仅存密文</text>
+        </view>
+        <file-uploader
+          biz-type="record"
+          biz-id="{{id}}"
+          role="back"
+          accept="image"
+          max="1"
+          encrypt="{{encryptedAttachments}}"
+        />
       </view>
-      <file-uploader
-        biz-type="record"
-        biz-id="{{id}}"
-        role="file"
-        accept="file"
-        max="5"
-        encrypt="{{encryptedAttachments}}"
-      />
-    </view>
+
+      <view class="card">
+        <view class="attach-head">
+          <text class="attach-title">其他图片</text>
+          <text class="form-hint">最多 9 张，单张 20MB</text>
+        </view>
+        <file-uploader
+          biz-type="record"
+          biz-id="{{id}}"
+          role="other"
+          accept="image"
+          max="9"
+          encrypt="{{encryptedAttachments}}"
+        />
+      </view>
+    </block>
+
+    <block wx:else>
+      <view class="card">
+        <view class="attach-head">
+          <text class="attach-title">图片</text>
+          <text class="form-hint">最多 9 张，单张 20MB</text>
+        </view>
+        <file-uploader
+          biz-type="record"
+          biz-id="{{id}}"
+          role="other"
+          accept="image"
+          max="9"
+          encrypt="{{encryptedAttachments}}"
+        />
+      </view>
+
+      <view class="card">
+        <view class="attach-head">
+          <text class="attach-title">文件</text>
+          <text class="form-hint">PDF / 文档，最多 5 个</text>
+        </view>
+        <file-uploader
+          biz-type="record"
+          biz-id="{{id}}"
+          role="file"
+          accept="file"
+          max="5"
+          encrypt="{{encryptedAttachments}}"
+        />
+      </view>
+    </block>
 
     <view class="card" wx:if="{{hasSensitive}}">
       <text class="form-hint">

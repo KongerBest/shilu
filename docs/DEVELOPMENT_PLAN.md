@@ -11,7 +11,7 @@
 |---|---|---|---|---|
 | P1 | 基础工程 + 登录 + 首页 + 导航 | 可编译骨架、design tokens、http 层、login/user 云函数 | — | ✅ 完成 |
 | P2 | 分类 + 模板 + 动态表单 + 资料 CRUD | `field-renderer` 12 类型可用、template 云函数、分类/模板管理页、动态表单编辑与详情 | P1 | ✅ 完成（附件类字段顺延 P3） |
-| P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | 🚧 进行中：附件服务 + 加密附件已完成（端到端加密上传/解密预览），证件管理页待做 |
+| P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | 🚧 进行中：附件服务 + 加密附件 + 证件正/反/其他三区已完成；EXIF 剥离、头像上传待做 |
 | P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | ⬜ |
 | P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | ⬜ |
 | P5-PoC | Argon2id WASM 验证 | 可行性结论 | 需真机 | ⬜ |
@@ -141,13 +141,15 @@ shilu/
 - 加密模块 `utils/crypto/`（P3 地基，P5 密钥体系直接复用）：`random`（跨环境 CSPRNG，小程序走 `wx.getUserCryptoManager`）/ `kdf`（PBKDF2-HMAC-SHA512 600k，同步 + `pbkdf2Async`）/ `aesgcm`（AES-256-GCM，key 32B、nonce 12B、ct||tag）/ `envelope`（密钥信封 + AAD 绑定 `userId:itemId:fieldKey:vKv`）/ `filecipher`（20B 头 + 密文||tag，AAD 绑定业务上下文）。25 项单测覆盖往返、篡改抛错、AAD 不匹配、nonce 唯一性 1000 次、边界。
 - 密钥来源（P5 保险箱密钥生命周期提前到 P3，加密附件的前置）：`utils/crypto/base32.ts`（恢复码，去 0/O/1/I）+ `utils/crypto/keystore.ts`（`initVault` / `unlockVault` / `recoverVault` / `changePassword` / `verifyUnlocked`，主密码 + 恢复码 + MK 信封，AAD 绑定 userId）+ `vault` 云函数（`init` / `status` / `changePassword` / `recover` / `audit`，零知识：主密码/恢复码/MK 永不上传，云端只存包裹体）。13 项单测，`vault` 已在真实云环境验证 init/status/changePassword/recover/audit/非法算法 400。
 - 端到端加密接入（2026-11-04）：`vault.service` / `vault-session`（MK 内存会话 + 超时自动锁）+ `utils/crypto/attachments.ts`（全量读入 → 加密 → 落临时文件 → 上传 → 删临时文件；`enc_meta={alg,kv,ctx}`，`ctx` 为 AAD 上下文）+ `file-uploader` 加密上传/解密预览（加密项显示锁形占位卡片、点击解锁解密）+ `pages/vault` 设置主密码/解锁/展示恢复码页 + `confirmUpload` 云端校验 `enc_meta`/`name_enc`。新增 5 项单测覆盖 enc_meta 往返与跨上下文抛错。
+- 证件区（2026-11-04）：`file-uploader` 的 `load()` 改为**按 `role` 分区**（不再按 mime 分图片/文件）；资料详情页对「证件资料」分类（`system_key=document`）的记录渲染「正面 `role=front` / 反面 `role=back` / 其他 `role=other`」三个加密图片区，替换普通资料的「图片/文件」两区。证件即 record（预设分类 + 预设模板），附件 `biz_type` 仍为 `record`，无需新集合/新云函数。
+- **`@noble` 子路径 bug 修复**（2026-11-04，模拟器实测暴露）：`@noble` 入口 `index.js` 直接 `throw`（强制子路径导入），微信「构建 npm」只按 `main` 入口打包、不生成 `exports` 子路径文件，导致运行时 `require('@noble/ciphers/aes')` 失败、密钥模块加载崩溃（首页正常、vault 页导航 `Uncaught`）。修复：新增 `scripts/sync-noble-npm.js`（`npm run sync:noble-npm`）把 @noble 的 CJS 产物补齐进 `miniprogram_npm`，已写入 DEPLOYMENT.md §3。
 
 ### 关键实现点
 1. `file-uploader` 状态机：`idle → reading → encrypting → uploading(progress) → confirming → done | failed`。
 2. 失败重试保留已加密的临时文件，避免重复加密（加密慢）。
 3. 加密模块 `utils/crypto/` 独立，含 `kdf.ts` / `aesgcm.ts` / `envelope.ts` / `filecipher.ts`，全部有单测。
-4. 证件页正/反/其他三区，支持排序、替换、删除。
-5. EXIF 剥离（canvas 重绘）。
+4. ✅ 证件页正/反/其他三区（`role=front/back/other`，按 role 分区），支持排序、替换、删除。
+5. ⬜ EXIF 剥离（canvas 重绘）——未做，当前依赖 `wx.chooseMedia` 的 `compressed` 重编码间接处理，且加密附件不生成明文缩略图，云端零明文已阻断 GPS 外泄。
 
 ### 测试
 - 加解密往返（含空文件、20MB 边界、1 字节）

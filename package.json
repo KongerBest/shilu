@@ -8,6 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "sync:shared": "node scripts/sync-shared.js",
+    "sync:noble-npm": "node scripts/sync-noble-npm.js",
     "check": "npm run typecheck && npm run test"
   },
   "devDependencies": {

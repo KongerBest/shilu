@@ -37,6 +37,8 @@ interface DetailData {
   revealSensitive: boolean;
   attachmentCount: number;
   encryptedAttachments: boolean;
+  /** 是否证件资料（system_key=document）：附件区渲染为正/反/其他三区 */
+  isDocument: boolean;
 }
 
 Page({
@@ -58,7 +60,8 @@ Page({
     hasSensitive: false,
     revealSensitive: false,
     attachmentCount: 0,
-    encryptedAttachments: ENCRYPTED_ATTACHMENT_ENABLED
+    encryptedAttachments: ENCRYPTED_ATTACHMENT_ENABLED,
+    isDocument: false
   } as DetailData,
 
   onLoad(options: Record<string, string | undefined>) {
@@ -111,6 +114,7 @@ Page({
         createdText: relativeTime(item.created_at, now),
         hasSensitive: rows.some((row) => row.sensitive),
         attachmentCount: item.attachment_count || 0,
+        isDocument: category ? category.system_key === 'document' : false,
         revealSensitive: false
       });
     } catch (error) {

@@ -202,10 +202,11 @@ Component({
       try {
         const res = await attachmentService.listByBiz(this.properties.bizType as AttachmentBiz, bizId);
         if (this.data.loadToken !== token) return;
-        // 同一个 biz 上既有图片也有文件：两个实例各取自己那一类，互不干扰
-        const acceptImage = this.properties.accept !== 'file';
+        // 同一 biz 上按 role 区分：普通资料是 other(图片) / file(文件)，
+        // 证件资料是 front(正面) / back(反面) / other(其他)。role 由调用方显式传入。
+        const role = this.properties.role;
         const items: UploadItem[] = res.items
-          .filter((item) => (item.mime.indexOf('image/') === 0) === acceptImage)
+          .filter((item) => item.role === role)
           .map((item) => Object.assign({ url: '', sizeText: humanSize(item.size) }, item));
         this.setData({ items, loading: false });
         await this.refreshUrls();

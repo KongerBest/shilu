@@ -41,6 +41,17 @@ npm run check        # 类型检查 + 单测
    - `cloudfunctionRoot: cloudfunctions/`
    - `setting.useCompilerPlugins: ["typescript"]` → **TS 由工具直接编译，不需要预编译出 js**
 4. 「详情 → 本地设置」确认：`将 JS 编译成 ES5` 关闭、`增强编译` 开启。
+5. 「工具 → 构建 npm」（或命令行 `cli build-npm --project E:\SHILU`）后，**必须**再补一步：
+
+```bash
+npm run sync:noble-npm
+```
+
+> 为什么：`@noble/ciphers`、`@noble/hashes` 的入口 `index.js` 会直接 `throw`，只能用子路径
+> （`@noble/ciphers/aes`、`@noble/hashes/pbkdf2` …）导入；而微信「构建 npm」只按包的 `main`
+> 入口打包，不生成这些 `exports` 子路径文件，导致运行时 `require('@noble/ciphers/aes')` 失败、
+> 密钥模块加载崩溃。`scripts/sync-noble-npm.js` 把 @noble 的 CJS 产物补齐进 `miniprogram_npm`。
+> 每次重新「构建 npm」之后都要重跑一次。
 
 ---
 
