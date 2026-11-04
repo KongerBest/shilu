@@ -10,7 +10,7 @@
     linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
   border: 1rpx solid var(--glass-border);
   border-radius: 24rpx;
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   overflow: hidden;
@@ -139,7 +139,7 @@
   border: 1rpx solid var(--glass-border-soft);
   border-radius: 18rpx;
   background: var(--glass-bg-soft);
-  box-shadow: var(--glass-highlight);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
   transition: border-color 120ms ease, background-color 120ms ease;
 }
 
@@ -149,8 +149,8 @@
 
 .theme-opt.is-active {
   border-color: var(--c-accent);
-  background: var(--c-accent-soft);
-  box-shadow: inset 0 0 0 1rpx var(--c-accent), var(--glass-highlight);
+  background: var(--c-accent-glass-soft);
+  box-shadow: var(--glass-highlight);
 }
 
 .theme-opt__dot {

@@ -102,7 +102,7 @@
     linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
   border: 1rpx solid var(--glass-border);
   border-radius: 24rpx;
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   overflow: hidden;

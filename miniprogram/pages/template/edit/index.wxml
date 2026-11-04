@@ -91,7 +91,7 @@
       </view>
     </view>
 
-    <button class="btn-primary" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+    <button class="btn-primary" hover-class="btn-primary--hover" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
       {{saving ? '保存中…' : '保存模板'}}
     </button>
   </block>
@@ -246,7 +246,7 @@
   </scroll-view>
 
   <view class="sheet-foot">
-    <button class="btn-ghost" bindtap="onSheetClose">取消</button>
-    <button class="btn-primary btn-primary--half" bindtap="onSheetConfirm">确定</button>
+    <button class="btn-ghost" hover-class="btn-ghost--hover" bindtap="onSheetClose">取消</button>
+    <button class="btn-primary btn-primary--half" hover-class="btn-primary--hover" bindtap="onSheetConfirm">确定</button>
   </view>
 </view>

@@ -85,7 +85,7 @@ button {
     linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 62%);
   border-radius: 24rpx;
   border: 1rpx solid var(--glass-border);
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
   -webkit-backdrop-filter: var(--glass-blur);
   backdrop-filter: var(--glass-blur);
   padding: var(--sp-4);
@@ -225,29 +225,43 @@ button {
 
 /* ---------- 按钮 ---------- */
 .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   height: 96rpx;
-  line-height: 96rpx;
+  padding: 0;
   margin-top: var(--sp-4);
   font-size: var(--fs-body);
   font-weight: 600;
   letter-spacing: 0.04em;
+  line-height: 1;
   color: var(--c-on-accent);
-  background-color: var(--c-accent);
-  background-image: linear-gradient(180deg, var(--c-accent-bright) 0%, var(--c-accent) 100%);
+  /* 液态玻璃主按钮：半透明主色透出环境光 + 左上斜向高光 + 亮色描边 + 内高光/投影双层 */
+  background-color: var(--c-accent-glass);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 34%),
+    linear-gradient(180deg, var(--c-accent-glass-bright) 0%, var(--c-accent-glass) 100%);
+  border: 1rpx solid var(--glass-border);
   border-radius: 22rpx;
-  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.26);
-  transition: transform 140ms ease, box-shadow 140ms ease;
+  box-shadow: var(--shadow-accent), var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  transition: transform 140ms ease, box-shadow 140ms ease, opacity 140ms ease;
 }
 
 .btn-primary::after {
   border: none;
 }
 
+.btn-primary--hover {
+  transform: translateY(2rpx) scale(0.99);
+  box-shadow: var(--glass-highlight);
+}
+
 .btn-primary[disabled] {
-  opacity: 0.5;
+  opacity: 0.45;
   color: var(--c-on-accent);
-  background: var(--c-accent);
   box-shadow: none;
 }
 
@@ -257,21 +271,30 @@ button {
 }
 
 .btn-ghost {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 1;
   height: 96rpx;
-  line-height: 96rpx;
+  padding: 0;
   margin-right: var(--sp-2);
   font-size: var(--fs-body);
+  line-height: 1;
   color: var(--c-text-2);
   background-color: var(--glass-bg-soft);
   background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
   border: 1rpx solid var(--glass-border);
   border-radius: 22rpx;
-  box-shadow: var(--glass-highlight);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+  transition: background-color 140ms ease, opacity 140ms ease;
 }
 
 .btn-ghost::after {
   border: none;
+}
+
+.btn-ghost--hover {
+  background-color: var(--glass-bg);
 }
 
 .link {
@@ -324,7 +347,7 @@ button {
   backdrop-filter: var(--glass-blur);
   border-top: 1rpx solid var(--glass-border);
   border-radius: 32rpx 32rpx 0 0;
-  box-shadow: var(--glass-shadow-lg), var(--glass-highlight);
+  box-shadow: var(--glass-shadow-lg), var(--glass-highlight), var(--glass-ring);
 }
 
 .sheet-head {

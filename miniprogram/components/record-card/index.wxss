@@ -6,7 +6,7 @@
   border: 1rpx solid var(--glass-border);
   border-radius: 24rpx;
   padding: var(--sp-4);
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
   transition: transform 140ms ease, box-shadow 140ms ease, background-color 140ms ease;
 }
 

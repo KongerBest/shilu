@@ -59,7 +59,7 @@
       </text>
     </view>
 
-    <button class="btn-primary" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+    <button class="btn-primary" hover-class="btn-primary--hover" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
       {{saving ? '保存中…' : '保存'}}
     </button>
 

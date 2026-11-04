@@ -135,7 +135,7 @@
 
 .fr-chip--on {
   color: var(--c-accent);
-  background: var(--c-accent-soft);
+  background: var(--c-accent-glass-soft);
   border-color: var(--c-accent);
 }
 

@@ -26,10 +26,8 @@
         <text class="link" bindtap="onToggleReveal">{{revealSensitive ? '隐藏' : '显示'}}</text>
       </view>
       <view wx:for="{{rows}}" wx:key="key" class="detail-row">
-        <text class="detail-label">
-          {{item.label}}<text wx:if="{{item.sensitive}}" class="tag tag--warn">敏感</text>
-        </text>
-        <text class="detail-value">{{revealSensitive || !item.sensitive ? item.raw : item.text}}</text>
+        <view class="detail-label">{{item.label}}<text wx:if="{{item.sensitive}}" class="tag tag--warn">敏感</text></view>
+        <view class="detail-value">{{revealSensitive || !item.sensitive ? item.raw : item.text}}</view>
       </view>
     </view>
 
@@ -123,7 +121,7 @@
       </text>
     </view>
 
-    <button class="btn-primary" bindtap="onEditTap">编辑</button>
+    <button class="btn-primary" hover-class="btn-primary--hover" bindtap="onEditTap">编辑</button>
 
     <view class="detail-actions">
       <text class="link" bindtap="onFavoriteTap">{{isFavorite ? '取消收藏' : '收藏'}}</text>

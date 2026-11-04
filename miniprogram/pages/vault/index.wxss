@@ -87,7 +87,7 @@
   border: 1rpx solid var(--glass-border-soft);
   border-radius: var(--radius-pill);
   background: var(--glass-bg-soft);
-  box-shadow: var(--glass-highlight);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
   font-size: var(--fs-caption);
   color: var(--c-accent);
 }

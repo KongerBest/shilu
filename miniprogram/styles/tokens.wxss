@@ -52,11 +52,19 @@ page {
   --glass-border: rgba(255, 255, 255, 0.88);
   --glass-border-soft: rgba(255, 255, 255, 0.56);
   --glass-highlight: inset 0 2rpx 0 rgba(255, 255, 255, 0.96), inset 0 -2rpx 0 rgba(255, 255, 255, 0.3);
+  /* 玻璃边缘折射：一整圈 1rpx 亮描边，模拟玻璃曲面边缘对光的折射。
+     叠加在顶部内高光之上，让「边缘亮、中间透」的液态感比只有顶部高光更明确 */
+  --glass-ring: inset 0 0 0 1rpx rgba(255, 255, 255, 0.72);
   --glass-shadow: 0 12rpx 32rpx rgba(24, 38, 33, 0.1), 0 2rpx 6rpx rgba(24, 38, 33, 0.04);
   --glass-shadow-lg: 0 24rpx 64rpx rgba(24, 38, 33, 0.12);
   /* 左上角斜向高光：浅色下是玻璃受光面，深色下必须很克制，否则糊成白雾 */
   --glass-specular: rgba(255, 255, 255, 0.5);
   --glass-blur: blur(28rpx) saturate(180%);
+  /* 主按钮的液态玻璃：主色的半透明版，透出环境光做折射，比纯色更“玻璃” */
+  --c-accent-glass: rgba(47, 93, 80, 0.84);
+  --c-accent-glass-bright: rgba(61, 115, 98, 0.88);
+  /* 选中/切换态的高透主色玻璃背景：文章强调切换态是「高透玻璃」而非磨砂/实心 */
+  --c-accent-glass-soft: rgba(47, 93, 80, 0.12);
   /* 悬浮层的投影要明显重于内容卡片，否则「浮起来」的感觉出不来 */
   --shadow-float: 0 18rpx 44rpx rgba(24, 38, 33, 0.16), 0 2rpx 8rpx rgba(24, 38, 33, 0.06);
   --glass-tabbar: rgba(252, 252, 250, 0.72);
@@ -138,9 +146,13 @@ page {
   --glass-border: rgba(255, 255, 255, 0.14);
   --glass-border-soft: rgba(255, 255, 255, 0.09);
   --glass-highlight: inset 0 1rpx 0 rgba(255, 255, 255, 0.16), inset 0 -1rpx 0 rgba(255, 255, 255, 0.04);
+  --glass-ring: inset 0 0 0 1rpx rgba(255, 255, 255, 0.09);
   --glass-shadow: 0 14rpx 36rpx rgba(0, 0, 0, 0.42);
   --glass-shadow-lg: 0 28rpx 70rpx rgba(0, 0, 0, 0.55);
   --glass-tabbar: rgba(22, 25, 31, 0.72);
   --glass-specular: rgba(255, 255, 255, 0.08);
+  --c-accent-glass: rgba(79, 158, 134, 0.9);
+  --c-accent-glass-bright: rgba(61, 127, 108, 0.92);
+  --c-accent-glass-soft: rgba(79, 158, 134, 0.16);
   --shadow-float: 0 18rpx 44rpx rgba(0, 0, 0, 0.55), 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
 }

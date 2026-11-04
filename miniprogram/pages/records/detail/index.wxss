@@ -40,7 +40,9 @@
 
 .detail-row {
   display: flex;
-  align-items: flex-start;
+  /* 垂直居中：小程序 text 组件对 baseline 对齐不可靠，改用 center 让标签与值的盒子中心对齐；
+     配合下方统一的 line-height，两列文字的中心线严格重合 */
+  align-items: center;
   padding: var(--sp-3) 0;
   border-bottom: 1rpx solid var(--c-line);
 }
@@ -54,12 +56,16 @@
   flex-shrink: 0;
   width: 180rpx;
   font-size: var(--fs-caption);
+  /* 与值统一行高：值 28rpx×1.5=42rpx，标签也用 42rpx，两列文字中心严格在同一水平线 */
+  line-height: 42rpx;
+  height: 42rpx;
   color: var(--c-text-3);
 }
 
 .detail-value {
   flex: 1;
   font-size: var(--fs-body);
+  line-height: 42rpx;
   color: var(--c-text);
   word-break: break-all;
 }

@@ -27,17 +27,19 @@
   line-height: 1;
   color: var(--c-text-2);
   flex-shrink: 0;
-  box-shadow: var(--glass-highlight);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
   transition: transform 120ms ease, background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
+/* 选中态 = 文章所说「切换态高透玻璃」：主色淡染高透背景 + 主色描边 + 主色文字，
+   而不是实心主色，让环境光能透过来 */
 .chip.is-active {
-  background-color: var(--c-accent);
-  background-image: linear-gradient(180deg, var(--c-accent-bright) 0%, var(--c-accent) 100%);
+  background-color: var(--c-accent-glass-soft);
+  background-image: linear-gradient(180deg, var(--c-accent-glass-soft) 0%, rgba(0, 0, 0, 0) 100%);
   border-color: var(--c-accent);
-  color: var(--c-on-accent);
+  color: var(--c-accent);
   font-weight: 600;
-  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.24);
+  box-shadow: var(--glass-highlight);
 }
 
 .stack-item {
@@ -103,7 +105,7 @@
   border-radius: 24rpx;
   padding: var(--sp-5);
   text-align: center;
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
 }
 
 .errorbox__title {

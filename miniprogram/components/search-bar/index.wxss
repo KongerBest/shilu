@@ -10,7 +10,7 @@
   backdrop-filter: var(--glass-blur);
   border: 1rpx solid var(--glass-border);
   border-radius: var(--radius-pill);
-  box-shadow: var(--glass-highlight), 0 6rpx 18rpx rgba(24, 38, 33, 0.05);
+  box-shadow: var(--glass-highlight), var(--glass-ring), 0 6rpx 18rpx rgba(24, 38, 33, 0.05);
 }
 
 /* 用放大镜的极简抽象：一个圆 + 一条斜线 */

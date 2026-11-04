@@ -30,7 +30,7 @@
       />
     </view>
     <text wx:if="{{error}}" class="vault-error">{{error}}</text>
-    <button class="btn-primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">设置并生成恢复码</button>
+    <button class="btn-primary" hover-class="btn-primary--hover" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">设置并生成恢复码</button>
   </block>
 
   <!-- 解锁 -->
@@ -52,7 +52,7 @@
       />
     </view>
     <text wx:if="{{error}}" class="vault-error">{{error}}</text>
-    <button class="btn-primary" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">解锁</button>
+    <button class="btn-primary" hover-class="btn-primary--hover" loading="{{submitting}}" disabled="{{submitting}}" bindtap="onSubmit">解锁</button>
     <view class="vault-reset" bindtap="onReset">忘记密码？重置保险箱</view>
   </block>
 
@@ -70,6 +70,6 @@
       <text class="vault-warn__title">重要提醒</text>
       <text class="vault-warn__text">恢复码与主密码二选一即可解密。若两者都丢失，你的加密附件将永久无法解密，拾录无法帮你找回。</text>
     </view>
-    <button class="btn-primary" bindtap="onFinish">我已保存，完成</button>
+    <button class="btn-primary" hover-class="btn-primary--hover" bindtap="onFinish">我已保存，完成</button>
   </block>
 </view>

@@ -42,7 +42,7 @@
       <text class="form-hint">点分类改名、换色、换默认模板；删除自定义分类时，里面的资料必须先迁到别的分类，不会凭空消失。</text>
     </view>
 
-    <button class="btn-primary" bindtap="onCreateTap">新建分类</button>
+    <button class="btn-primary" hover-class="btn-primary--hover" bindtap="onCreateTap">新建分类</button>
   </block>
 </view>
 
@@ -97,8 +97,8 @@
   </view>
 
   <view class="sheet-foot">
-    <button class="btn-ghost" bindtap="onSheetClose">取消</button>
-    <button class="btn-primary btn-primary--half" bindtap="onSheetConfirm">保存</button>
+    <button class="btn-ghost" hover-class="btn-ghost--hover" bindtap="onSheetClose">取消</button>
+    <button class="btn-primary btn-primary--half" hover-class="btn-primary--hover" bindtap="onSheetConfirm">保存</button>
   </view>
 </view>
 

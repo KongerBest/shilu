@@ -37,7 +37,7 @@
   border: 1rpx solid var(--glass-border-soft);
   background: var(--glass-bg-soft);
   background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
-  box-shadow: var(--glass-highlight);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
   font-size: var(--fs-caption);
   color: var(--c-text-2);
   transition: transform 120ms ease, opacity 120ms ease;
@@ -50,10 +50,13 @@
 
 .action-btn--primary {
   color: var(--c-on-accent);
-  border-color: var(--c-accent);
-  background: var(--c-accent);
-  background-image: linear-gradient(180deg, var(--c-accent-bright), var(--c-accent));
-  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.26);
+  border-color: var(--glass-border);
+  /* 液态玻璃主按钮：与全局 btn-primary 同源，半透明主色 + 左上高光 + 内高光 */
+  background-color: var(--c-accent-glass);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 34%),
+    linear-gradient(180deg, var(--c-accent-glass-bright) 0%, var(--c-accent-glass) 100%);
+  box-shadow: var(--shadow-accent), var(--glass-highlight);
 }
 
 .action-btn__plus {
@@ -91,7 +94,7 @@
   justify-content: center;
   flex-shrink: 0;
   border: 1rpx solid var(--glass-border);
-  box-shadow: var(--glass-highlight), 0 8rpx 20rpx rgba(24, 38, 33, 0.08);
+  box-shadow: var(--glass-highlight), var(--glass-ring), 0 8rpx 20rpx rgba(24, 38, 33, 0.08);
   overflow: hidden;
 }
 
@@ -146,7 +149,7 @@
   border-radius: 28rpx;
   padding: var(--sp-4) var(--sp-3);
   margin-bottom: var(--sp-5);
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
 }
 
 .stats__item {
@@ -195,7 +198,7 @@
   flex-direction: column;
   align-items: center;
   gap: 6rpx;
-  box-shadow: var(--glass-highlight), 0 6rpx 16rpx rgba(24, 38, 33, 0.04);
+  box-shadow: var(--glass-highlight), var(--glass-ring), 0 6rpx 16rpx rgba(24, 38, 33, 0.04);
   transition: transform 140ms ease, background-color 140ms ease;
 }
 
@@ -241,7 +244,7 @@
   border-radius: 24rpx;
   padding: var(--sp-5);
   text-align: center;
-  box-shadow: var(--glass-shadow), var(--glass-highlight);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
 }
 
 .errorbox__title {
