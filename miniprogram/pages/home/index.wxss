@@ -1,6 +1,11 @@
 /* 分区标题：主色竖条作视觉锚点，避免整页纯文字 */
 .section__head {
   align-items: center;
+  margin-bottom: var(--sp-5);
+}
+
+.search-wrap {
+  margin: var(--sp-4) 0;
 }
 
 .section__title {
@@ -69,7 +74,7 @@
   display: flex;
   align-items: center;
   gap: var(--sp-4);
-  padding: var(--sp-5) 0 var(--sp-4);
+  padding: var(--sp-5) 0 var(--sp-6);
 }
 
 /* 首字母头像：不用图片，避免阶段三之前的头像上传空窗 */
@@ -134,7 +139,7 @@
   border: 1rpx solid var(--glass-border);
   border-radius: 28rpx;
   padding: var(--sp-4) var(--sp-3);
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-5);
   box-shadow: var(--glass-shadow), var(--glass-highlight);
 }
 
@@ -168,11 +173,11 @@
 .grid {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sp-2);
+  gap: var(--sp-3);
 }
 
 .grid__item {
-  width: calc((100% - var(--sp-2) * 3) / 4);
+  width: calc((100% - var(--sp-3) * 3) / 4);
   background-color: var(--glass-bg);
   background-image:
     linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 34%),

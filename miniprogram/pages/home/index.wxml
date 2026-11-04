@@ -38,7 +38,9 @@
       </view>
     </view>
 
-    <search-bar readonly="{{true}}" value="" placeholder="搜索标题或内容" bind:tap="onSearchTap" />
+    <view class="search-wrap">
+      <search-bar readonly="{{true}}" value="" placeholder="搜索标题或内容" bind:tap="onSearchTap" />
+    </view>
 
     <view class="section">
       <view class="section__head">
