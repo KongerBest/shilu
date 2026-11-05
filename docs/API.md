@@ -180,14 +180,13 @@ getWXContext().OPENID
 
 | action | payload | 返回 |
 |---|---|---|
-| `list` | `{ type?, cursor?, limit? }` | `{ items, nextCursor, hasMore }` |
-| `upcoming` | `{ days: 30 }` | `{ items: [{id,title,nextDate,daysLeft,repeatRule}] }`（≤ 20） |
-| `detail` | `{ id }` | `{ item }` |
-| `create` | `{ title, type, date, repeatRule, customRule?, contactId?, remindDaysBefore? }` | `{ item }` |
+| `list` | `{ today }` | `{ items, today, total }`（每项含 `next_date` / `days`，按 days 升序，过期排最后） |
+| `upcoming` | `{ today, limit? }` | `{ items, today }`（仅未过期，≤ 20） |
+| `create` | `{ title, type, date, repeatRule, customRule?, contactId?, recordId?, remindDays? }` | `{ item }` |
 | `update` | `{ id, ... }` | `{ item }` |
-| `remove` | `{ id }` | `{ ok }` |
+| `remove` | `{ id }` | `{ ok: true }`（软删除 + 计数回退） |
 
-`upcoming` 的日期推进在**云函数内计算**（`repeat_rule` + 闰年 2/29），不在前端算，避免多端不一致。
+`date` / `repeatRule` 的推进在**云函数内计算**（`_shared/recur.js`）；`today` 由客户端传入，避免服务端 UTC 与用户本地差一天。客户端 `utils/date.ts` 有一份逐行等价的实现，`tests/recur-parity.test.ts` 强制两边一致。
 
 ### 5.9 `reminder`
 

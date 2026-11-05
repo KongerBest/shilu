@@ -17,10 +17,10 @@ export const VAULT_ENABLED = true;
 export const ENCRYPTED_ATTACHMENT_ENABLED = true;
 
 /**
- * 纪念日模块（阶段四接入）。
+ * 纪念日模块（阶段四）。
  * 为 false 时底部导航不渲染该 tab——宁可少一个入口，也不放一个点进去是空页的按钮。
  */
-export const ANNIVERSARY_ENABLED = false;
+export const ANNIVERSARY_ENABLED = true;
 
 /** 搜索页（阶段六接入）。为 false 时首页搜索框改为在信息库内就地过滤。 */
 export const SEARCH_PAGE_ENABLED = false;

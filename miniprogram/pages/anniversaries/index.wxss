@@ -1,0 +1,180 @@
+.page {
+  padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--sp-6));
+}
+
+/* 下一个纪念日：玻璃主卡，倒计时是视觉重心 */
+.hero {
+  margin-top: var(--sp-3);
+  padding: var(--sp-5);
+  background-image:
+    linear-gradient(135deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 40%),
+    linear-gradient(160deg, var(--glass-bg-strong) 0%, var(--glass-bg) 70%);
+  border: 1rpx solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
+  overflow: hidden;
+}
+
+.hero__kicker {
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  letter-spacing: 0.04em;
+}
+
+.hero__main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: var(--sp-2);
+}
+
+.hero__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hero__count {
+  flex-shrink: 0;
+  margin-left: var(--sp-3);
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--c-accent);
+}
+
+.hero__meta {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+/* 三项统计：与首页统计卡同构 */
+.stats {
+  display: flex;
+  align-items: center;
+  margin-top: var(--sp-3);
+  padding: var(--sp-4) 0;
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
+  background-color: var(--glass-bg-soft);
+  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+}
+
+.stats__item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.stats__value {
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+/* 日期比数字长，降到正文级避免折行 */
+.stats__value--date {
+  font-size: var(--fs-body);
+  white-space: nowrap;
+}
+
+.stats__label {
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.stats__divider {
+  width: 1rpx;
+  height: 48rpx;
+  background: var(--c-line);
+}
+
+.list {
+  padding: 0;
+}
+
+/* 全局 .section 只有 margin-bottom，这里紧跟在统计卡后，需要补上间距 */
+.section {
+  margin-top: var(--sp-5);
+}
+
+.arow {
+  display: flex;
+  align-items: center;
+  padding: var(--sp-3) var(--sp-4);
+  transition: background-color 140ms ease;
+}
+
+.arow + .arow {
+  border-top: 1rpx solid var(--c-line);
+}
+
+.arow--hover {
+  background: var(--glass-bg-strong);
+}
+
+.arow__bar {
+  flex-shrink: 0;
+  width: 6rpx;
+  height: 56rpx;
+  border-radius: 6rpx;
+  margin-right: var(--sp-3);
+}
+
+.arow__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.arow__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arow__title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arow__count {
+  flex-shrink: 0;
+  margin-left: var(--sp-2);
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--c-accent);
+}
+
+.arow__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 8rpx;
+}
+
+.arow__meta-text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.arow .chevron {
+  margin-left: var(--sp-2);
+}

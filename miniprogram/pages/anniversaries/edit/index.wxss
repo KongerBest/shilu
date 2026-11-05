@@ -1,0 +1,75 @@
+.page {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-6));
+}
+
+.title-input {
+  width: 100%;
+  height: 88rpx;
+  font-size: var(--fs-title);
+  font-weight: 500;
+  color: var(--c-text);
+}
+
+.title-placeholder {
+  color: var(--c-text-3);
+  font-weight: 400;
+}
+
+/* 自定义重复：数字 + 单位并排 */
+.interval {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.interval__input {
+  width: 96rpx;
+  height: 64rpx;
+  padding: 0 var(--sp-2);
+  text-align: center;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 14rpx;
+  background: var(--glass-bg-soft);
+}
+
+.form-picker--compact {
+  padding: 0 var(--sp-2);
+}
+
+/* 提醒点 chips：选中 = 高透主色玻璃，与全局选中态一致 */
+.remind {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.remind__chip {
+  padding: 12rpx 24rpx;
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 999rpx;
+  background: var(--glass-bg-soft);
+  box-shadow: var(--glass-highlight);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.remind__chip--hover {
+  background: var(--glass-bg-strong);
+}
+
+.remind__chip.is-on {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+  background: var(--c-accent-glass-soft);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--sp-5);
+}

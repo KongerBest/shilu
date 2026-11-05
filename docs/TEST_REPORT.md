@@ -12,11 +12,11 @@
 | 项 | 命令 | 结果 |
 |---|---|---|
 | TypeScript 类型检查 | `npx tsc --noEmit` | ✅ **0 error** |
-| 单元测试 | `npx vitest run` | ✅ **190 passed / 0 failed**（15 个文件） |
+| 单元测试 | `npx vitest run` | ✅ **203 passed / 0 failed**（16 个文件） |
 
 ```
-Test Files  15 passed (15)
-     Tests  190 passed (190)
+Test Files  16 passed (16)
+     Tests  203 passed (203)
 ```
 
 | 测试文件 | 用例数 | 覆盖 |
@@ -36,6 +36,7 @@ Test Files  15 passed (15)
 | `attachments.test.ts` | 8 | 附件上下文、文件名加密、mime |
 | **`crypto-fields.test.ts`** | **11** | **字段信封往返、类型保真、AAD 绑定、篡改、记录 ID** |
 | **`backfill-plan.test.ts`** | **5** | **回填判定：只加密有值且未封包的敏感字段，空白/信封/非敏感/无模板均跳过** |
+| **`recur-parity.test.ts`** | **13** | **云函数 `_shared/recur.js` 与客户端 `utils/date.ts` 的重复规则逐条一致（闰日、月末、自定义、不重复、非法日期）** |
 
 ---
 
@@ -192,6 +193,21 @@ Test Files  15 passed (15)
 | 解密校验 | ✅ 详情页 `encryptedCount=0`，`手机号` 行 `raw=13900002222`，姓名/生日保持明文 |
 | 幂等性 | ✅ 已加密的字段再次回填不会重复处理（`planSensitiveSeal` 跳过信封，5 项单测覆盖） |
 | 回填后清理 | 测试手机号已还原为 null，保险箱重置为未初始化 |
+
+### 3.4 纪念日（P4 第一切片，2026-11-05 晚）
+
+| 项 | 结果 |
+|---|---|
+| 云函数部署 | ⚠️ 首次 `cloud_fn_deploy` 报 `FailedOperation.UpdateFunctionCode`（函数处于 Creating），10 秒后重试成功 |
+| `anniversary.list` | ✅ `code: 0`，空集合返回 `{items: [], total: 0}` |
+| 底栏 tab | ✅ `ANNIVERSARY_ENABLED=true` 后出现第 4 个 tab「纪念日」，选中态正确 |
+| 新建（生日 2008-01-12 / 每年） | ✅ 列表显示 `2027-01-12 · 68 天后`，与手算一致 |
+| 闰日规则 | ✅ `2024-02-29` + 每年 → `2027-02-28 · 115 天后`（平年按月末对齐，不跨到 3 月） |
+| 排序 | ✅ 「测试生日」68 天排在「闰日测试」115 天之前，过期项排最后 |
+| 编辑页回填 | ✅ 类型/日期/重复/提醒 chips 均按记录回填 |
+| 删除 | ✅ `anniversary.remove` 两条均 `code: 0`，列表回到空态；`anniversaries_count` 回退 |
+| 测试数据 | 已全部删除，未留残留 |
+| 日历视图 / 人物联动 / 订阅提醒 | ❌ 未实现（下一步） |
 
 ---
 

@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "新建纪念日",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "loading": "/components/loading/index",
+    "empty-state": "/components/empty-state/index"
+  }
+}

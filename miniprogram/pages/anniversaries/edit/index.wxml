@@ -1,0 +1,103 @@
+<view class="page {{themeClass}}">
+  <loading wx:if="{{loading}}" mode="block" />
+
+  <empty-state
+    wx:elif="{{error}}"
+    title="无法编辑"
+    desc="{{error}}"
+    action-text="返回"
+    bind:action="onBack"
+  />
+
+  <block wx:else>
+    <view class="card">
+      <input
+        class="title-input"
+        value="{{title}}"
+        maxlength="30"
+        placeholder="这个日子叫什么"
+        placeholder-class="title-placeholder"
+        bindinput="onTitleInput"
+      />
+      <text wx:if="{{titleError}}" class="form-error">{{titleError}}</text>
+    </view>
+
+    <view class="card">
+      <view class="form-row">
+        <text class="form-label">类型</text>
+        <picker range="{{typeOptions}}" value="{{typeIndex}}" bindchange="onTypeChange">
+          <view class="form-picker">
+            <text class="form-picker-text">{{typeOptions[typeIndex]}}</text>
+            <text class="chevron">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-row">
+        <text class="form-label">日期</text>
+        <picker mode="date" value="{{date}}" end="2099-12-31" bindchange="onDateChange">
+          <view class="form-picker">
+            <text class="form-picker-text tabular">{{date}}</text>
+            <text class="chevron">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-row">
+        <text class="form-label">重复</text>
+        <picker range="{{repeatOptions}}" value="{{repeatIndex}}" bindchange="onRepeatChange">
+          <view class="form-picker">
+            <text class="form-picker-text">{{repeatOptions[repeatIndex]}}</text>
+            <text class="chevron">›</text>
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-row" wx:if="{{showCustom}}">
+        <text class="form-label">间隔</text>
+        <view class="interval">
+          <input
+            class="interval__input tabular"
+            type="number"
+            value="{{customInterval}}"
+            maxlength="3"
+            bindinput="onIntervalInput"
+          />
+          <picker range="{{unitOptions}}" value="{{unitIndex}}" bindchange="onUnitChange">
+            <view class="form-picker form-picker--compact">
+              <text class="form-picker-text">{{unitOptions[unitIndex]}}</text>
+              <text class="chevron">›</text>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <view class="card">
+      <text class="form-label">提醒</text>
+      <view class="remind">
+        <view
+          wx:for="{{remindOptions}}"
+          wx:key="days"
+          class="remind__chip {{item.on ? 'is-on' : ''}}"
+          data-index="{{index}}"
+          bindtap="onRemindTap"
+          hover-class="remind__chip--hover"
+        >{{item.label}}</view>
+      </view>
+      <text class="form-hint">提醒依赖微信一次性订阅消息：每次授权只有一条额度，用完需重新授权，不承诺每年自动提醒。</text>
+    </view>
+
+    <button
+      class="btn-primary"
+      hover-class="btn-primary--hover"
+      loading="{{saving}}"
+      disabled="{{saving}}"
+      bindtap="onSave"
+    >{{saving ? '保存中…' : '保存'}}</button>
+
+    <view class="actions" wx:if="{{isEdit}}">
+      <text class="link link--danger" bindtap="onDelete">删除这个纪念日</text>
+    </view>
+  </block>
+</view>

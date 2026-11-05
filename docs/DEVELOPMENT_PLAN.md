@@ -12,7 +12,7 @@
 | P1 | 基础工程 + 登录 + 首页 + 导航 | 可编译骨架、design tokens、http 层、login/user 云函数 | — | ✅ 完成 |
 | P2 | 分类 + 模板 + 动态表单 + 资料 CRUD | `field-renderer` 12 类型可用、template 云函数、分类/模板管理页、动态表单编辑与详情 | P1 | ✅ 完成（附件类字段顺延 P3） |
 | P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | ✅ 完成：附件服务 + 加密附件 + 证件正/反/其他三区 + 头像上传 + EXIF 剥离 |
-| P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | ⬜ |
+| P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | 🟡 纪念日（列表 / 倒计时 / 增删改）已完成；人物联动、日历视图、订阅提醒未做 |
 | P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | 🟡 基础设施完成（`keystore` + `vault` 云函数 + 解锁页 + 「我的」入口）；**敏感字段落库加密与明文回填未做** |
 | P5-PoC | Argon2id WASM 验证 | 可行性结论 | 需真机 | ⬜ |
 | P6 | 搜索 + 收藏 + 备份恢复 + 导出 | search/backup 云函数 | P2~P5 | 🟡 搜索（库内正则）与收藏已完成；备份恢复、导出未做 |
@@ -164,6 +164,12 @@ shilu/
 ---
 
 ## P4 — 人物 / 纪念日 / 日历 / 提醒
+
+### 实施状态（2026-11-05 晚）
+
+已完成：`anniversary` 云函数（list / upcoming / create / update / remove）、`_shared/recur.js` 重复规则（与客户端 `utils/date.ts` 逐行等价，13 项 parity 测试）、`pages/anniversaries` 列表（下一个纪念日主卡 + 倒计时 + 按临近排序）与 `pages/anniversaries/edit`（类型 / 日期 / 重复 / 自定义间隔 / 提醒点）、底栏 tab 开启。
+
+未完成：人物（contact）模块与双联动、日历视图、订阅消息（`reminder` 云函数与额度 UI）。
 
 ### 目标
 人物与纪念日双联动；倒计时准确；订阅额度可见。

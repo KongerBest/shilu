@@ -10,14 +10,14 @@
 
 **阶段一 ~ 三已完成**：基础工程 + 登录 + 分类/模板/动态表单/资料 CRUD + 附件服务 + 证件正反面 + 端到端加密附件 + 微信头像/昵称授权。**已在微信开发者工具 + 真实云环境跑通**。
 
-**阶段五的加密基础设施已就绪**（主密码 / 恢复码 / 解锁页 / 「我的」入口 / 加密附件 / **敏感字段落库加密** / **存量明文回填**）。剩余：整条记录加密、密钥轮换。阶段四（纪念日）、阶段六剩余（备份恢复 / 导出）、阶段七（发布）未开始。详见 `docs/DEVELOPMENT_PLAN.md`。
+**阶段五的加密基础设施已就绪**（主密码 / 恢复码 / 解锁页 / 「我的」入口 / 加密附件 / **敏感字段落库加密** / **存量明文回填**）。剩余：整条记录加密、密钥轮换。**阶段四的纪念日已可用**（列表 / 倒计时 / 增删改 / 重复规则），人物联动、日历视图、订阅提醒未做。阶段六剩余（备份恢复 / 导出）、阶段七（发布）未开始。详见 `docs/DEVELOPMENT_PLAN.md`。
 
 | 项 | 结果 |
 |---|---|
 | `npm run typecheck` | 0 error |
-| `npm run check` | 185 / 185 通过（14 个文件） |
-| 云函数 | `user`、`category`、`template`、`record`、`attachment`、`vault`（共 6 个，均已部署并验证） |
-| 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings、vault（10 个） |
+| `npm run check` | 203 / 203 通过（16 个文件） |
+| 云函数 | `user`、`category`、`template`、`record`、`attachment`、`vault`、`anniversary`（共 7 个，均已部署并验证） |
+| 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings、vault、anniversaries、anniversaries/edit（12 个） |
 | 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer、file-uploader（7 个） |
 | AppID / 云环境 | `wx46dfc697b1c986c0` / 本地注入（见 `config/env.local.example.ts`） |
 | 加密 | 端到端加密附件（PBKDF2 600k + AES-256-GCM + 主密码/恢复码双信封，云端零明文）；敏感字段落库加密（AAD 绑定 `userId:recordId:fieldKey`）；微信头像/昵称授权 + EXIF 剥离 |

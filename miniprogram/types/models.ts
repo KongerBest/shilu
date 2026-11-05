@@ -175,3 +175,30 @@ export interface RecordListItem {
   attachment_count: number;
   updated_at: number;
 }
+
+export type AnniversaryType = 'birthday' | 'meet' | 'anniversary' | 'school' | 'custom';
+export type RepeatRule = 'none' | 'yearly' | 'monthly' | 'custom';
+export type RepeatUnit = 'day' | 'week' | 'month' | 'year';
+
+export interface CustomRule {
+  unit: RepeatUnit;
+  interval: number;
+}
+
+/** 纪念日。next_date / days 由云函数按「今天」推进重复规则后返回。 */
+export interface Anniversary {
+  _id: string;
+  title: string;
+  type: AnniversaryType;
+  /** YYYY-MM-DD */
+  date: string;
+  repeat_rule: RepeatRule;
+  custom_rule: CustomRule | null;
+  contact_id: string | null;
+  record_id: string | null;
+  remind_days_before: number[];
+  next_date?: string | null;
+  days?: number | null;
+  created_at: number;
+  updated_at: number;
+}

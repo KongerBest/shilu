@@ -1,0 +1,85 @@
+<view class="page {{themeClass}}">
+  <loading wx:if="{{loading}}" mode="block" text="正在读取" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <view class="card hero" wx:if="{{nextTitle}}">
+      <text class="hero__kicker">下一个纪念日</text>
+      <view class="hero__main">
+        <text class="hero__title">{{nextTitle}}</text>
+        <text class="hero__count">{{nextCountdown}}</text>
+      </view>
+      <text class="hero__meta">{{nextDateText}}</text>
+    </view>
+
+    <view class="stats">
+      <view class="stats__item">
+        <text class="stats__value tabular">{{monthCount}}</text>
+        <text class="stats__label">本月</text>
+      </view>
+      <view class="stats__divider"></view>
+      <view class="stats__item">
+        <text class="stats__value tabular">{{total}}</text>
+        <text class="stats__label">全部</text>
+      </view>
+      <view class="stats__divider"></view>
+      <view class="stats__item">
+        <text class="stats__value stats__value--date tabular">{{today}}</text>
+        <text class="stats__label">今天</text>
+      </view>
+    </view>
+
+    <view class="section" wx:if="{{items.length > 0}}">
+      <view class="section__head">
+        <text class="section__title">全部纪念日</text>
+        <text class="section__action">按临近排序</text>
+      </view>
+
+      <view class="card list">
+        <view
+          wx:for="{{items}}"
+          wx:key="_id"
+          class="arow"
+          data-id="{{item._id}}"
+          bindtap="onItemTap"
+          hover-class="arow--hover"
+        >
+          <view class="arow__bar" style="background: {{item.accent}}"></view>
+          <view class="arow__main">
+            <view class="arow__head">
+              <text class="arow__title">{{item.title}}</text>
+              <text class="arow__count">{{item.countdown}}</text>
+            </view>
+            <view class="arow__meta">
+              <text class="tag tag--accent">{{item.typeLabel}}</text>
+              <text class="arow__meta-text">{{item.nextText}} · {{item.repeatLabel}}</text>
+            </view>
+          </view>
+          <view class="chevron"></view>
+        </view>
+      </view>
+    </view>
+
+    <empty-state
+      wx:else
+      title="还没有纪念日"
+      desc="生日、相遇、毕业、任何一个想记住的日子，都可以放进来倒数。"
+      action-text="新建纪念日"
+      bind:action="onCreateTap"
+    />
+
+    <button
+      wx:if="{{items.length > 0}}"
+      class="btn-primary"
+      hover-class="btn-primary--hover"
+      bindtap="onCreateTap"
+    >新建纪念日</button>
+  </block>
+
+  <custom-tabbar id="tabbar" current="anniversaries" />
+</view>
