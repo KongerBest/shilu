@@ -233,3 +233,279 @@
   border-color: var(--glass-border);
   background: var(--glass-bg-soft);
 }
+
+/* 视图切换：列表 / 日历 */
+.view-switch {
+  display: flex;
+  margin-top: var(--sp-4);
+  padding: 4rpx;
+  border: 1rpx solid var(--glass-border);
+  border-radius: 999rpx;
+  background-color: var(--glass-bg-soft);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+}
+
+.view-switch__item {
+  flex: 1;
+  padding: 14rpx 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+  text-align: center;
+  border-radius: 999rpx;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.view-switch__item.is-on {
+  color: var(--c-accent);
+  font-weight: 600;
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow-card);
+}
+
+/* 月历：6 行固定高度，换月不跳动 */
+.cal {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-2) var(--sp-2);
+}
+
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-2) var(--sp-1);
+}
+
+.cal__title {
+  flex: 1;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-text);
+  text-align: center;
+}
+
+.cal__nav {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  font-size: 34rpx;
+  line-height: 60rpx;
+  color: var(--c-text-2);
+  text-align: center;
+  border-radius: 50%;
+}
+
+.cal__nav--hover {
+  background: var(--glass-bg-strong);
+}
+
+.cal-week {
+  display: flex;
+  padding-bottom: var(--sp-1);
+}
+
+.cal-week__item {
+  width: 14.2857%;
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  text-align: center;
+}
+
+.cal-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 14.2857%;
+  height: 84rpx;
+  padding-top: 6rpx;
+}
+
+.cal-cell__day {
+  width: 56rpx;
+  height: 56rpx;
+  font-size: var(--fs-body);
+  line-height: 56rpx;
+  color: var(--c-text);
+  text-align: center;
+  border-radius: 50%;
+}
+
+.cal-cell.is-out .cal-cell__day {
+  color: var(--c-text-3);
+  opacity: 0.35;
+}
+
+.cal-cell.is-today .cal-cell__day {
+  color: var(--c-accent);
+  font-weight: 600;
+  background: var(--c-accent-soft);
+}
+
+/* 选中态放在今天之后：同一天被选中时以填色为准 */
+.cal-cell.is-selected .cal-cell__day {
+  color: var(--c-on-accent);
+  font-weight: 600;
+  background: var(--c-accent);
+}
+
+.cal-cell__dot {
+  width: 8rpx;
+  height: 8rpx;
+  margin-top: 2rpx;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
+
+.cal-cell.is-selected .cal-cell__dot {
+  background: var(--c-accent-deep);
+}
+
+.cal-hint {
+  display: block;
+  padding: var(--sp-5) 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  text-align: center;
+}
+
+/* 视图切换：列表 / 日历 */
+.view-switch {
+  display: flex;
+  margin-top: var(--sp-4);
+  padding: 4rpx;
+  border: 1rpx solid var(--glass-border);
+  border-radius: 999rpx;
+  background-color: var(--glass-bg-soft);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+}
+
+.view-switch__item {
+  flex: 1;
+  padding: 14rpx 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+  text-align: center;
+  border-radius: 999rpx;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.view-switch__item.is-on {
+  color: var(--c-accent);
+  font-weight: 600;
+  background: var(--c-surface);
+  box-shadow: var(--c-shadow-card);
+}
+
+/* 月历：6 行固定高度，换月不跳动 */
+.cal {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-2) var(--sp-2);
+}
+
+.cal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-2) var(--sp-1);
+}
+
+.cal__title {
+  flex: 1;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-text);
+  text-align: center;
+}
+
+.cal__nav {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  font-size: 34rpx;
+  line-height: 60rpx;
+  color: var(--c-text-2);
+  text-align: center;
+  border-radius: 50%;
+}
+
+.cal__nav--hover {
+  background: var(--glass-bg-strong);
+}
+
+.cal-week {
+  display: flex;
+  padding-bottom: var(--sp-1);
+}
+
+.cal-week__item {
+  width: 14.2857%;
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  text-align: center;
+}
+
+.cal-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cal-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 14.2857%;
+  height: 84rpx;
+  padding-top: 6rpx;
+}
+
+.cal-cell__day {
+  width: 56rpx;
+  height: 56rpx;
+  font-size: var(--fs-body);
+  line-height: 56rpx;
+  color: var(--c-text);
+  text-align: center;
+  border-radius: 50%;
+}
+
+.cal-cell.is-out .cal-cell__day {
+  color: var(--c-text-3);
+  opacity: 0.35;
+}
+
+.cal-cell.is-today .cal-cell__day {
+  color: var(--c-accent);
+  font-weight: 600;
+  background: var(--c-accent-soft);
+}
+
+/* 选中态放在今天之后：同一天被选中时以填色为准 */
+.cal-cell.is-selected .cal-cell__day {
+  color: var(--c-on-accent);
+  font-weight: 600;
+  background: var(--c-accent);
+}
+
+.cal-cell__dot {
+  width: 8rpx;
+  height: 8rpx;
+  margin-top: 2rpx;
+  border-radius: 50%;
+  background: var(--c-accent);
+}
+
+.cal-cell.is-selected .cal-cell__dot {
+  background: var(--c-accent-deep);
+}
+
+.cal-hint {
+  display: block;
+  padding: var(--sp-5) 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  text-align: center;
+}

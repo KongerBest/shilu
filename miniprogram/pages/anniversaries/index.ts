@@ -2,6 +2,8 @@ import { ANNIVERSARY_ENABLED } from '../../config/features';
 import { anniversaryService } from '../../services/anniversary.service';
 import { reminderService } from '../../services/reminder.service';
 import type { Anniversary, AnniversaryType } from '../../types/models';
+import { buildMonthGrid, dayLabel, defaultSelection, itemsOn, monthLabel, shiftMonth } from '../../utils/calendar';
+import type { MonthCell } from '../../utils/calendar';
 import { countdownText } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
@@ -32,6 +34,8 @@ const REPEAT_LABEL: Record<string, string> = {
   custom: '自定义'
 };
 
+type ViewMode = 'list' | 'calendar';
+
 interface ListData {
   themeClass: string;
   loading: boolean;
@@ -51,6 +55,20 @@ interface ListData {
   reminderTemplateId: string;
   nextFireText: string;
   granting: boolean;
+
+  /** 列表 / 日历 两种看法 */
+  view: ViewMode;
+  weekdays: string[];
+  cells: MonthCell[];
+  /** 当前翻到的月份 */
+  viewYear: number;
+  viewMonth: number;
+  monthText: string;
+  /** 是否正停在今天所在月，用于决定要不要显示「回到今天」 */
+  isCurrentMonth: boolean;
+  selectedDate: string;
+  selectedLabel: string;
+  selectedItems: AnniversaryView[];
 }
 
 function toView(item: Anniversary): AnniversaryView {
@@ -87,7 +105,17 @@ Page({
     reminderQuota: 0,
     reminderTemplateId: '',
     nextFireText: '',
-    granting: false
+    granting: false,
+    view: 'list',
+    weekdays: ['日', '一', '二', '三', '四', '五', '六'],
+    cells: [],
+    viewYear: 0,
+    viewMonth: 0,
+    monthText: '',
+    isCurrentMonth: true,
+    selectedDate: '',
+    selectedLabel: '',
+    selectedItems: []
   } as ListData,
 
   onShow() {
@@ -122,6 +150,10 @@ Page({
         nextCountdown: next ? next.countdown : '',
         nextDateText: next ? next.nextText : ''
       });
+
+      // 日历跟着「今天」走，数据一变就重建，避免点和列表对不上
+      const anchor = res.today.split('-');
+      this.renderMonth(Number(anchor[0]), Number(anchor[1]), res.today, res.today);
     } catch (error) {
       const appError = toAppError(error);
       logger.warn('anniversaries', 'load failed', { code: appError.code });
@@ -186,6 +218,72 @@ Page({
         logger.warn('anniversaries', 'subscribe failed', { code: String(error && error.errMsg) });
         wx.showToast({ title: '订阅请求失败，稍后再试', icon: 'none' });
       }
+    });
+  },
+
+  /**
+   * 重建一个月并选中某天。cells / selectedItems 一次 setData，
+   * 避免先画格子再补选中造成的闪动。
+   */
+  renderMonth(year: number, month: number, prefer?: string, todayOverride?: string) {
+    const today = todayOverride || this.data.today;
+    const cells = buildMonthGrid(year, month, this.data.items, today);
+    const date = prefer !== undefined ? prefer : defaultSelection(cells, today);
+
+    this.setData({
+      cells,
+      viewYear: year,
+      viewMonth: month,
+      monthText: monthLabel(year, month),
+      isCurrentMonth:
+        year === Number(today.slice(0, 4)) && month === Number(today.slice(5, 7)),
+      selectedDate: date,
+      selectedLabel: date ? dayLabel(date, today) : '本月没有纪念日',
+      selectedItems: date ? itemsOn(this.data.items, date) : []
+    });
+  },
+
+  onViewChange(e: WechatMiniprogram.TouchEvent) {
+    const view = (e.currentTarget.dataset.view as ViewMode) || 'list';
+    if (view === this.data.view) return;
+
+    if (view === 'calendar' && this.data.cells.length === 0 && this.data.today) {
+      // 首次切到日历：按今天的月份建一次
+      this.setData({ view });
+      this.renderMonth(Number(this.data.today.slice(0, 4)), Number(this.data.today.slice(5, 7)), this.data.today);
+      return;
+    }
+    this.setData({ view });
+  },
+
+  onMonthShift(e: WechatMiniprogram.TouchEvent) {
+    const delta = Number(e.currentTarget.dataset.delta);
+    if (!delta) return;
+    const next = shiftMonth(this.data.viewYear, this.data.viewMonth, delta);
+    this.renderMonth(next.year, next.month);
+  },
+
+  onBackToday() {
+    if (!this.data.today) return;
+    this.renderMonth(Number(this.data.today.slice(0, 4)), Number(this.data.today.slice(5, 7)), this.data.today);
+  },
+
+  /** 点补位格（上/下月的日子）就顺势翻过去，不让点击没反应。 */
+  onDayTap(e: WechatMiniprogram.TouchEvent) {
+    const date = e.currentTarget.dataset.date as string;
+    if (!date) return;
+
+    const year = Number(date.slice(0, 4));
+    const month = Number(date.slice(5, 7));
+    if (year !== this.data.viewYear || month !== this.data.viewMonth) {
+      this.renderMonth(year, month, date);
+      return;
+    }
+
+    this.setData({
+      selectedDate: date,
+      selectedLabel: dayLabel(date, this.data.today),
+      selectedItems: itemsOn(this.data.items, date)
     });
   },
 

@@ -1,3 +1,21 @@
+<!-- 单条纪念日：列表与日历共用一套结构，避免两处改样式时漏掉一边 -->
+<template name="anniversaryRow">
+  <view class="arow" data-id="{{_id}}" bindtap="onItemTap" hover-class="arow--hover">
+    <view class="arow__bar" style="background: {{accent}}"></view>
+    <view class="arow__main">
+      <view class="arow__head">
+        <text class="arow__title">{{title}}</text>
+        <text class="arow__count">{{countdown}}</text>
+      </view>
+      <view class="arow__meta">
+        <text class="tag tag--accent">{{typeLabel}}</text>
+        <text class="arow__meta-text">{{nextText}} · {{repeatLabel}}</text>
+      </view>
+    </view>
+    <view class="chevron"></view>
+  </view>
+</template>
+
 <view class="page {{themeClass}}">
   <loading wx:if="{{loading}}" mode="block" text="正在读取" />
   <empty-state
@@ -50,34 +68,70 @@
       >{{granting ? '授权中' : '授权 1 次'}}</view>
     </view>
 
-    <view class="section" wx:if="{{items.length > 0}}">
+    <view class="view-switch" wx:if="{{items.length > 0}}">
+      <view
+        class="view-switch__item {{view === 'list' ? 'is-on' : ''}}"
+        data-view="list"
+        bindtap="onViewChange"
+      >列表</view>
+      <view
+        class="view-switch__item {{view === 'calendar' ? 'is-on' : ''}}"
+        data-view="calendar"
+        bindtap="onViewChange"
+      >日历</view>
+    </view>
+
+    <block wx:if="{{items.length > 0 && view === 'calendar'}}">
+      <view class="card cal">
+        <view class="cal__head">
+          <view class="cal__nav" data-delta="-1" bindtap="onMonthShift" hover-class="cal__nav--hover">‹</view>
+          <text class="cal__title">{{monthText}}</text>
+          <view class="cal__nav" data-delta="1" bindtap="onMonthShift" hover-class="cal__nav--hover">›</view>
+        </view>
+
+        <view class="cal-week">
+          <text wx:for="{{weekdays}}" wx:key="*this" class="cal-week__item">{{item}}</text>
+        </view>
+
+        <view class="cal-grid">
+          <view
+            wx:for="{{cells}}"
+            wx:key="date"
+            class="cal-cell {{item.inMonth ? '' : 'is-out'}} {{item.isToday ? 'is-today' : ''}} {{item.date === selectedDate ? 'is-selected' : ''}}"
+            data-date="{{item.date}}"
+            bindtap="onDayTap"
+          >
+            <text class="cal-cell__day tabular">{{item.day}}</text>
+            <view class="cal-cell__dot" wx:if="{{item.count > 0}}"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section__head">
+          <text class="section__title">{{selectedLabel}}</text>
+          <text class="section__action" wx:if="{{!isCurrentMonth}}" bindtap="onBackToday">回到今天</text>
+        </view>
+
+        <view class="card list" wx:if="{{selectedItems.length > 0}}">
+          <block wx:for="{{selectedItems}}" wx:key="_id">
+            <template is="anniversaryRow" data="{{...item}}" />
+          </block>
+        </view>
+        <text class="cal-hint" wx:else>{{selectedDate ? '这一天没有纪念日' : '这个月没有纪念日'}}</text>
+      </view>
+    </block>
+
+    <view class="section" wx:elif="{{items.length > 0}}">
       <view class="section__head">
         <text class="section__title">全部纪念日</text>
         <text class="section__action">按临近排序</text>
       </view>
 
       <view class="card list">
-        <view
-          wx:for="{{items}}"
-          wx:key="_id"
-          class="arow"
-          data-id="{{item._id}}"
-          bindtap="onItemTap"
-          hover-class="arow--hover"
-        >
-          <view class="arow__bar" style="background: {{item.accent}}"></view>
-          <view class="arow__main">
-            <view class="arow__head">
-              <text class="arow__title">{{item.title}}</text>
-              <text class="arow__count">{{item.countdown}}</text>
-            </view>
-            <view class="arow__meta">
-              <text class="tag tag--accent">{{item.typeLabel}}</text>
-              <text class="arow__meta-text">{{item.nextText}} · {{item.repeatLabel}}</text>
-            </view>
-          </view>
-          <view class="chevron"></view>
-        </view>
+        <block wx:for="{{items}}" wx:key="_id">
+          <template is="anniversaryRow" data="{{...item}}" />
+        </block>
       </view>
     </view>
 
