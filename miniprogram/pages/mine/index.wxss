@@ -129,6 +129,17 @@
   color: var(--c-text);
 }
 
+.row__right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.row__value {
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
 .row__arrow {
   width: 14rpx;
   height: 14rpx;

@@ -109,7 +109,7 @@
       <view class="divider"></view>
       <view class="kv">
         <text class="kv__k">保险箱</text>
-        <text class="kv__v {{vaultEnabled ? 'is-ok' : 'is-off'}}">{{vaultEnabled ? '已启用' : '当前构建关闭'}}</text>
+        <text class="kv__v {{vaultEnabled ? 'is-ok' : 'is-off'}}">{{vaultEnabled ? '本构建可用' : '当前构建关闭'}}</text>
       </view>
     </view>
   </view>

@@ -1,6 +1,8 @@
 import { APP_VERSION, isCloudConfigured } from '../../config/env';
+import { VAULT_ENABLED } from '../../config/features';
 import { attachmentService } from '../../services/attachment.service';
 import { userService } from '../../services/user.service';
+import { vaultSession } from '../../services/vault-session';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { stripExif } from '../../utils/image';
@@ -18,6 +20,8 @@ interface MineData {
   stats: { records: number; attachments: number; anniversaries: number };
   version: string;
   cloudReady: boolean;
+  vaultEnabled: boolean;
+  vaultUnlocked: boolean;
 }
 
 function formatDate(timestamp: number): string {
@@ -37,11 +41,15 @@ Page({
     createdText: '',
     stats: { records: 0, attachments: 0, anniversaries: 0 },
     version: APP_VERSION,
-    cloudReady: isCloudConfigured()
+    cloudReady: isCloudConfigured(),
+    vaultEnabled: VAULT_ENABLED,
+    vaultUnlocked: false
   } as MineData,
 
   onShow() {
     syncTheme(this);
+    // 保险箱解锁态只存内存，返回本页时重新读一次，避免显示过期状态
+    this.setData({ vaultUnlocked: vaultSession.isUnlocked() });
     void this.load();
   },
 
@@ -156,6 +164,10 @@ Page({
 
   onOpenTemplates() {
     wx.navigateTo({ url: '/pages/template/index' });
+  },
+
+  onOpenVault() {
+    wx.navigateTo({ url: '/pages/vault/index' });
   },
 
   onOpenAbout() {

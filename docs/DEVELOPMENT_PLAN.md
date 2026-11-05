@@ -13,9 +13,9 @@
 | P2 | 分类 + 模板 + 动态表单 + 资料 CRUD | `field-renderer` 12 类型可用、template 云函数、分类/模板管理页、动态表单编辑与详情 | P1 | ✅ 完成（附件类字段顺延 P3） |
 | P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | ✅ 完成：附件服务 + 加密附件 + 证件正/反/其他三区 + 头像上传 + EXIF 剥离 |
 | P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | ⬜ |
-| P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | ⬜ |
+| P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | 🟡 基础设施完成（`keystore` + `vault` 云函数 + 解锁页 + 「我的」入口）；**敏感字段落库加密与明文回填未做** |
 | P5-PoC | Argon2id WASM 验证 | 可行性结论 | 需真机 | ⬜ |
-| P6 | 搜索 + 收藏 + 备份恢复 + 导出 | search/backup 云函数 | P2~P5 | ⬜ |
+| P6 | 搜索 + 收藏 + 备份恢复 + 导出 | search/backup 云函数 | P2~P5 | 🟡 搜索（库内正则）与收藏已完成；备份恢复、导出未做 |
 | P7 | 测试 + 安全体检 + 性能 + 发布 | TEST_REPORT、发布包 | 全部 | ⬜ |
 
 ---
@@ -185,6 +185,16 @@ shilu/
 
 ## P5 — 密码保险箱
 
+### 实施状态（2026-11-05）
+
+已完成：`utils/crypto/keystore.ts`（init / unlock / recover / changePassword / verify）、`vault` 云函数（init / status / changePassword / recover / reset / audit，零知识）、`pages/vault`（设置主密码 / 解锁 / 展示恢复码 / 重置）、`file-uploader` 加密上传与解密预览、「我的」页入口。
+
+未完成（本阶段验收条件，不可省）：
+1. **敏感字段落库加密**：`TemplateField.encrypted` 仍恒为 `false`，云端存明文。
+2. **明文回填迁移**：对存量 `encrypted=false` 的敏感值做「读明文 → 写信封 → 置 true」，可中断续做。
+3. **保险箱整条加密**（单条记录整体加密，非字段级）。
+4. 密钥轮换（分批 20 条）。
+
 ### 目标
 `features.VAULT_ENABLED=true` 下完整可用；`false` 下彻底不可达。
 
@@ -228,6 +238,12 @@ shilu/
 ---
 
 ## P6 — 搜索 / 收藏 / 备份恢复 / 导出
+
+### 实施状态（2026-11-05）
+
+已完成：库内关键词搜索（`search_text` 正则 + `owner_openid` 强过滤 + 关键词转义）、收藏标记与首页「收藏」区块（`is_favorite`）。
+
+未完成：备份（聚合 → 加密 → 上传）、恢复（分批 100 条 + 进度）、导出 JSON。
 
 ### 关键实现点
 1. 搜索走 `search_text` 正则，必须带 `owner_openid` + 可选 `category_id` 强过滤（正则不走索引，靠强过滤缩小扫描）。

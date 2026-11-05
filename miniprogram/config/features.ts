@@ -7,8 +7,11 @@
  * 不依赖这里的前端隐藏。
  */
 
-/** 构建形态。上架包改为 false。 */
-export const VAULT_ENABLED = false;
+/**
+ * 构建形态开关，不是用户开关：开发构建为 true，上架构建必须改为 false。
+ * 为 true 时「我的」页出现保险箱入口；为 false 时入口整行不渲染（不留死链）。
+ */
+export const VAULT_ENABLED = true;
 
 /** 加密附件（阶段三起生效）。 */
 export const ENCRYPTED_ATTACHMENT_ENABLED = true;

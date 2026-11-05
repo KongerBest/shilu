@@ -42,6 +42,13 @@
         <text class="row__label">模板管理</text>
         <view class="row__arrow"></view>
       </view>
+      <view wx:if="{{vaultEnabled}}" class="row" bindtap="onOpenVault" hover-class="row--hover">
+        <text class="row__label">加密保险箱</text>
+        <view class="row__right">
+          <text class="row__value">{{vaultUnlocked ? '已解锁' : '未解锁'}}</text>
+          <view class="row__arrow"></view>
+        </view>
+      </view>
       <view class="row" bindtap="onOpenSettings" hover-class="row--hover">
         <text class="row__label">设置</text>
         <view class="row__arrow"></view>
