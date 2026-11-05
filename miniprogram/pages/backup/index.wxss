@@ -1,0 +1,130 @@
+/* 非 tab 页，底部只留常规留白 */
+.page {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-6));
+}
+
+.card__title {
+  display: block;
+  font-size: var(--fs-title);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.card .btn-primary {
+  margin-top: var(--sp-4);
+}
+
+/* 导出结果 / 恢复来源：左标签右值，值过长换行而不是撑破卡片 */
+.meta {
+  margin-top: var(--sp-4);
+}
+
+.meta__row {
+  display: flex;
+  align-items: flex-start;
+  padding: 10rpx 0;
+}
+
+.meta__row + .meta__row {
+  border-top: 1rpx solid var(--c-line);
+}
+
+.meta__label {
+  flex-shrink: 0;
+  width: 140rpx;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.meta__value {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--c-text);
+  word-break: break-all;
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+  margin-top: var(--sp-3);
+}
+
+/* 三个动作平铺：比塞进一个按钮组更容易点中 */
+.actions {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-4);
+}
+
+.action {
+  flex: 1;
+  padding: 18rpx 0;
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+  text-align: center;
+  border: 1rpx solid var(--c-accent);
+  border-radius: 999rpx;
+  background: var(--c-accent-glass-soft);
+}
+
+.action--hover {
+  background: var(--c-accent-soft);
+}
+
+.link-row {
+  margin-top: var(--sp-3);
+  text-align: center;
+}
+
+.preview {
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1rpx solid var(--c-line);
+}
+
+/* 进度：只在恢复中显示，条本身不抢视线 */
+.progress {
+  margin-top: var(--sp-3);
+}
+
+.progress__track {
+  height: 8rpx;
+  border-radius: 999rpx;
+  background: var(--glass-bg-strong);
+  overflow: hidden;
+}
+
+.progress__fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background: var(--c-accent);
+  transition: width 160ms ease;
+}
+
+.progress__text {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  text-align: center;
+}
+
+.notice {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-caption);
+  line-height: 1.6;
+  color: var(--c-accent);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 20rpx;
+  background: var(--c-accent-glass-soft);
+}
+
+.notice--error {
+  color: var(--c-danger);
+  background: var(--c-warn-soft);
+  border-color: var(--c-warn-line);
+}

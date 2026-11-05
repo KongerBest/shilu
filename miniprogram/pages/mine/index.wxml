@@ -49,6 +49,10 @@
           <view class="row__arrow"></view>
         </view>
       </view>
+      <view class="row" bindtap="onOpenBackup" hover-class="row--hover">
+        <text class="row__label">备份与恢复</text>
+        <view class="row__arrow"></view>
+      </view>
       <view class="row" bindtap="onOpenSettings" hover-class="row--hover">
         <text class="row__label">设置</text>
         <view class="row__arrow"></view>

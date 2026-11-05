@@ -154,6 +154,10 @@ Page({
       .catch((error) => wx.showToast({ title: toAppError(error).message, icon: 'none' }));
   },
 
+  onOpenBackup() {
+    wx.navigateTo({ url: '/pages/backup/index' });
+  },
+
   onOpenSettings() {
     wx.navigateTo({ url: '/pages/settings/index' });
   },

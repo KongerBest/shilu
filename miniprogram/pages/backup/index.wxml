@@ -1,0 +1,105 @@
+<view class="page {{themeClass}}">
+  <view class="card">
+    <text class="card__title">导出备份</text>
+    <text class="form-hint">
+      导出分类、模板、资料、人物、纪念日。附件文件不在其中——文件本体在云存储，恢复后需要重新上传。
+    </text>
+
+    <button
+      class="btn-primary"
+      hover-class="btn-primary--hover"
+      loading="{{exporting}}"
+      disabled="{{exporting}}"
+      bindtap="onExport"
+    >{{exporting ? '正在打包' : '生成备份文件'}}</button>
+
+    <block wx:if="{{exportReady}}">
+      <view class="meta">
+        <view class="meta__row">
+          <text class="meta__label">文件</text>
+          <text class="meta__value">{{fileName}}</text>
+        </view>
+        <view class="meta__row">
+          <text class="meta__label">大小</text>
+          <text class="meta__value tabular">{{fileSize}}</text>
+        </view>
+        <view class="meta__row">
+          <text class="meta__label">时间</text>
+          <text class="meta__value tabular">{{exportedAt}}</text>
+        </view>
+        <view class="meta__row">
+          <text class="meta__label">内容</text>
+          <text class="meta__value">{{total}} 条</text>
+        </view>
+      </view>
+
+      <view class="tag-row">
+        <text class="tag">资料 {{counts.records}}</text>
+        <text class="tag">人物 {{counts.contacts}}</text>
+        <text class="tag">纪念日 {{counts.anniversaries}}</text>
+        <text class="tag">分类 {{counts.categories}}</text>
+        <text class="tag">模板 {{counts.templates}}</text>
+      </view>
+
+      <view class="actions">
+        <view class="action" bindtap="onShareToChat" hover-class="action--hover">发送到聊天</view>
+        <view class="action" bindtap="onSaveToDisk" hover-class="action--hover">存到电脑</view>
+        <view class="action" bindtap="onCopyText" hover-class="action--hover">复制内容</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="card">
+    <text class="card__title">从备份恢复</text>
+    <text class="form-hint">
+      按原 ID 补齐或覆盖，不会删除你现有的其它数据；同一份备份重复恢复结果一致。附件不会恢复。
+    </text>
+
+    <button
+      class="btn-primary"
+      hover-class="btn-primary--hover"
+      loading="{{picking}}"
+      disabled="{{picking || importing}}"
+      bindtap="onChooseFile"
+    >选择备份文件</button>
+
+    <view class="link-row" bindtap="onPasteBackup">
+      <text class="link">选不到文件？改为粘贴备份内容</text>
+    </view>
+
+    <view wx:if="{{preview}}" class="preview">
+      <view class="meta">
+        <view class="meta__row">
+          <text class="meta__label">来源</text>
+          <text class="meta__value">{{preview.fileName}}</text>
+        </view>
+        <view class="meta__row">
+          <text class="meta__label">导出时间</text>
+          <text class="meta__value tabular">{{preview.exportedAt}}</text>
+        </view>
+        <view class="meta__row">
+          <text class="meta__label">条目</text>
+          <text class="meta__value">{{preview.total}} 条</text>
+        </view>
+      </view>
+
+      <button
+        class="btn-primary"
+        hover-class="btn-primary--hover"
+        loading="{{importing}}"
+        disabled="{{importing}}"
+        bindtap="onStartRestore"
+      >{{importing ? '正在恢复' : '开始恢复'}}</button>
+
+      <view wx:if="{{importing}}" class="progress">
+        <view class="progress__track">
+          <view class="progress__fill" style="width: {{progressPercent}}%"></view>
+        </view>
+        <text class="progress__text tabular">{{progressLabel}} · {{progressPercent}}%</text>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{result}}" class="notice">{{result}}</view>
+  <view wx:if="{{error}}" class="notice notice--error">{{error}}</view>
+</view>
