@@ -125,7 +125,8 @@ vaults  secure_items  security_logs  backups
 | `user_id` / `owner_openid` | string | |
 | `records_count` | number | 未删除资料数 |
 | `attachments_count` | number | 未删除附件数 |
-| `anniversaries_count` | number | 未删除纪念日数 |
+| `anniversaries_count` | number | 未删除纪念日数（含生日自动生成的） |
+| `contacts_count` | number | 未删除人物数 |
 | `vault_items_count` | number | 仅 private 构建维护 |
 | `updated_at` | number | |
 
@@ -237,18 +238,22 @@ type FieldType =
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `name` | string | 明文，≤ 24 字，可搜 |
-| `nickname` | string | |
-| `avatar_file_id` | string | 不加密 |
-| `relations` | string[] | 关系标签，如 `['朋友','同事']` |
-| `phone_enc` | 信封 \| null | **加密** |
-| `phone_mask` | string \| null | `138****8888`，用于展示 |
+| `nickname` | string | ≤ 24 字 |
+| `avatar_file_id` | string | 不加密（暂未接入上传，恒为空串） |
+| `relations` | string[] | 关系标签，≤ 5 个、单个 ≤ 12 字，如 `['朋友','同事']` |
+| `phone_enc` | 信封 \| string \| null | 信封为主；字符串是"未解锁仍选择明文保存"的兼容形态 |
+| `phone_mask` | string | `138****1111`，客户端算好；有号码时必含 `*` |
 | `birthday` | string \| null | `YYYY-MM-DD` |
 | `remark` | string | 明文备注，≤ 500 |
-| `record_ids` | string[] | 关联资料 |
-| `anniversary_ids` | string[] | 关联纪念日 |
+| `record_ids` | string[] | 预留，当前资料侧用 `records.contact_ids` 反查 |
+| `anniversary_ids` | string[] | 预留，当前纪念日侧用 `anniversaries.contact_id` 反查 |
+| `birthday_anniversary_id` | string \| null | 生日自动生成的那条纪念日 id，改/删时据此同步 |
 | `is_deleted` / `created_at` / `updated_at` | | |
 
 索引（3）：`owner_openid+is_deleted+updated_at↓`、`owner_openid+name`、`owner_openid+birthday`
+
+`phone_enc` 的 AAD 为 `userId:contactId:phone`（字段名统一用 `phone`，与存储名 `phone_enc` 解耦）。
+`_id` 在含手机号的新建场景由客户端预生成（`utils/id.ts` 的 `newContactId`），随 `contact.create` 的 `clientId` 传入。
 
 ### 3.7 `anniversaries`
 
@@ -261,6 +266,7 @@ type FieldType =
 | `custom_rule` | `{ unit:'day'\|'week'\|'month'\|'year', interval:number } \| null` | |
 | `contact_id` / `record_id` | string \| null | |
 | `remind_days_before` | number[] | 如 `[0,1,7]` |
+| `auto_generated` | `0 \| 1` | 由人物生日自动生成。改生日同步、清空或删人物时只软删带此标记的记录 |
 | `is_deleted` / `created_at` / `updated_at` | | |
 
 索引（3）：`owner_openid+is_deleted+date`、`owner_openid+contact_id`、`owner_openid+is_deleted+updated_at↓`

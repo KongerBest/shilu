@@ -167,9 +167,13 @@ shilu/
 
 ### 实施状态（2026-11-05 晚）
 
-已完成：`anniversary` 云函数（list / upcoming / create / update / remove）、`_shared/recur.js` 重复规则（与客户端 `utils/date.ts` 逐行等价，13 项 parity 测试）、`pages/anniversaries` 列表（下一个纪念日主卡 + 倒计时 + 按临近排序）与 `pages/anniversaries/edit`（类型 / 日期 / 重复 / 自定义间隔 / 提醒点）、底栏 tab 开启。
+已完成：
 
-未完成：人物（contact）模块与双联动、日历视图、订阅消息（`reminder` 云函数与额度 UI）。
+1. **纪念日**：`anniversary` 云函数（list / upcoming / create / update / remove）、`_shared/recur.js` 重复规则（与客户端 `utils/date.ts` 逐行等价，13 项 parity 测试）、`pages/anniversaries`（下一个纪念日主卡 + 倒计时 + 按临近排序）与 `pages/anniversaries/edit`（类型 / 日期 / 重复 / 自定义间隔 / 提醒点 / 关联人物）、底栏 tab 开启。
+2. **人物**：`contact` 云函数（list / detail / create / update / remove）、`pages/contacts` 三页（搜索列表 / 详情 / 编辑）、手机号信封加密（AAD `userId:contactId:phone`）与脱敏展示、生日自动生成纪念日并双向同步。
+3. **双联动**：资料编辑可多选关联人物，资料详情展示关联人物；纪念日编辑可单选关联人物，人物详情反查纪念日与资料。
+
+未完成：日历视图、订阅消息（`reminder` 云函数与额度 UI）、人物头像上传。
 
 ### 目标
 人物与纪念日双联动；倒计时准确；订阅额度可见。

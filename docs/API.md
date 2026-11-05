@@ -134,14 +134,22 @@ getWXContext().OPENID
 
 | action | payload | 返回 |
 |---|---|---|
-| `list` | `{ keyword?, cursor?, limit? }` | `{ items, nextCursor, hasMore }` |
-| `detail` | `{ id }` | `{ item, records, anniversaries }` |
-| `create` | `{ name, nickname?, avatarFileId?, relations?, phone?, birthday?, remark? }` | `{ item }` |
+| `list` | `{ keyword? }` | `{ items, total }`（按姓名拼音排序，上限 200） |
+| `detail` | `{ id, today? }` | `{ item, anniversaries, records, today }` |
+| `create` | `{ name, nickname?, avatarFileId?, relations?, phoneEnc?, phoneMask?, birthday?, remark?, clientId? }` | `{ item }` |
 | `update` | `{ id, ...同上 }` | `{ item }` |
 | `remove` | `{ id }` | `{ ok }` |
-| `bindRecord` | `{ id, recordId, bind: boolean }` | `{ item }` |
 
-`phone` 在云函数内**不做加密**——加密必须发生在客户端（主密钥只在客户端）。云函数只接收已加密信封 + 掩码，且校验二者字段名合法性，防止明文混入。
+`phone` 在云函数内**不做加密**——加密必须发生在客户端（主密钥只在客户端）。云函数只接收：
+
+- `phoneEnc`：信封 `{ __enc:1, ct, iv, kv }`，或**明文字符串**（保险箱未解锁、用户明确选择的风险路径）；
+- `phoneMask`：客户端算好的脱敏值。有号码时必须含 `*`，否则拒绝——防止「加密」只是换个字段名存明文。
+
+`clientId` 由客户端预生成（32 位 hex）。手机号信封的 AAD 绑定 `userId:contactId:phone`，先写库再回填会留下明文窗口；云函数先查该 ID 是否被占用，占用返回 409。
+
+**生日联动**：`birthday` 非空时自动建一条 `type=birthday / repeat_rule=yearly / auto_generated=1` 的纪念日（`remind_days_before=[0]`）；改生日同步该条，清空生日或删人物时只软删自己建的那条，用户手动建的生日纪念日不碰。
+
+资料与人物是多对多：由 `record.update` 的 `contactIds` 维护，`contact.detail` 反查 `records.contact_ids` 里含此人且未删除的资料。
 
 ### 5.6 `document`
 

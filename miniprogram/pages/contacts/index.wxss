@@ -93,3 +93,8 @@
 .crow .chevron {
   margin-left: var(--sp-2);
 }
+
+/* 紧跟搜索框，补一点上间距，否则标题像贴在输入框上 */
+.section {
+  margin-top: var(--sp-4);
+}
