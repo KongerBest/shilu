@@ -12,7 +12,7 @@
 | P1 | 基础工程 + 登录 + 首页 + 导航 | 可编译骨架、design tokens、http 层、login/user 云函数 | — | ✅ 完成 |
 | P2 | 分类 + 模板 + 动态表单 + 资料 CRUD | `field-renderer` 12 类型可用、template 云函数、分类/模板管理页、动态表单编辑与详情 | P1 | ✅ 完成（附件类字段顺延 P3） |
 | P3 | 附件服务 + 证件管理 + 加密附件 | `file-uploader`、加密模块、attachment/document 云函数 | P2 | ✅ 完成：附件服务 + 加密附件 + 证件正/反/其他三区 + 头像上传 + EXIF 剥离 |
-| P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | 🟡 纪念日（列表 / 倒计时 / 增删改）已完成；人物联动、日历视图、订阅提醒未做 |
+| P4 | 人物 + 纪念日 + 日历 + 倒计时 + 提醒 | contact/anniversary/reminder 云函数、订阅额度 | P3 | 🟡 纪念日 / 人物 / 双联动 / 订阅提醒已完成；日历视图未做，提醒模板需自行配置后才真正推送 |
 | P5 | 密码保险箱 | vault 模块、KDF、恢复码、自动锁 | P3（加密模块） | 🟡 基础设施完成（`keystore` + `vault` 云函数 + 解锁页 + 「我的」入口）；**敏感字段落库加密与明文回填未做** |
 | P5-PoC | Argon2id WASM 验证 | 可行性结论 | 需真机 | ⬜ |
 | P6 | 搜索 + 收藏 + 备份恢复 + 导出 | search/backup 云函数 | P2~P5 | 🟡 搜索（库内正则）与收藏已完成；备份恢复、导出未做 |
@@ -173,7 +173,14 @@ shilu/
 2. **人物**：`contact` 云函数（list / detail / create / update / remove）、`pages/contacts` 三页（搜索列表 / 详情 / 编辑）、手机号信封加密（AAD `userId:contactId:phone`）与脱敏展示、生日自动生成纪念日并双向同步。
 3. **双联动**：资料编辑可多选关联人物，资料详情展示关联人物；纪念日编辑可单选关联人物，人物详情反查纪念日与资料。
 
-未完成：日历视图、订阅消息（`reminder` 云函数与额度 UI）、人物头像上传。
+4. **订阅提醒**：`reminder` 云函数（status / grant / runMine / runDaily）+ `_shared/reminder-plan.js`（到期判断纯函数，11 项单测）+ `_shared/reminder-config.js`（模板 ID 与关键词映射，留空即未配置）+ 每日 09:00 定时触发器 + 纪念日页「提醒额度」卡（剩余次数 / 授权 1 次 / 未配置时如实说明）。
+
+未完成：日历视图、人物头像上传。
+
+**启用提醒的前提**（当前未配，所以线上只显示"不可用"）：
+1. 到 mp.weixin.qq.com →「订阅消息」申请一个一次性模板（如「纪念日提醒」），拿到模板 ID 与关键词；
+2. 把 ID 与关键词映射填进 `cloudfunctions/_shared/reminder-config.js`；
+3. 重新部署 `reminder` 云函数；定时器若未随代码上传，到云开发控制台手动建一个每天 09:00 的触发器。
 
 ### 目标
 人物与纪念日双联动；倒计时准确；订阅额度可见。

@@ -1,5 +1,6 @@
 import { ANNIVERSARY_ENABLED } from '../../config/features';
 import { anniversaryService } from '../../services/anniversary.service';
+import { reminderService } from '../../services/reminder.service';
 import type { Anniversary, AnniversaryType } from '../../types/models';
 import { countdownText } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
@@ -43,6 +44,13 @@ interface ListData {
   nextDateText: string;
   monthCount: number;
   total: number;
+
+  /** 提醒额度（订阅消息）。configured=false 时整块如实显示"不可用" */
+  reminderConfigured: boolean;
+  reminderQuota: number;
+  reminderTemplateId: string;
+  nextFireText: string;
+  granting: boolean;
 }
 
 function toView(item: Anniversary): AnniversaryView {
@@ -74,7 +82,12 @@ Page({
     nextCountdown: '',
     nextDateText: '',
     monthCount: 0,
-    total: 0
+    total: 0,
+    reminderConfigured: false,
+    reminderQuota: 0,
+    reminderTemplateId: '',
+    nextFireText: '',
+    granting: false
   } as ListData,
 
   onShow() {
@@ -84,6 +97,7 @@ Page({
       return;
     }
     void this.load();
+    void this.loadReminder();
   },
 
   onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
@@ -113,6 +127,66 @@ Page({
       logger.warn('anniversaries', 'load failed', { code: appError.code });
       this.setData({ loading: false, error: appError.message });
     }
+  },
+
+  /** 提醒状态失败不该影响纪念日列表：整体降级为"不可用"，不弹错误。 */
+  async loadReminder() {
+    try {
+      const res = await reminderService.status();
+      const first = res.upcoming[0];
+      this.setData({
+        reminderConfigured: res.configured,
+        reminderQuota: res.quota,
+        reminderTemplateId: res.template_id,
+        nextFireText: first && first.next_fire_date ? `${first.next_fire_date} · ${first.title}` : ''
+      });
+    } catch (error) {
+      logger.warn('anniversaries', 'reminder status failed', { code: toAppError(error).code });
+    }
+  },
+
+  /**
+   * 一次性订阅：必须在用户点击的同一个手势里调用 requestSubscribeMessage，
+   * 所以模板 ID 提前放在 data 里，这里同步发起，不先 await。
+   */
+  onGrantReminder() {
+    const templateId = this.data.reminderTemplateId;
+    if (!templateId) {
+      wx.showToast({ title: '当前构建未配置提醒模板', icon: 'none' });
+      return;
+    }
+    if (this.data.granting) return;
+
+    this.setData({ granting: true });
+    wx.requestSubscribeMessage({
+      tmplIds: [templateId],
+      success: (res) => {
+        const result = (res as unknown as Record<string, string>)[templateId];
+        if (result !== 'accept') {
+          this.setData({ granting: false });
+          wx.showToast({
+            title: result === 'reject' ? '已拒绝，不会收到提醒' : '未授权，不会收到提醒',
+            icon: 'none'
+          });
+          return;
+        }
+        reminderService
+          .grant()
+          .then((r) => {
+            this.setData({ granting: false, reminderQuota: r.quota });
+            wx.showToast({ title: `已增加额度，剩余 ${r.quota} 次`, icon: 'none' });
+          })
+          .catch((error: unknown) => {
+            this.setData({ granting: false });
+            wx.showToast({ title: toAppError(error).message, icon: 'none' });
+          });
+      },
+      fail: (error) => {
+        this.setData({ granting: false });
+        logger.warn('anniversaries', 'subscribe failed', { code: String(error && error.errMsg) });
+        wx.showToast({ title: '订阅请求失败，稍后再试', icon: 'none' });
+      }
+    });
   },
 
   onCreateTap() {

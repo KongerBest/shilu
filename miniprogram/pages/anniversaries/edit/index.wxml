@@ -103,7 +103,7 @@
           hover-class="remind__chip--hover"
         >{{item.label}}</view>
       </view>
-      <text class="form-hint">提醒依赖微信一次性订阅消息：每次授权只有一条额度，用完需重新授权，不承诺每年自动提醒。</text>
+      <text class="form-hint">提醒依赖微信一次性订阅消息：每次授权只有一条额度，用完需重新授权，不承诺每年自动提醒。额度在纪念日页「提醒额度」里授权。</text>
     </view>
 
     <button

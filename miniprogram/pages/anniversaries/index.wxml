@@ -34,6 +34,22 @@
       </view>
     </view>
 
+    <view class="card reminder">
+      <view class="reminder__main">
+        <text class="reminder__title">提醒额度</text>
+        <text wx:if="{{!reminderConfigured}}" class="reminder__desc">当前构建未配置订阅消息模板，到点不会推送</text>
+        <text wx:elif="{{reminderQuota > 0}}" class="reminder__desc">剩 {{reminderQuota}} 次 · 一次授权一条，用完需再授权</text>
+        <text wx:else class="reminder__desc">还没有额度 · 授权后才会推送</text>
+        <text wx:if="{{nextFireText}}" class="reminder__meta">下次提醒 {{nextFireText}}</text>
+      </view>
+      <view
+        wx:if="{{reminderConfigured}}"
+        class="reminder__btn {{granting ? 'is-busy' : ''}}"
+        bindtap="onGrantReminder"
+        hover-class="reminder__btn--hover"
+      >{{granting ? '授权中' : '授权 1 次'}}</view>
+    </view>
+
     <view class="section" wx:if="{{items.length > 0}}">
       <view class="section__head">
         <text class="section__title">全部纪念日</text>

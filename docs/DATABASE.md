@@ -113,6 +113,9 @@ vaults  secure_items  security_logs  backups
 | `avatar_file_id` | string | | 云存储 fileID（头像**不加密**，见 SECURITY.md §4.3） |
 | `status` | `'active' \| 'deleted'` | ✓ | 注销后置 `deleted` 并级联清理 |
 | `settings` | object | | `{ autoLockSeconds, theme, defaultCategoryId }` |
+| `subscribe_quota` | number | | 一次性订阅剩余额度（授权 +1，发送成功 -1）；只是「大概还剩几条」，发送失败 43101 时清零 |
+| `subscribe_quota_at` | number | | 最近一次授权时间 |
+| `last_reminder_sent_at` | number | | 最近一次成功推送时间 |
 | `created_at` / `last_active_at` | number | ✓ | |
 
 索引（2）：`owner_openid`（唯一）、`status`
@@ -273,20 +276,27 @@ type FieldType =
 
 ### 3.8 `reminders`
 
+**发送流水**，不是预排队列。到期判断由 `_shared/reminder-plan.js` 的 `dueToday()` 现算：
+一次性订阅本来只有几条额度，预排队列会在纪念日改期/删除后留下大量脏数据，收益远小于成本。
+
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `anniversary_id` | string \| null | |
-| `record_id` | string \| null | |
-| `fire_at` | number | 应触发时间戳 |
-| `status` | `'pending' \| 'sent' \| 'failed' \| 'skipped_no_quota'` | |
-| `template_key` | string | 订阅消息模板 key |
+| `kind` | `'send' \| 'grant'` | 发送记录 / 授权记录 |
+| `anniversary_id` | string \| null | 发送记录才有 |
+| `title` | string | 纪念日标题（明文，非敏感字段） |
+| `fire_date` | string | 触发当天的本地日期 `YYYY-MM-DD`，用于当天去重 |
+| `next_date` / `days` / `remind_day` | string / number / number | 当时的计算结果，便于事后核对 |
+| `status` | `'sent' \| 'failed' \| 'granted'` | |
+| `template_key` | string | 固定 `anniversary_daily` |
 | `sent_at` | number \| null | |
-| `error` | string \| null | 截断 200 字，禁止含敏感值 |
+| `error` / `err_code` | string \| null / number | 截断 200 字，禁止含敏感值；43101 时同时把额度清零 |
+| `delta` / `quota_after` | number | 仅 `grant` 记录：本次增加多少、加完剩多少 |
 | `created_at` | number | |
 
-索引（3）：`status+fire_at`（全局扫描，定时任务用）、`owner_openid+fire_at`、`owner_openid+anniversary_id`
+索引（3）：`owner_openid+created_at↓`、`fire_date+status`（当天去重）、`owner_openid+anniversary_id`
 
-> 后台扫描用 `status='pending' AND fire_at<=now`，**不带 owner_openid**，故需独立索引。这是唯一允许跨用户扫描的查询，仅限 `reminder` 云函数定时触发。
+> 定时任务扫的是 `anniversaries`（跨用户，这是唯一允许的全局扫描），
+> 再按 `owner_openid` 分组下发；`reminders` 只用于去重与审计。
 
 ### 3.9 `tags`
 

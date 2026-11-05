@@ -12,11 +12,11 @@
 | 项 | 命令 | 结果 |
 |---|---|---|
 | TypeScript 类型检查 | `npx tsc --noEmit` | ✅ **0 error** |
-| 单元测试 | `npx vitest run` | ✅ **211 passed / 0 failed**（17 个文件） |
+| 单元测试 | `npx vitest run` | ✅ **222 passed / 0 failed**（18 个文件） |
 
 ```
-Test Files  17 passed (17)
-     Tests  211 passed (211)
+Test Files  18 passed (18)
+     Tests  222 passed (222)
 ```
 
 | 测试文件 | 用例数 | 覆盖 |
@@ -38,6 +38,7 @@ Test Files  17 passed (17)
 | **`backfill-plan.test.ts`** | **5** | **回填判定：只加密有值且未封包的敏感字段，空白/信封/非敏感/无模板均跳过** |
 | **`recur-parity.test.ts`** | **13** | **云函数 `_shared/recur.js` 与客户端 `utils/date.ts` 的重复规则逐条一致（闰日、月末、自定义、不重复、非法日期）** |
 | **`crypto-phone.test.ts`** | **8** | **手机号脱敏（11 位 / 带区号 / 7 位 / 短号 / 空白）、脱敏必含星号、AAD 换人即失效** |
+| **`reminder-plan.test.ts`** | **11** | **提醒到期判定：当天 / 提前 N 天 / 多点独立命中 / 无提醒点 / 不重复已过 / 闰日提前一天 / 排序 / 每用户上限 / 文案** |
 
 ---
 
@@ -230,6 +231,23 @@ Test Files  17 passed (17)
 | 清理 | ✅ 关联已解除，两条测试人物与测试纪念日已删除，保险箱重置为未初始化 |
 | 人物头像上传 | ❌ 未接入（`avatar_file_id` 恒为空串） |
 
+### 3.6 订阅提醒（P4 收尾，2026-11-05 晚）
+
+`reminder` 云函数 19 文件 / 30.4 KB 部署成功（同样遇到首次 Creating 报错，20 秒后重试通过）。
+**当前未配置模板 ID**，所以验证的是「未配置时是否诚实降级」与「到期日推算是否正确」，真实下发仍未验证。
+
+| 项 | 结果 |
+|---|---|
+| `status`（未配置） | ✅ `configured=false`、`template_id=''`、`quota=0`、`upcoming=[]` |
+| `grant`（未配置） | ✅ `{ok:false, reason:'not_configured', quota:0}`，不写额度、不写流水 |
+| `next_fire_date` 推算 | ✅ 事件 2026-11-08 + 提醒点 `[3]` → 下次提醒 2026-11-05（就是今天）；提醒点 `[0,1]` → 2026-11-07 |
+| 额度卡（未配置态） | ✅ 显示「当前构建未配置订阅消息模板，到点不会推送」，不渲染授权按钮 |
+| 额度卡（已配置态） | ✅ 注入 `configured=true / quota=2` 后显示「剩 2 次 · 一次授权一条，用完需再授权」+「授权 1 次」胶囊按钮，不挤压不折行 |
+| 无效模板点击 | ✅ `requestSubscribeMessage` 失败只记 warn 日志，`granting` 复位，无未捕获异常 |
+| 真实下发 | ❌ 未验证（需先在公众平台申请一次性模板并填进 `_shared/reminder-config.js`） |
+| 定时触发器 | ⚠️ `config.json` 已声明每天 09:00；部署工具是否随代码创建触发器未确认，需在云开发控制台核对 |
+| 清理 | ✅ 两条测试纪念日已删除，`reminders` 集合为空，`anniversaries_count` 已重算 |
+
 ---
 
 ## 4. 已知技术债
@@ -245,6 +263,8 @@ Test Files  17 passed (17)
 | 7 | 分类排序一次提交全部条目，服务端逐条 `update` | 分类数 ≤ 100，可接受；后续可改批量 `command` |
 | 8 | 人物头像上传未接入（`avatar_file_id` 恒为空串） | 复用附件服务后再接 |
 | 9 | 全局搜索页未建，搜索降级为信息库内 `search_text` 正则 | 阶段六 |
+| 10 | **订阅消息未配置模板 ID**，提醒只计数不真发 | 在公众平台申请一次性模板 → 填 `_shared/reminder-config.js` → 重新部署 |
+| 11 | 定时触发器可能未随 `cloud_fn_deploy` 创建 | 到云开发控制台核对「每天 09:00」触发器，没有就手动建 |
 
 > 第 3~9 项在界面「设置 → 已知限制」中如实展示，不从产品里隐藏。
 

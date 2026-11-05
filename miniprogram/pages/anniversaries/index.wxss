@@ -178,3 +178,58 @@
 .arow .chevron {
   margin-left: var(--sp-2);
 }
+
+/* 提醒额度：一行说清还剩几条，右侧只给一个动作 */
+.reminder {
+  display: flex;
+  align-items: center;
+  margin-top: var(--sp-3);
+  padding: var(--sp-4);
+}
+
+.reminder__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder__title {
+  display: block;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+
+.reminder__desc {
+  display: block;
+  margin-top: 6rpx;
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--c-text-3);
+}
+
+.reminder__meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+}
+
+.reminder__btn {
+  flex-shrink: 0;
+  margin-left: var(--sp-3);
+  padding: 14rpx 24rpx;
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+  border: 1rpx solid var(--c-accent);
+  border-radius: 999rpx;
+  background: var(--c-accent-glass-soft);
+}
+
+.reminder__btn--hover {
+  background: var(--c-accent-soft);
+}
+
+.reminder__btn.is-busy {
+  color: var(--c-text-3);
+  border-color: var(--glass-border);
+  background: var(--glass-bg-soft);
+}

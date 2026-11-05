@@ -200,12 +200,23 @@ getWXContext().OPENID
 
 | action | payload | 返回 |
 |---|---|---|
-| `subscribe` | `{ templateKey }` | `{ granted: boolean, quotaLeft }`（前端先 `wx.requestSubscribeMessage`，再把结果上报） |
-| `quota` | — | `{ items: [{templateKey, left}] }` |
-| `list` | `{ cursor? }` | `{ items, nextCursor, hasMore }` |
-| `scan` | — | 定时触发专用（`event.Type === 'Timer'`），手动调用返回 403 |
+| `status` | `{ today }` | `{ configured, template_id, quota, today, upcoming[], last_sent_at }` |
+| `grant` | `{ count?: 1..3 }` | `{ ok, quota, reason? }`（前端 `wx.requestSubscribeMessage` 返回 accept 后才调） |
+| `runMine` | `{ today }` | `{ ok, sent, failed, skipped, quota, reason? }` 只处理自己，用于验证模板能发出去 |
+| `runDaily` | 定时触发专用（`event.Type === 'Timer'`），无 action |
 
-`scan` 逻辑：查 `status='pending' && fire_at <= now`（≤ 20 条）→ 逐条检查该 `(openid, template)` 额度 → 发订阅消息 → 更新 `status`。无额度则置 `skipped_no_quota`，**不发**。
+`template_id` 由云函数从 `_shared/reminder-config.js` 读出下发，未配置时为空串——客户端拿到空串就不发起订阅请求，避免一次注定失败的弹窗。
+
+`runDaily` 逻辑（不预排队列）：
+
+1. 分页扫全库未删除纪念日（上限 2000 条）；
+2. `dueToday()` 纯函数算「今天该提醒谁」：`nextOccurrence` 推进后的天数命中 `remind_days_before` 才算；
+3. 按 `owner_openid` 分组，查额度，`min(额度, 2)` 条上限；
+4. 检查当天 `status='sent'` 的流水，重跑不重发；
+5. `cloud.openapi.subscribeMessage.send` → 成功写流水并 `_.inc(-1)` 扣额度；失败写 `failed`，`errCode=43101` 时把额度清零（本地计数已经不可信）。
+
+**额度只是「大概还剩几条」**：一次性订阅的授权结果只存在于客户端，平台没有查询接口，服务端无法验证。
+
 
 ### 5.10 `vault`（public 构建整体 403）
 
