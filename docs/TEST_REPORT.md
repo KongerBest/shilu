@@ -581,3 +581,49 @@ padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--
 
 原先是纯 CSS 几何标记（方块/圆环），辨识度低。改成 SVG `mask-image` + `background-color`，
 同一套图形靠 CSS 变量换色，深浅色主题不必各准备一份资源。切换 tab 时图标与文字同步变主色。
+
+---
+
+## 7. 滚动边界视觉与顶栏玻璃质感（P7 后追加，2026-11-06）
+
+### 7.1 实现与取舍
+
+| 需求 | 落点 |
+|---|---|
+| 背景 / 边缘随滚动状态平滑过渡 | `app.wxss` 的 `.page::before` / `.page::after`：固定在视口上下沿的多层渐变带，全部渐隐收尾，没有硬边 |
+| 顶栏渐变 + 模糊质感 | 原生导航栏只接受纯色，无法直接渐变/模糊。保留系统栏（**零布局改动**），由 `utils/scroll-edge.ts` 用 `wx.setNavigationBarColor` 的 260ms 动画在三态同色系间平滑换色；导航栏下沿由 `::before` 的玻璃高光 + `backdrop-filter` 渐变带无缝延伸 |
+| 文字 / 图标 / 交互清晰 | 氛围层 `z-index: -1`（背景之上、内容之下）+ `pointer-events: none`；顶栏三态都在同一浅色/深色系内，`frontColor` 不变 |
+| 布局 / 滚动 / 入口 / 层级不变 | 只给 `.page` 加 `position: relative; z-index: 0`（不用 transform，否则 fixed tabbar 会错位）；不改任何滚动容器；19 个页面仅根节点多一个 `style`、ts 多一个 `onPageScroll` 调用 |
+
+配色全部来自 `styles/tokens.wxss` 新增的 `--edge-*` / `--nav-*`，浅色与深色各一套，与既有 `--bg-gradient` 同源。
+
+### 7.2 数值模型（`utils/scroll-edge.ts`）
+
+- `NEAR_PX = 180`：接近边界的作用区间（逻辑像素，各机型一致）
+- `BASE_TOP = 0.38` / `BASE_BOTTOM = 0.3`：常驻玻璃质感的最低不透明度，滚到中间也不会忽然消失
+- `STEP = 0.06`：只在数值明显变化时 `setData`，沿用 `syncTabbarCompact` 的约定，绝不每帧一次
+- 页面高度每 500ms 低频重测一次，异步内容加载后也能算准「离底部还有多远」；未测到时保守按「离底部很远」处理
+- 状态按页面实例存 `WeakMap`，切页不串；CSS 侧 `transition: opacity 260ms var(--ease-out)` 负责抹平档位变化
+
+### 7.3 模拟器实测
+
+三态数值（长文档页，可滚动 181px；瞬时滚动后静止采样）：
+
+| 位置 | `edgeTop` | `edgeBottom` | 顶栏色 |
+|---|---|---|---|
+| 顶部 (0) | 1 | 0.3 | 淡绿 `#dcece5` |
+| 中间 (90) | 0.69 | 0.64 | 暖白 `#e9e9e2` |
+| 底部 (181) | 0.38 | 1 | 淡蓝紫 `#dbe3f4` |
+| 离开底部回到顶部 | 1 | 0.3 | 淡绿 |
+
+截图 `.vitest-tmp/state-top.png` / `state-mid.png` / `state-bottom.png`：顶部绿渐变带由强转淡、底部蓝紫柔光由淡转强，过渡连续无跳变；标题、搜索框、按钮、自定义 tabbar 在三种状态下都清晰，tabbar 原有的滚动收缩行为照常工作。深色主题（`dark-top.png`）下柔光更暗、上沿高光克制，没有泛白或浅底浅字。真实点击 `.search-wrap` 成功，调用 `onSearchTap` 能正常跳到搜索页（栈深 2），说明新增层没有拦截交互。控制台 `grep -c error` 为空。
+
+**常见屏幕尺寸**：色带用 `left:0;right:0` 自适应宽度、`height: 360rpx / 400rpx` 加 `max-height: 28vh / 30vh` 双上限，逻辑像素阈值不随屏宽变。
+本次只在开发者工具当前机型上实测，**其他机型 / 真机未实测**，不把模拟器结论写成真机通过。
+
+### 7.4 踩坑
+
+新增 `miniprogram/utils/scroll-edge.ts` 后，开发者工具没有自动把它编进产物，页面报
+`module 'utils/scroll-edge.js' is not defined` 并白屏。执行
+`debug_clear_cache --action cleanCompileCache` + `cleanProjectFileListCache` 再 `simulator_refresh` 后恢复。
+以后通过脚本直接写盘新增 `.ts` 文件时，都要先清这两个缓存再做模拟器验证。

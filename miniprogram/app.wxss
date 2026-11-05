@@ -21,6 +21,10 @@ button {
    注意：深色主题下必须自己铺底色。原生 page 的背景来自 page{} 选择器，
    拿不到 .theme-dark 上的变量，只靠它会留下浅色底 + 浅色文字的「隐形文字」。 */
 .page {
+  /* 只为边缘氛围层建立层叠上下文：不用 transform，否则 fixed 的 tabbar 会以本容器为参照跑偏。
+     z-index:0 让 z-index:-1 的伪元素落在「背景之上、内容之下」，不遮挡文字与点击。 */
+  position: relative;
+  z-index: 0;
   min-height: 100vh;
   background-color: var(--c-bg);
   /* 三团环境光：让半透明卡片有可见的折射来源，也是「不空」的底层质感。
@@ -37,6 +41,53 @@ button {
   /* 切 tab 走 reLaunch，原生层会闪一下；整页淡入把它盖住。
      只动 opacity 不动 transform —— 带 transform 会让 fixed 的 tabbar 以容器为参照跑偏 */
   animation: page-fade-in var(--dur-base) var(--ease-out);
+}
+
+/* ---------- 滚动边缘氛围 / 顶栏玻璃质感 ----------
+   两个伪元素固定在视口上下沿，全部用渐变收尾（没有硬边），并放在 z-index:-1：
+   在页面背景之上、所有内容之下，pointer-events:none 不拦截任何点击。
+   opacity 由 utils/scroll-edge.ts 按滚动位置写入 --edge-top / --edge-bottom，
+   基础值始终 > 0，所以「顶栏渐变+磨砂」常驻；接近/到达尽头时同色柔光增强，
+   离开时靠 transition 平滑回落，不会突然出现或消失。 */
+.page::before,
+.page::after {
+  content: '';
+  position: fixed;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: -1;
+  -webkit-backdrop-filter: blur(20rpx) saturate(140%);
+  backdrop-filter: blur(20rpx) saturate(140%);
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+
+.page::before {
+  top: 0;
+  /* 原生导航栏会盖住上半截，露出的部分正好是「顶栏向下延伸的玻璃带」。
+     rpx + vh 双重上限，窄屏与横屏都不会让色带压到正文。 */
+  height: 360rpx;
+  max-height: 28vh;
+  opacity: var(--edge-top, 1);
+  background-image:
+    linear-gradient(180deg, var(--edge-specular) 0%, rgba(0, 0, 0, 0) 12%),
+    linear-gradient(180deg, var(--edge-glass) 0%, rgba(0, 0, 0, 0) 46%),
+    linear-gradient(180deg, var(--nav-top) 0%, rgba(0, 0, 0, 0) 30%),
+    linear-gradient(180deg, var(--edge-top-tint) 0%, rgba(0, 0, 0, 0) 100%);
+  background-repeat: no-repeat;
+}
+
+.page::after {
+  bottom: 0;
+  height: 400rpx;
+  max-height: 30vh;
+  opacity: var(--edge-bottom, 0.28);
+  background-image:
+    linear-gradient(0deg, var(--edge-specular) 0%, rgba(0, 0, 0, 0) 10%),
+    linear-gradient(0deg, var(--edge-glass) 0%, rgba(0, 0, 0, 0) 44%),
+    linear-gradient(0deg, var(--nav-bottom) 0%, rgba(0, 0, 0, 0) 26%),
+    linear-gradient(0deg, var(--edge-bottom-tint) 0%, rgba(0, 0, 0, 0) 100%);
+  background-repeat: no-repeat;
 }
 
 @keyframes page-fade-in {

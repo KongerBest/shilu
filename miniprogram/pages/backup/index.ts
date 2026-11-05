@@ -6,6 +6,7 @@ import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface Preview {
   fileName: string;
@@ -48,6 +49,10 @@ let pending: BackupFile | null = null;
 const EMPTY_COUNTS = { categories: 0, templates: 0, contacts: 0, anniversaries: 0, records: 0 };
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     exporting: false,

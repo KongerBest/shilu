@@ -1,4 +1,5 @@
 import { syncTheme, themeClass, getTheme } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
  * 隐私政策 / 用户协议。
@@ -172,6 +173,10 @@ const TERMS: LegalDoc = {
 const DOCS: Record<LegalType, LegalDoc> = { privacy: PRIVACY, terms: TERMS };
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     themeMode: getTheme(),

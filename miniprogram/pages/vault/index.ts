@@ -4,6 +4,7 @@ import { vaultService } from '../../services/vault.service';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
  * 加密密钥页面：负责「首次设置主密码」与「解锁」。
@@ -18,6 +19,10 @@ const MIN_PASSWORD = 8;
 type Mode = 'loading' | 'setup' | 'unlock' | 'recovery';
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   onShow() {
     syncTheme(this);
   },

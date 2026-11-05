@@ -1,4 +1,4 @@
-<view class="page page--plain {{themeClass}}">
+<view class="page page--plain {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
   <view class="section">
     <view class="section__head">
       <text class="section__title">外观</text>

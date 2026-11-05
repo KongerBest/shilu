@@ -23,7 +23,7 @@
   </view>
 </template>
 
-<view class="page {{themeClass}}">
+<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
   <view class="sbar-row">
     <view class="sbar-slot">
       <search-bar

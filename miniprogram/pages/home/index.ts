@@ -9,6 +9,7 @@ import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
 import { tweenProgress, type TweenHandle } from '../../utils/tween';
 import { syncTabbarCompact } from '../../utils/tabbar';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 // 统计动画的句柄挂在模块级：每次重新加载前先取消上一段，
 // 否则两个 tween 会同时改同一组数字，末值取决于谁最后跑完。
@@ -62,6 +63,7 @@ Page({
 
   onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
     syncTabbarCompact(this, e.scrollTop);
+    syncScrollEdge(this, e.scrollTop);
   },
 
   onPullDownRefresh() {

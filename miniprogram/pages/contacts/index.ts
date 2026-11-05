@@ -4,6 +4,7 @@ import { countdownText, daysUntil, nextOccurrence } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface ContactView extends Contact {
   initial: string;
@@ -41,6 +42,10 @@ function toView(item: Contact): ContactView {
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     loading: true,

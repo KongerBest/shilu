@@ -13,6 +13,7 @@ import { newRecordId } from '../../../utils/id';
 import { logger } from '../../../utils/logger';
 import { LIMITS } from '../../../utils/validate';
 import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface ContactChip {
   _id: string;
@@ -115,6 +116,10 @@ function askModal(options: WechatMiniprogram.ShowModalOption): Promise<boolean> 
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   onShow() {
     syncTheme(this);
     this.setData({ vaultUnlocked: vaultSession.isUnlocked() });

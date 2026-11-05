@@ -5,6 +5,7 @@ import { toAppError } from '../../../utils/errors';
 import { ATTACHMENT_FIELDS_ENABLED, FIELD_TYPE_LABELS, FIELD_TYPES } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
 import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface OptionDraft {
   /** 仅用于 wx:key 的本地标识，提交前剔除 */
@@ -142,6 +143,10 @@ function defaultKindOf(type: FieldType): 'text' | 'number' | 'date' | 'switch' |
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   onShow() {
     syncTheme(this);
   },

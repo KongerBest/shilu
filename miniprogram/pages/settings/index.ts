@@ -7,6 +7,7 @@ import { vaultSession } from '../../services/vault-session';
 import { toAppError } from '../../utils/errors';
 import { getHapticsEnabled, haptic, setHapticsEnabled } from '../../utils/haptics';
 import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
  * 账号指纹：取用户文档 _id 的后 8 位，仅用于在设备上区分不同微信号。
@@ -22,6 +23,10 @@ function accountTag(id: string): string {
  */
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   onShow() {
     syncTheme(this);
     // 解锁态只在内存里，从保险箱页返回时重新读一次

@@ -16,7 +16,7 @@
   </view>
 </template>
 
-<view class="page {{themeClass}}">
+<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
   <loading wx:if="{{loading}}" mode="block" text="正在读取" />
   <empty-state
     wx:elif="{{error}}"

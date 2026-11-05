@@ -12,6 +12,7 @@ import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
 import { containsKeyword, scoreFields, splitByKeyword } from '../../utils/search';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
  * 全局搜索。
@@ -359,6 +360,10 @@ function recentHits(): SearchHit[] {
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     focus: true,

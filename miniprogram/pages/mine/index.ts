@@ -9,6 +9,7 @@ import { stripExif } from '../../utils/image';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface MineData {
   loading: boolean;
@@ -55,6 +56,7 @@ Page({
 
   onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
     syncTabbarCompact(this, e.scrollTop);
+    syncScrollEdge(this, e.scrollTop);
   },
 
   async load() {

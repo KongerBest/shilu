@@ -10,6 +10,7 @@ import { newContactId } from '../../../utils/id';
 import { logger } from '../../../utils/logger';
 import { syncTheme, themeClass } from '../../../utils/theme';
 import type { Envelope } from '../../../types/models';
+import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 const RELATION_PRESETS = ['家人', '朋友', '同事', '同学', '室友', '伴侣'];
 const MAX_RELATIONS = 5;
@@ -61,6 +62,10 @@ type PhonePayload =
   | { ok: false };
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     id: '',
     isEdit: false,

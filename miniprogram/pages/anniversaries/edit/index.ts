@@ -6,6 +6,7 @@ import { toAppError } from '../../../utils/errors';
 import { haptic } from '../../../utils/haptics';
 import { logger } from '../../../utils/logger';
 import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 const TYPES: { value: AnniversaryType; label: string }[] = [
   { value: 'birthday', label: '生日' },
@@ -67,6 +68,10 @@ function remindLabel(days: number): string {
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     id: '',

@@ -2,6 +2,7 @@ import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { SHOW_KNOWN_LIMITS, VAULT_ENABLED } from '../../config/features';
 import { KNOWN_LIMITS } from '../../config/known-limits';
 import { syncTheme, themeClass, getTheme } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
  * 关于拾录。
@@ -10,6 +11,10 @@ import { syncTheme, themeClass, getTheme } from '../../utils/theme';
  * 设置页共用同一份 config/known-limits.ts，不允许只改一处。
  */
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     themeMode: getTheme(),

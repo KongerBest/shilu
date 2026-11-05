@@ -11,6 +11,7 @@ import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface AnniversaryView extends Anniversary {
   typeLabel: string;
@@ -113,6 +114,7 @@ Page({
 
   onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
     syncTabbarCompact(this, e.scrollTop);
+    syncScrollEdge(this, e.scrollTop);
   },
 
   async load() {

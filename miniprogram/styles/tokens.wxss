@@ -106,6 +106,19 @@ page {
   --h-chip: 56rpx;
 
   --tabbar-height: 108rpx;
+
+  /* ---------- 滚动边界氛围 ----------
+     全部取自上面的三团环境光 / 整页渐变，不另起色系：靠近顶部或底部尽头时，
+     边缘叠一层同源柔光，离开时再淡出。原生导航栏由 JS 同步换成 --nav-* 的实色。 */
+  --edge-top-tint: rgba(118, 174, 152, 0.42);
+  --edge-bottom-tint: rgba(160, 156, 204, 0.36);
+  /* 顶栏玻璃上沿：一道亮线 + 半透明底色，配合 backdrop-filter 做磨砂观感 */
+  --edge-specular: rgba(255, 255, 255, 0.78);
+  --edge-glass: rgba(255, 255, 255, 0.24);
+  /* 三态底色分别对应 --bg-gradient 的 0% / 46% / 100% 附近，切换时不会跳色 */
+  --nav-top: #dcece5;
+  --nav-mid: #e9e9e2;
+  --nav-bottom: #dbe3f4;
 }
 
 /* 深色主题：不是把浅色反相，而是降饱和 + 抬升层级靠亮度差 */
@@ -155,4 +168,13 @@ page {
   --c-accent-glass-bright: rgba(61, 127, 108, 0.92);
   --c-accent-glass-soft: rgba(79, 158, 134, 0.16);
   --shadow-float: 0 18rpx 44rpx rgba(0, 0, 0, 0.55), 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
+
+  /* 深色下柔光要更暗、更克制，否则边缘会泛白把文字吃掉 */
+  --edge-top-tint: rgba(28, 76, 64, 0.52);
+  --edge-bottom-tint: rgba(58, 44, 68, 0.48);
+  --edge-specular: rgba(255, 255, 255, 0.11);
+  --edge-glass: rgba(30, 34, 41, 0.34);
+  --nav-top: #101917;
+  --nav-mid: #14161a;
+  --nav-bottom: #17151f;
 }

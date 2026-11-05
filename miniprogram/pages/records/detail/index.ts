@@ -13,6 +13,7 @@ import { toAppError } from '../../../utils/errors';
 import { formatValue, isBlank, MASK_TEXT } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
 import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface DetailRow {
   key: string;
@@ -56,6 +57,10 @@ interface DetailData {
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     id: '',

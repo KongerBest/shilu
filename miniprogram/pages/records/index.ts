@@ -7,6 +7,7 @@ import { logger } from '../../utils/logger';
 import { haptic } from '../../utils/haptics';
 import { syncTheme, themeClass } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 type FilterKey = 'all' | 'favorite' | 'archived';
 
@@ -72,6 +73,7 @@ Page({
 
   onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
     syncTabbarCompact(this, e.scrollTop);
+    syncScrollEdge(this, e.scrollTop);
   },
 
   onPullDownRefresh() {

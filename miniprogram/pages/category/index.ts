@@ -4,6 +4,7 @@ import type { Category, Template } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { syncTheme, themeClass } from '../../utils/theme';
+import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface CategoryRow {
   _id: string;
@@ -53,6 +54,10 @@ const PALETTE = [
 ];
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     loading: true,

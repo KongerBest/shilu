@@ -8,6 +8,7 @@ import { toAppError } from '../../../utils/errors';
 import { isEnvelope } from '../../../utils/crypto/fields';
 import { logger } from '../../../utils/logger';
 import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface AnniversaryView extends ContactAnniversary {
   countdown: string;
@@ -44,6 +45,10 @@ interface DetailData {
 }
 
 Page({
+  onPageScroll(e: WechatMiniprogram.Page.IPageScrollOption) {
+    syncScrollEdge(this, e.scrollTop);
+  },
+
   data: {
     themeClass: themeClass(),
     id: '',
