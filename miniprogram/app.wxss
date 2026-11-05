@@ -254,6 +254,15 @@ button {
   border: none;
 }
 
+/**
+ * 微信基础样式里有 `button:not([size]) { width: 184px }`（特异性 0,1,1），
+ * 单类选择器（0,1,0）压不住它，主按钮会固定成 184px 而不是通栏。
+ * 双类把特异性提到 0,2,0，稳定胜出；不用 !important 以免后续无法覆盖。
+ */
+.btn-primary.btn-primary {
+  width: 100%;
+}
+
 .btn-primary--hover {
   transform: translateY(2rpx) scale(0.99);
   box-shadow: var(--glass-highlight);
