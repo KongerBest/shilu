@@ -16,7 +16,7 @@ const {
   isPlainObject,
   escapeRegExp
 } = require('./common/validate');
-const { param, notFound, forbidden } = require('./common/response');
+const { param, notFound, forbidden, conflict } = require('./common/response');
 
 function toListItem(doc) {
   return {
@@ -157,6 +157,10 @@ async function create({ openid, payload }) {
   const categoryId = requireId(payload.categoryId, 'categoryId');
   const category = await loadOwnedCategory(openid, categoryId);
 
+  // 客户端可预生成 _id：字段加密的 AAD 绑定 userId:recordId:fieldKey，
+  // 若先写库再回填密文，中间会留下一段明文窗口，失败还会剩下半条记录。
+  const clientId = optionalId(payload.clientId, 'clientId');
+
   // 未显式指定模板时沿用分类的默认模板；显式传 null 表示"这条不要模板"
   const explicitTemplate = Object.prototype.hasOwnProperty.call(payload, 'templateId');
   const templateId = explicitTemplate
@@ -203,7 +207,21 @@ async function create({ openid, payload }) {
     schema_version: 1
   };
 
-  const added = await db.collection(COLLECTIONS.records).add({ data: doc });
+  let recordId;
+  if (clientId) {
+    // 已存在（无论是谁）一律拒绝：云函数有管理员权限，绝不能静默覆盖别人的记录
+    const existing = await db
+      .collection(COLLECTIONS.records)
+      .doc(clientId)
+      .get()
+      .catch(() => null);
+    if (existing && existing.data) throw conflict('记录标识已被占用');
+    await db.collection(COLLECTIONS.records).doc(clientId).set({ data: doc });
+    recordId = clientId;
+  } else {
+    const added = await db.collection(COLLECTIONS.records).add({ data: doc });
+    recordId = added._id;
+  }
 
   // 冗余计数失败不影响主流程，可用 user.recalcStats 校正
   await bumpStat(openid, user._id, 'records_count', 1);
@@ -213,7 +231,7 @@ async function create({ openid, payload }) {
     .update({ data: { record_count: _.inc(1), updated_at: now } })
     .catch(() => undefined);
 
-  return { item: toPublic(Object.assign({ _id: added._id }, doc)) };
+  return { item: toPublic(Object.assign({ _id: recordId }, doc)) };
 }
 
 async function update({ openid, payload }) {

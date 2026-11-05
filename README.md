@@ -10,17 +10,17 @@
 
 **阶段一 ~ 三已完成**：基础工程 + 登录 + 分类/模板/动态表单/资料 CRUD + 附件服务 + 证件正反面 + 端到端加密附件 + 微信头像/昵称授权。**已在微信开发者工具 + 真实云环境跑通**。
 
-**阶段五的加密基础设施已就绪**（主密码 / 恢复码 / 解锁页 / 「我的」入口 / 加密附件），但**敏感字段落库仍是明文**——字段级加密与存量回填未做。阶段四（纪念日）、阶段六剩余（备份恢复 / 导出）、阶段七（发布）未开始。详见 `docs/DEVELOPMENT_PLAN.md`。
+**阶段五的加密基础设施已就绪**（主密码 / 恢复码 / 解锁页 / 「我的」入口 / 加密附件 / **敏感字段落库加密**）。**存量记录的敏感字段仍是明文**——回填迁移未做。阶段四（纪念日）、阶段六剩余（备份恢复 / 导出）、阶段七（发布）未开始。详见 `docs/DEVELOPMENT_PLAN.md`。
 
 | 项 | 结果 |
 |---|---|
 | `npm run typecheck` | 0 error |
-| `npm run check` | 174 / 174 通过（13 个文件） |
+| `npm run check` | 185 / 185 通过（14 个文件） |
 | 云函数 | `user`、`category`、`template`、`record`、`attachment`、`vault`（共 6 个，均已部署并验证） |
 | 页面 | home、records、records/detail、records/edit、category、template、template/edit、mine、settings、vault（10 个） |
 | 组件 | custom-tabbar、search-bar、record-card、empty-state、loading、field-renderer、file-uploader（7 个） |
 | AppID / 云环境 | `wx46dfc697b1c986c0` / 本地注入（见 `config/env.local.example.ts`） |
-| 加密 | 端到端加密附件（PBKDF2 600k + AES-256-GCM + 主密码/恢复码双信封，云端零明文）；微信头像/昵称授权 + EXIF 剥离 |
+| 加密 | 端到端加密附件（PBKDF2 600k + AES-256-GCM + 主密码/恢复码双信封，云端零明文）；敏感字段落库加密（AAD 绑定 `userId:recordId:fieldKey`）；微信头像/昵称授权 + EXIF 剥离 |
 | 外观 | 浅色 / 深色双主题；液态玻璃材质（环境光渐变 + 半透明卡片 + 顶部高光）；悬浮胶囊底栏；线性图标（SVG mask 换色） |
 | 动效 | 页面淡入、统计数字滚动、底栏随滚动收缩成窄胶囊、触感反馈（可关） |
 

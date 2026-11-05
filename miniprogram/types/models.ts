@@ -79,7 +79,10 @@ export interface TemplateField {
   type: FieldType;
   required: boolean;
   sensitive: boolean;
-  /** 落库加密标志。阶段五密钥体系接入前恒为 false，UI 不得声称已加密。 */
+  /**
+   * 落库加密标志。加解密不依赖它：客户端按值的形态（`__enc === 1`）判定，
+   * 否则存量明文与新密文混排时必然出错。保留字段供导出/提示使用。
+   */
   encrypted?: boolean;
   default_value: unknown;
   placeholder?: string;

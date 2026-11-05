@@ -70,6 +70,12 @@
   word-break: break-all;
 }
 
+/* 密文占位：弱化处理，明确「这不是真实值」 */
+.detail-value--locked {
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+}
+
 .detail-actions {
   display: flex;
   align-items: center;

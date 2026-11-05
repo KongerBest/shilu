@@ -22,3 +22,42 @@
 .link--danger {
   color: var(--c-danger);
 }
+
+/* 敏感字段加密提示：低饱和玻璃条，不抢表单主体 */
+.crypto-note {
+  margin-top: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 20rpx;
+  background-color: var(--glass-bg-soft);
+  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+}
+
+.crypto-note--hover {
+  background-color: var(--glass-bg-strong);
+}
+
+.crypto-note__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.crypto-note__title {
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+
+.crypto-note__cta {
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+}
+
+.crypto-note__desc {
+  display: block;
+  margin-top: 8rpx;
+  font-size: var(--fs-caption);
+  line-height: 1.55;
+  color: var(--c-text-3);
+}

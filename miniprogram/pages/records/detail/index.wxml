@@ -21,13 +21,13 @@
     </view>
 
     <view class="card" wx:if="{{rows.length > 0}}">
-      <view class="detail-rows-head" wx:if="{{hasSensitive}}">
-        <text class="form-hint">含敏感字段，默认掩码显示</text>
-        <text class="link" bindtap="onToggleReveal">{{revealSensitive ? '隐藏' : '显示'}}</text>
+      <view class="detail-rows-head" wx:if="{{hasSensitive || encryptedCount > 0}}">
+        <text class="form-hint">{{encryptedCount > 0 ? '含加密字段，解锁后可见' : '含敏感字段，默认掩码显示'}}</text>
+        <text class="link" bindtap="onToggleReveal">{{encryptedCount > 0 ? '去解锁' : revealSensitive ? '隐藏' : '显示'}}</text>
       </view>
-      <view wx:for="{{rows}}" wx:key="key" class="detail-row">
-        <view class="detail-label">{{item.label}}<text wx:if="{{item.sensitive}}" class="tag tag--warn">敏感</text></view>
-        <view class="detail-value">{{revealSensitive || !item.sensitive ? item.raw : item.text}}</view>
+      <view wx:for="{{rows}}" wx:key="key" class="detail-row" data-key="{{item.key}}" bindtap="onRowTap">
+        <view class="detail-label">{{item.label}}<text wx:if="{{item.sensitive}}" class="tag tag--warn">{{item.encrypted ? '加密' : '敏感'}}</text></view>
+        <view class="detail-value {{item.encrypted ? 'detail-value--locked' : ''}}"><block wx:if="{{item.encrypted}}">{{item.text}}</block><block wx:elif="{{revealSensitive || !item.sensitive}}">{{item.raw}}</block><block wx:else>{{item.text}}</block></view>
       </view>
     </view>
 

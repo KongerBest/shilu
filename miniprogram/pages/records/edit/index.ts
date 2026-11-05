@@ -1,9 +1,14 @@
 import { categoryService } from '../../../services/category.service';
+import { hasEnvelopes, openEnvelopes, sealSensitiveValues } from '../../../services/record-crypto';
 import { recordService } from '../../../services/record.service';
 import { templateService, sortedFields } from '../../../services/template.service';
+import { userService } from '../../../services/user.service';
+import { VaultLockedError, vaultSession } from '../../../services/vault-session';
 import type { Category, RecordValues, TemplateField } from '../../../types/models';
+import { isEnvelope } from '../../../utils/crypto/fields';
 import { toAppError } from '../../../utils/errors';
 import { coerceValue, isBlank, validateValues } from '../../../utils/field-rules';
+import { newRecordId } from '../../../utils/id';
 import { logger } from '../../../utils/logger';
 import { LIMITS } from '../../../utils/validate';
 import { syncTheme, themeClass } from '../../../utils/theme';
@@ -39,10 +44,20 @@ interface EditData {
   fieldViews: FieldView[];
   hasTemplate: boolean;
   isArchived: boolean;
+
+  /** 当前模板是否含敏感字段（决定是否显示加密提示） */
+  hasSensitiveFields: boolean;
+  /** 保险箱当前是否解锁（只影响提示文案） */
+  vaultUnlocked: boolean;
+  /** 记录含密文且未解锁：整页停在「需解锁」态，不进表单 */
+  locked: boolean;
 }
 
 /** 字段值不放进 data，避免逐字输入时整页 diff；只在需要回填时同步到 fieldViews。 */
 let valuesStash: RecordValues = {};
+
+/** 已跳到保险箱页等解锁：返回本页时自动重新加载。 */
+let pendingUnlock = false;
 
 function emptyData(): EditData {
   return {
@@ -64,13 +79,34 @@ function emptyData(): EditData {
     fields: [],
     fieldViews: [],
     hasTemplate: false,
-    isArchived: false
+    isArchived: false,
+    hasSensitiveFields: false,
+    vaultUnlocked: false,
+    locked: false
   };
+}
+
+/** wx.showModal 的 Promise 包装：只关心用户点了哪个按钮。 */
+function askModal(options: WechatMiniprogram.ShowModalOption): Promise<boolean> {
+  return new Promise((resolve) => {
+    wx.showModal({
+      ...options,
+      success: (res) => resolve(!!res.confirm),
+      fail: () => resolve(false)
+    });
+  });
 }
 
 Page({
   onShow() {
     syncTheme(this);
+    this.setData({ vaultUnlocked: vaultSession.isUnlocked() });
+    // 从保险箱页返回：解锁成功就重新载入（新建时不能重载，否则会把已填内容清空）
+    if (pendingUnlock && vaultSession.isUnlocked()) {
+      pendingUnlock = false;
+      if (this.data.id) void this.onLoad({ id: this.data.id });
+      else this.setData({ vaultUnlocked: true });
+    }
   },
 
   data: { ...emptyData() } as EditData,
@@ -78,11 +114,12 @@ Page({
   async onLoad(options: Record<string, string | undefined>) {
     valuesStash = {};
     const id = options.id || '';
-    this.setData({ id, isEdit: id.length > 0 });
+    this.setData({ id, isEdit: id.length > 0, locked: false, error: '' });
     wx.setNavigationBarTitle({ title: id ? '编辑资料' : '新建资料' });
 
     try {
-      const categories = await categoryService.list();
+      // 登录态有内存缓存，这里拿 userId 只为拼字段加密的 AAD 上下文
+      const [categories, session] = await Promise.all([categoryService.list(), userService.login()]);
 
       let categoryId = options.categoryId || '';
       let title = '';
@@ -96,6 +133,32 @@ Page({
         templateId = item.template_id;
         isArchived = item.is_archived === 1;
         valuesStash = { ...item.values };
+
+        // 密文必须解开才能进表单，否则显示的是 [object Object]，保存还可能把密文弄丢
+        if (hasEnvelopes(valuesStash)) {
+          if (!vaultSession.isUnlocked()) {
+            this.setData({ loading: false, locked: true });
+            return;
+          }
+          try {
+            const opened = openEnvelopes(session.user._id, id, valuesStash);
+            if (opened.failed.length > 0) {
+              this.setData({
+                loading: false,
+                error: `有 ${opened.failed.length} 个加密字段无法解密（密钥不匹配）。为避免覆盖原密文，已停止编辑。`
+              });
+              return;
+            }
+            valuesStash = opened.values;
+          } catch (error) {
+            // 会话在加载瞬间超时：回到「需解锁」态，而不是把密文当明文塞进表单
+            if (error instanceof VaultLockedError) {
+              this.setData({ loading: false, locked: true });
+              return;
+            }
+            throw error;
+          }
+        }
       }
 
       if (!categoryId) categoryId = categories.length > 0 ? categories[0]._id : '';
@@ -161,7 +224,7 @@ Page({
   async applyTemplate(templateId: string | null, carryValues: boolean) {
     if (!templateId) {
       // 没有模板时不清空 valuesStash：用户可能在临时切换，保存时也不会提交 values
-      this.setData({ fields: [], fieldViews: [], hasTemplate: false });
+      this.setData({ fields: [], fieldViews: [], hasTemplate: false, hasSensitiveFields: false });
       return;
     }
 
@@ -186,6 +249,7 @@ Page({
     this.setData({
       fields,
       hasTemplate: fields.length > 0,
+      hasSensitiveFields: fields.some((field) => field.sensitive),
       fieldViews: fields.map((field) => ({
         key: field.key,
         field,
@@ -297,6 +361,60 @@ Page({
     }
 
     const templateId = this.data.templateIds[this.data.templateIndex] || null;
+
+    // ---- 敏感字段加密 ----
+    // 只处理「有值且还是明文」的敏感字段：空白不加密（加密空值等于制造脏数据），
+    // 已是信封则原样带回（理论上不会出现——进页面前已解密）。
+    const sensitiveKeys = fields.filter(
+      (field) => field.sensitive && !isBlank(values[field.key]) && !isEnvelope(values[field.key])
+    );
+
+    let recordId = this.data.id;
+    let payloadValues = values;
+
+    if (sensitiveKeys.length > 0) {
+      if (!vaultSession.isUnlocked()) {
+        // 不明文静默落库：让用户选「去解锁」还是「明知风险仍保存」
+        const stillSave = await askModal({
+          title: '敏感字段未加密',
+          content: `保险箱未解锁，${sensitiveKeys.length} 个敏感字段会以明文保存到云端。`,
+          confirmText: '仍要保存',
+          cancelText: '去解锁',
+          confirmColor: '#C2453D'
+        });
+        if (!stillSave) {
+          pendingUnlock = true;
+          wx.navigateTo({ url: '/pages/vault/index' });
+          return;
+        }
+      } else {
+        try {
+          const { user } = await userService.login();
+          // 新建时先定 _id，让 AAD 的 recordId 从第一次写入就是最终值
+          if (!recordId) recordId = await newRecordId();
+          const sealed = await sealSensitiveValues({
+            userId: user._id,
+            recordId,
+            fields,
+            values
+          });
+          payloadValues = sealed.values;
+        } catch (error) {
+          // 会话在保存瞬间超时：绝不降级成明文，要求重新解锁
+          this.setData({ saving: false });
+          wx.showModal({
+            title: '加密已锁定',
+            content:
+              error instanceof VaultLockedError
+                ? '保险箱已自动锁定，请解锁后重试。'
+                : toAppError(error).message,
+            showCancel: false
+          });
+          return;
+        }
+      }
+    }
+
     this.setData({ saving: true, titleError: '' });
 
     try {
@@ -306,15 +424,30 @@ Page({
           title,
           templateId,
           // 没有模板时不提交 values，避免把已有字段值清空
-          ...(fields.length > 0 ? { values } : {})
+          ...(fields.length > 0 ? { values: payloadValues } : {})
         });
       } else {
-        await recordService.create({
+        const created = await recordService.create({
           categoryId: category._id,
           title,
+          // 只有加密路径才需要预生成 _id，普通新建交给云端生成
+          ...(recordId ? { clientId: recordId } : {}),
           templateId,
-          ...(fields.length > 0 ? { values } : {})
+          ...(fields.length > 0 ? { values: payloadValues } : {})
         });
+
+        if (recordId && created.item._id !== recordId) {
+          // 兜底：云端没采用 clientId（例如还没部署新版 record 云函数），
+          // 密文绑的是旧 ID，必须按真实 _id 重新封包回写，否则这批字段永远解不开。
+          const { user } = await userService.login();
+          const resealed = await sealSensitiveValues({
+            userId: user._id,
+            recordId: created.item._id,
+            fields,
+            values
+          });
+          await recordService.update({ id: created.item._id, values: resealed.values });
+        }
       }
       wx.showToast({ title: '已保存', icon: 'none' });
       setTimeout(() => wx.navigateBack(), 400);
@@ -324,6 +457,15 @@ Page({
       this.setData({ saving: false });
       wx.showModal({ title: '保存失败', content: appError.message, showCancel: false });
     }
+  },
+
+  onUnlockTap() {
+    if (vaultSession.isUnlocked()) {
+      wx.showToast({ title: '保险箱已解锁', icon: 'none' });
+      return;
+    }
+    pendingUnlock = true;
+    wx.navigateTo({ url: '/pages/vault/index' });
   },
 
   onArchiveToggle() {

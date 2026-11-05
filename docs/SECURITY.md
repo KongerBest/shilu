@@ -82,6 +82,10 @@ interface Envelope {
 
 作用：把密文绑定到"哪个用户的哪条记录的哪个字段"。攻击者若把 A 用户的密文复制到 B 用户的记录里，GCM 校验失败 → 解密报错而非返回错误数据。
 
+字段值的明文载荷是 `{"v":1,"value":<原值>}`（`utils/crypto/fields.ts`），不是裸字符串：数字 / 开关 / 多选在往返中不会退化成字符串，载荷版本也可单独演进。
+
+**记录 `_id` 由客户端预生成**：AAD 需要 `itemId`，若先写库再回填密文，中间会有一段明文窗口，失败还会留下半条记录。因此 `record.create` 接受 `clientId`（32 位 hex），校验未被占用后直接以该 ID 写入。
+
 ### 2.4 唯一 nonce 保证
 
 - 每个 nonce 由 `crypto.getRandomValues(new Uint8Array(12))` 生成。
@@ -144,14 +148,15 @@ interface Envelope {
 |---|---|---|
 | 敏感字段不进 `search_text` / `summary` | ✅ 已实现（P2） | `normalize.js` 的 `flattenValues` 跳过 `sensitive` 字段与信封对象 |
 | 敏感字段详情页掩码 | ✅ 已实现（P2） | `maskValue`，需用户主动点「显示」才渲染原值 |
-| 敏感字段落库加密 | ❌ **未实现（P5）** | `TemplateField.encrypted` 恒为 `false`。现阶段云端存的是明文，UI 与文档均不得声称"已加密" |
+| 敏感字段落库加密 | ✅ 已实现（P5） | 保存时把 `sensitive` 字段值封成信封（AAD 绑定 `userId:recordId:fieldKey`）；新建前预生成 `_id` 保证首次写入就绑对。判定按值的形态（`__enc=1`），不看模板 `encrypted` 标志，兼容存量明文 |
+| 存量明文回填 | ❌ 未实现（P5 待办） | 历史记录的敏感字段仍是明文；需要一次「读明文 → 写信封 → 置 encrypted」的批量迁移，可中断续做 |
 | 附件内容加密 | ✅ 已实现（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/reset/audit）+ `file-uploader` 端到端接入（加密上传 / 解密预览）。加密附件在云存储为密文（`*.enc`），元数据里 `encrypted=1` 并携带 `enc_meta={alg,kv,ctx}`；文件名加密为 `name_enc` 信封 |
 | 保险箱整条加密 | ❌ 未实现（P5） | |
 | 头像 EXIF 剥离 + 缩放 | ✅ 已实现（P3） | `utils/image.ts` 的 `stripExif`：canvas 重编码剥离 GPS 等元数据 + 等比缩放 ≤512，用于明文头像上传 |
 
 > **阶段五的迁移义务**：P5 接入 MK 后，需要对所有 `encrypted=false` 的敏感字段值做一次加密回填（读明文 → 写信封 → 置 `encrypted=true`）。在回填完成前，这些字段依然是明文。这条不是可选项，是 P5 的验收条件之一。
 
-**因此现在的诚实表述是**：「敏感字段不进搜索索引、列表摘要与默认展示」，而不是「敏感字段已加密」。模板编辑页与资料详情页都按这个口径写文案。
+**因此现在的诚实表述是**：「新写入的敏感字段以密文存储，历史记录尚未回填」，而不是「所有敏感字段已加密」。模板编辑页与资料详情页都按这个口径写文案。
 
 ---
 

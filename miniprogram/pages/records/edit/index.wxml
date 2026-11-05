@@ -1,6 +1,13 @@
 <view class="page {{themeClass}}">
   <loading wx:if="{{loading}}" mode="block" />
   <empty-state
+    wx:elif="{{locked}}"
+    title="保险箱已锁定"
+    desc="这条资料含加密字段，解锁后才能查看与编辑。"
+    action-text="去解锁"
+    bind:action="onUnlockTap"
+  />
+  <empty-state
     wx:elif="{{error}}"
     title="加载失败"
     desc="{{error}}"
@@ -56,6 +63,16 @@
       <text class="muted">当前没有使用模板，只能保存标题。</text>
       <text class="form-hint">
         到「我的 → 分类管理」给这个分类选一个默认模板，或者在上面把表单模板换成别的。
+      </text>
+    </view>
+
+    <view wx:if="{{hasSensitiveFields}}" class="crypto-note" bindtap="onUnlockTap" hover-class="crypto-note--hover">
+      <view class="crypto-note__head">
+        <text class="crypto-note__title">{{vaultUnlocked ? '敏感字段将以密文保存' : '敏感字段尚未加密'}}</text>
+        <text wx:if="{{!vaultUnlocked}}" class="crypto-note__cta">去解锁</text>
+      </view>
+      <text class="crypto-note__desc">
+        {{vaultUnlocked ? '主密码只在本地派生密钥，云端只存密文；忘记密码且丢失恢复码将无法找回。' : '保险箱未解锁，保存时还会再确认一次；未解锁写入的是明文。'}}
       </text>
     </view>
 

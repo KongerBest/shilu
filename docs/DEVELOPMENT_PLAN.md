@@ -189,11 +189,12 @@ shilu/
 
 已完成：`utils/crypto/keystore.ts`（init / unlock / recover / changePassword / verify）、`vault` 云函数（init / status / changePassword / recover / reset / audit，零知识）、`pages/vault`（设置主密码 / 解锁 / 展示恢复码 / 重置）、`file-uploader` 加密上传与解密预览、「我的」页入口。
 
+已完成（本轮）：**敏感字段落库加密**——`utils/crypto/fields.ts`（AAD `userId:recordId:fieldKey`、载荷 `{v:1,value}` 保类型）+ `services/record-crypto.ts` + 编辑页保存时封包 / 详情页解锁解密；`record.create` 支持 `clientId` 预生成 `_id`，保证首次写入就绑对 AAD。
+
 未完成（本阶段验收条件，不可省）：
-1. **敏感字段落库加密**：`TemplateField.encrypted` 仍恒为 `false`，云端存明文。
-2. **明文回填迁移**：对存量 `encrypted=false` 的敏感值做「读明文 → 写信封 → 置 true」，可中断续做。
-3. **保险箱整条加密**（单条记录整体加密，非字段级）。
-4. 密钥轮换（分批 20 条）。
+1. **存量明文回填迁移**：历史记录中 `sensitive` 字段仍是明文，需「读明文 → 写信封 → 置 encrypted」，可中断续做。
+2. **保险箱整条加密**（单条记录整体加密，非字段级）。
+3. 密钥轮换（分批 20 条）。
 
 ### 目标
 `features.VAULT_ENABLED=true` 下完整可用；`false` 下彻底不可达。

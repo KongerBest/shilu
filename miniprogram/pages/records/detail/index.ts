@@ -1,8 +1,12 @@
 import { categoryService } from '../../../services/category.service';
+import { countEnvelopes, hasEnvelopes, openEnvelopes } from '../../../services/record-crypto';
 import { recordService } from '../../../services/record.service';
 import { templateService, sortedFields } from '../../../services/template.service';
+import { userService } from '../../../services/user.service';
+import { VaultLockedError, vaultSession } from '../../../services/vault-session';
 import { ENCRYPTED_ATTACHMENT_ENABLED } from '../../../config/features';
 import type { Category, ShiluRecord, TemplateField } from '../../../types/models';
+import { isEnvelope } from '../../../utils/crypto/fields';
 import { relativeTime } from '../../../utils/date';
 import { toAppError } from '../../../utils/errors';
 import { formatValue, isBlank, MASK_TEXT } from '../../../utils/field-rules';
@@ -17,7 +21,12 @@ interface DetailRow {
   /** 真实文本，仅当用户主动点开敏感字段时渲染 */
   raw: string;
   sensitive: boolean;
+  /** 值仍是密文（未解锁或解不开）：不提供「显示」，只提供「去解锁」 */
+  encrypted: boolean;
 }
+
+/** 密文行在未解锁时的占位文案 */
+const LOCKED_TEXT = '已加密 · 解锁后查看';
 
 interface DetailData {
   id: string;
@@ -35,6 +44,8 @@ interface DetailData {
   createdText: string;
   hasSensitive: boolean;
   revealSensitive: boolean;
+  /** 仍是密文的字段数：>0 时「显示」改为「去解锁」 */
+  encryptedCount: number;
   attachmentCount: number;
   encryptedAttachments: boolean;
   /** 是否证件资料（system_key=document）：附件区渲染为正/反/其他三区 */
@@ -59,6 +70,7 @@ Page({
     createdText: '',
     hasSensitive: false,
     revealSensitive: false,
+    encryptedCount: 0,
     attachmentCount: 0,
     encryptedAttachments: ENCRYPTED_ATTACHMENT_ENABLED,
     isDocument: false
@@ -77,9 +89,30 @@ Page({
   async load() {
     this.setData({ loading: true, error: '' });
     try {
-      const { item } = await recordService.detail(this.data.id);
-      const [categories] = await Promise.all([categoryService.list()]);
+      const [{ item }, categories] = await Promise.all([
+        recordService.detail(this.data.id),
+        categoryService.list()
+      ]);
       const category = categories.find((entry: Category) => entry._id === item.category_id);
+
+      // 密文字段：解锁态直接解开（仍按敏感字段掩码）；锁定态保持信封，行内提示去解锁
+      const values = item.values || {};
+      if (hasEnvelopes(values) && vaultSession.isUnlocked()) {
+        try {
+          const { user } = await userService.login();
+          const opened = openEnvelopes(user._id, item._id, values);
+          item.values = opened.values;
+          if (opened.failed.length > 0) {
+            // 解不开就保留密文，绝不显示乱码或空字符串冒充真实值
+            logger.warn('record-detail', 'field decrypt failed', { count: opened.failed.length });
+          }
+        } catch (error) {
+          // 会话刚好超时：退回未解锁展示，不让整页变成「加载失败」
+          if (!(error instanceof VaultLockedError)) throw error;
+          logger.warn('record-detail', 'vault locked during decrypt');
+        }
+      }
+      const encryptedCount = countEnvelopes(item.values);
 
       let fields: TemplateField[] = [];
       let templateName = '无模板';
@@ -112,7 +145,8 @@ Page({
         isArchived: item.is_archived === 1,
         updatedText: relativeTime(item.updated_at, now),
         createdText: relativeTime(item.created_at, now),
-        hasSensitive: rows.some((row) => row.sensitive),
+        hasSensitive: rows.some((row) => row.sensitive && !row.encrypted),
+        encryptedCount,
         attachmentCount: item.attachment_count || 0,
         isDocument: category ? category.system_key === 'document' : false,
         revealSensitive: false
@@ -130,29 +164,62 @@ Page({
     if (fields.length > 0) {
       return fields
         .filter((field) => !isBlank(values[field.key]) || field.type === 'switch')
-        .map((field) => ({
-          key: field.key,
-          label: field.label,
-          text: field.sensitive ? MASK_TEXT : formatValue(field, values[field.key]),
-          raw: formatValue(field, values[field.key]),
-          sensitive: !!field.sensitive
-        }));
+        .map((field) => {
+          const value = values[field.key];
+          const locked = isEnvelope(value);
+          return {
+            key: field.key,
+            label: field.label,
+            text: locked ? LOCKED_TEXT : field.sensitive ? MASK_TEXT : formatValue(field, value),
+            raw: locked ? '' : formatValue(field, value),
+            sensitive: !!field.sensitive,
+            encrypted: locked
+          };
+        });
     }
 
     // 没有模板定义时按裸 key 兜底，至少不让内容消失
     return Object.keys(values)
       .filter((key) => !isBlank(values[key]))
-      .map((key) => ({
-        key,
-        label: key,
-        text: String(values[key]),
-        raw: String(values[key]),
-        sensitive: false
-      }));
+      .map((key) => {
+        const locked = isEnvelope(values[key]);
+        return {
+          key,
+          label: key,
+          text: locked ? LOCKED_TEXT : String(values[key]),
+          raw: locked ? '' : String(values[key]),
+          sensitive: false,
+          encrypted: locked
+        };
+      });
   },
 
   onToggleReveal() {
+    // 还有密文：先把人送到解锁页，解锁回来本页 onShow 会自动重载
+    if (this.data.encryptedCount > 0) {
+      this.promptUnlock();
+      return;
+    }
     this.setData({ revealSensitive: !this.data.revealSensitive });
+  },
+
+  /** 点「已加密」的字段行：引导解锁。 */
+  onRowTap(e: WechatMiniprogram.TouchEvent) {
+    const key = e.currentTarget.dataset.key as string | undefined;
+    if (!key) return;
+    const row = this.data.rows.find((item) => item.key === key);
+    if (row && row.encrypted) this.promptUnlock();
+  },
+
+  promptUnlock() {
+    wx.showModal({
+      title: '需要解锁保险箱',
+      content: '这条资料有字段以密文保存，解锁后才能查看。',
+      confirmText: '去解锁',
+      success: (res) => {
+        if (res.confirm) wx.navigateTo({ url: '/pages/vault/index' });
+      }
+    });
   },
 
   onEditTap() {

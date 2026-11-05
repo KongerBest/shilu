@@ -28,6 +28,8 @@ export const recordService = {
   async create(input: {
     categoryId: string;
     title: string;
+    /** 客户端预生成的记录 ID：字段加密的 AAD 需要它，见 utils/id.ts */
+    clientId?: string;
     /** 不传则沿用分类的默认模板；显式传 null 表示这条不要模板 */
     templateId?: string | null;
     values?: RecordValues;

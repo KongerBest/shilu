@@ -211,6 +211,8 @@ type FieldType =
 | `schema_version` | number | |
 | `created_at` / `updated_at` | number | |
 
+> `_id` 通常由云数据库生成；但**含敏感字段的新建记录由客户端预生成**（32 位 hex，`utils/id.ts`），随 `record.create` 的 `clientId` 传入：字段加密的 AAD 绑定 `userId:recordId:fieldKey`，先写库再回填会留下明文窗口。云函数先查该 ID 是否被占用，占用直接返回 409，绝不覆盖。
+
 索引（10，预算 20）：
 
 | # | 索引 | 服务的查询 |
