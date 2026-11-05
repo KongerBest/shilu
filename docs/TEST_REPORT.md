@@ -4,7 +4,7 @@
 > 环境：Windows / Node v24.22.2（LTS）/ npm 11.19.1 / 微信开发者工具 + 云环境（本地注入，见 `config/env.local.example.ts`）
 > 测试命令：`npm run check`（类型检查 + 单进程串行单测）、`npm run test:coverage`（覆盖率）
 > 本报告只写实际执行结果。**没有执行过的，一律标「未验证」，不使用「通过」二字。**
-> P7 有两项未闭环：云数据库集合权限不达标、三处云函数修复尚待部署（详见 §3.11 / §4）。
+> P7 有两项未闭环：集合权限还剩 2 个集合未改、三处云函数修复尚待部署（详见 §3.11 / §4）。
 
 ---
 
@@ -179,7 +179,7 @@ Test Files  33 passed (33)
 | 订阅消息真实下发 | 无模板 ID | 代码路径 / 额度 / 未配置降级已由单测与模拟器覆盖 |
 | **真机性能** | 只有微信开发者工具模拟器 | PBKDF2 600k 耗时、5MB 图加密、冷启动、列表翻页的真机数字全部**未验证**；模拟器实测见 §3.11 |
 | 真机安全区 / 键盘 | 只有模拟器 | 键盘弹起时输入框遮挡、不同机型安全区未实测 |
-| **云数据库集合权限** | 实测**不通过** | 客户端可直写，见 `SECURITY.md §9.1`；这是发布阻塞项，不是「未验证」 |
+| **云数据库集合权限** | 手工修正后复验 **13/15 通过** | `anniversaries`、`attachments` 仍可直读直写，见 `SECURITY.md §9.1`；发布阻塞项，不是「未验证」 |
 | **三处云函数修复的云端生效** | 部署确认弹窗待人工点，云端仍是旧代码 | `vault.status` 实测 `code=0`，说明构建闸门尚未部署；详见 §3.11 |
 
 ### 3.3 字段级加密端到端验证（2026-11-05，模拟器 + 真实云环境）
@@ -387,15 +387,20 @@ Node 下跑不到分支）。新增 `tests/crypto-runtime.test.ts` 装最小 wx 
 
 #### 3.11.3 安全检查清单
 
-`SECURITY.md §9` 共 9 项，**8 项通过、1 项不通过**。通过的项由
+`SECURITY.md §9` 共 9 项，**8 项通过、1 项部分通过（13/15）**。通过的项由
 `tests/security-static.test.ts`（源码级）+ 既有加密单测固定下来，逐条证据写在 §9 里。
 
-不通过的那项值得单独说：在模拟器里直接用 `wx.cloud.database()` 探测，
+集合权限这项在体检时**不通过**：模拟器里直接 `wx.cloud.database()` 探测，
 `collection('records').limit(3).get()` 不抛错但返回 0 条（云端实际 9 条），
 而 `doc('__probe_no_such_doc__').update(...)` 返回 **`ALLOWED`**，`updated:0` 只是文档不存在。
-`records / categories / vaults / users` 四个集合结果一致，说明客户端**有写权限**，
-不满足 `read:false, write:false`。`cloud_db_write_struct` 只支持集合与索引，改不了权限，
-必须到云开发控制台手工设置，详见 `SECURITY.md §9.1`。**这是发布阻塞项。**
+`cloud_db_write_struct` 只支持集合与索引，改不了权限，只能到云开发控制台手工设置。
+
+用户手工修正后复验（2026-11-06 01:40，刷新模拟器、15 个集合逐个跑读写）：
+**13 个集合已变为 `DENIED/DENIED`**（`Permission denied` / `DATABASE_PERMISSION_DENIED`），
+但 **`anniversaries` 与 `attachments` 仍是 `OPEN/ALLOWED`**，单独复跑两次结果一致。
+同时确认 `user.getProfile` / `record.list` / `anniversary.list` / `category.list` 四个云函数
+都返回 `code=0`，权限收紧没有误伤业务（云函数走管理员权限）。
+因此本项仍是发布阻塞项，只差这 2 个集合，详见 `SECURITY.md §9.1`。
 
 #### 3.11.4 性能实测
 
@@ -466,7 +471,7 @@ wechatide -c WorkBuddy cloud_fn_deploy --appid <APPID> --env <ENV_ID> \
 | 7 | 人物头像上传未接入页面（`avatar_file_id` 恒为空串） | 复用附件服务后再接 |
 | 8 | **订阅消息未配置模板 ID**，提醒只计数不真发 | 在公众平台申请一次性模板 → 填 `_shared/reminder-config.js` → 重新部署 |
 | 9 | 定时触发器可能未随 `cloud_fn_deploy` 创建 | 到云开发控制台核对「每天 09:00」触发器，没有就手动建 |
-| 10 | **云数据库集合权限不是 `read:false, write:false`** | 发布阻塞项，控制台手工修，见 `SECURITY.md §9.1` |
+| 10 | **2 个集合权限仍不是 `read:false, write:false`**（13 个已改好） | 发布阻塞项：`anniversaries`、`attachments` 待控制台手工修，见 `SECURITY.md §9.1` |
 | 11 | **三处云函数修复尚未部署** | 确认弹窗待人工点，见 §3.11.6；不部署则云端修复不生效 |
 | 12 | 真机性能（PBKDF2 600k / 5MB 加密 / 冷启动 / 深翻页）未测 | 只有模拟器数字，需真机实测后再调参 |
 
