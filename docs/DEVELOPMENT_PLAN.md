@@ -191,10 +191,11 @@ shilu/
 
 已完成（本轮）：**敏感字段落库加密**——`utils/crypto/fields.ts`（AAD `userId:recordId:fieldKey`、载荷 `{v:1,value}` 保类型）+ `services/record-crypto.ts` + 编辑页保存时封包 / 详情页解锁解密；`record.create` 支持 `clientId` 预生成 `_id`，保证首次写入就绑对 AAD。
 
+已完成（2026-11-05 晚）：**存量明文回填**——`record.backfillBatch` 分页扫描 + `services/backfill.service.ts` 逐条封包写回，设置页入口与进度提示；幂等、可中断。
+
 未完成（本阶段验收条件，不可省）：
-1. **存量明文回填迁移**：历史记录中 `sensitive` 字段仍是明文，需「读明文 → 写信封 → 置 encrypted」，可中断续做。
-2. **保险箱整条加密**（单条记录整体加密，非字段级）。
-3. 密钥轮换（分批 20 条）。
+1. **保险箱整条加密**（单条记录整体加密，非字段级）。
+2. 密钥轮换（分批 20 条）。
 
 ### 目标
 `features.VAULT_ENABLED=true` 下完整可用；`false` 下彻底不可达。

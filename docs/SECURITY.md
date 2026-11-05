@@ -149,7 +149,7 @@ interface Envelope {
 | 敏感字段不进 `search_text` / `summary` | ✅ 已实现（P2） | `normalize.js` 的 `flattenValues` 跳过 `sensitive` 字段与信封对象 |
 | 敏感字段详情页掩码 | ✅ 已实现（P2） | `maskValue`，需用户主动点「显示」才渲染原值 |
 | 敏感字段落库加密 | ✅ 已实现（P5） | 保存时把 `sensitive` 字段值封成信封（AAD 绑定 `userId:recordId:fieldKey`）；新建前预生成 `_id` 保证首次写入就绑对。判定按值的形态（`__enc=1`），不看模板 `encrypted` 标志，兼容存量明文 |
-| 存量明文回填 | ❌ 未实现（P5 待办） | 历史记录的敏感字段仍是明文；需要一次「读明文 → 写信封 → 置 encrypted」的批量迁移，可中断续做 |
+| 存量明文回填 | ✅ 已实现（P5） | 设置页「回填历史明文」：`record.backfillBatch` 按 `_id` 升序扫描 → 客户端判断哪些敏感字段仍是明文 → 封包后 `record.update` 写回。幂等（信封跳过），可中断重跑；模板已删的记录跳过不猜 |
 | 附件内容加密 | ✅ 已实现（P3） | `utils/crypto/`（KDF / AES-GCM / 信封 / 文件密文）+ `keystore`（主密码/恢复码/MK 信封）+ `vault` 云函数（init/status/changePassword/recover/reset/audit）+ `file-uploader` 端到端接入（加密上传 / 解密预览）。加密附件在云存储为密文（`*.enc`），元数据里 `encrypted=1` 并携带 `enc_meta={alg,kv,ctx}`；文件名加密为 `name_enc` 信封 |
 | 保险箱整条加密 | ❌ 未实现（P5） | |
 | 头像 EXIF 剥离 + 缩放 | ✅ 已实现（P3） | `utils/image.ts` 的 `stripExif`：canvas 重编码剥离 GPS 等元数据 + 等比缩放 ≤512，用于明文头像上传 |

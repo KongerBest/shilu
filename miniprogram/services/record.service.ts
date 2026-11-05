@@ -62,5 +62,30 @@ export const recordService = {
 
   async setArchived(id: string, value: boolean): Promise<{ item: RecordListItem }> {
     return call<{ item: RecordListItem }>('record', 'setArchived', { id, value });
+  },
+
+  /**
+   * 回填扫描：按 _id 升序分页拿「全量 values」。
+   * 只给敏感字段加密回填用——正常列表不返回 values。
+   */
+  async backfillBatch(input: {
+    afterId?: string | null;
+    limit?: number;
+  }): Promise<{ items: BackfillItem[]; hasMore: boolean; nextAfterId: string | null }> {
+    return call<{ items: BackfillItem[]; hasMore: boolean; nextAfterId: string | null }>(
+      'record',
+      'backfillBatch',
+      {
+        afterId: input.afterId || undefined,
+        limit: input.limit
+      }
+    );
   }
 };
+
+/** 回填扫描的返回项：原始密文/明文都要，客户端据此判断是否需要加密。 */
+export interface BackfillItem {
+  _id: string;
+  template_id: string | null;
+  values: RecordValues;
+}

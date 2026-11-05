@@ -115,11 +115,12 @@ getWXContext().OPENID
 |---|---|---|
 | `list` | `{ categoryId?, archived?, favorite?, keyword?, cursor?, limit? }` | `{ items, nextCursor, hasMore }` |
 | `detail` | `{ id }` | `{ item }` |
-| `create` | `{ categoryId, title, templateId?, values?, tags?, contactIds? }` | `{ item }` |
+| `create` | `{ categoryId, title, clientId?, templateId?, values?, tags?, contactIds? }` | `{ item }`（`clientId` 为客户端预生成的 32 位 hex `_id`，被占用返回 409） |
 | `update` | `{ id, title?, templateId?, values?, tags?, contactIds?, archived?, favorite?, remindAt? }` | `{ item }` |
 | `remove` | `{ id }` | `{ ok: true }`（软删除 + 级联收藏） |
 | `setFavorite` | `{ id, value: boolean }` | `{ item }`（同步 `favorites`） |
 | `setArchived` | `{ id, value: boolean }` | `{ item }` |
+| `backfillBatch` | `{ afterId?, limit? }` | `{ items:[{_id, template_id, values}], hasMore, nextAfterId }`（按 `_id` 升序，仅供敏感字段回填） |
 
 `create/update` 额外：
 

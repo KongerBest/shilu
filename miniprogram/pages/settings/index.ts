@@ -1,14 +1,12 @@
 import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { VAULT_ENABLED } from '../../config/features';
+import { runSensitiveBackfill } from '../../services/backfill.service';
 import { userService } from '../../services/user.service';
+import { vaultSession } from '../../services/vault-session';
 import { toAppError } from '../../utils/errors';
 import { getHapticsEnabled, haptic, setHapticsEnabled } from '../../utils/haptics';
 import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../../utils/theme';
 
-/**
- * 已知限制。这份清单与 docs/PRD.md §8 同步维护，
- * 不允许为了"看起来更完整"而从界面上删掉。
- */
 /**
  * 账号指纹：取用户文档 _id 的后 8 位，仅用于在设备上区分不同微信号。
  * 不展示 openid，也不参与任何鉴权。
@@ -16,6 +14,11 @@ import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../..
 function accountTag(id: string): string {
   return (id || '').replace(/[^0-9a-zA-Z]/g, '').slice(-8).toUpperCase();
 }
+
+/**
+ * 已知限制。这份清单与 docs/PRD.md §8 同步维护，
+ * 不允许为了"看起来更完整"而从界面上删掉。
+ */
 
 const KNOWN_LIMITS: string[] = [
   '密码保险箱只保留在开发构建：平台规则禁止小程序收集或存储用户密码，上架包会关闭入口，云端也有二次校验。',
@@ -29,6 +32,8 @@ const KNOWN_LIMITS: string[] = [
 Page({
   onShow() {
     syncTheme(this);
+    // 解锁态只在内存里，从保险箱页返回时重新读一次
+    this.setData({ vaultUnlocked: vaultSession.isUnlocked() });
   },
 
   data: {
@@ -40,6 +45,8 @@ Page({
     version: APP_VERSION,
     cloudReady: isCloudConfigured(),
     vaultEnabled: VAULT_ENABLED,
+    vaultUnlocked: false,
+    backfilling: false,
     limits: KNOWN_LIMITS,
     recalculating: false
   },
@@ -110,6 +117,58 @@ Page({
       .finally(() => {
         this.setData({ recalculating: false });
       });
+  },
+
+  /** 存量回填：把历史记录里的明文敏感字段补加密（需保险箱解锁）。 */
+  onBackfillTap() {
+    if (this.data.backfilling) return;
+
+    if (!vaultSession.isUnlocked()) {
+      wx.showModal({
+        title: '需要解锁保险箱',
+        content: '回填要用主密码派生的密钥加密历史数据，请先解锁。',
+        confirmText: '去解锁',
+        success: (res) => {
+          if (res.confirm) wx.navigateTo({ url: '/pages/vault/index' });
+        }
+      });
+      return;
+    }
+
+    wx.showModal({
+      title: '加密历史敏感字段',
+      content:
+        '逐条检查历史资料：仍是明文的敏感字段会加密后写回。可以中断，重跑会跳过已加密的记录。',
+      confirmText: '开始回填',
+      success: (res) => {
+        if (res.confirm) void this.runBackfill();
+      }
+    });
+  },
+
+  async runBackfill() {
+    this.setData({ backfilling: true });
+    wx.showLoading({ title: '准备中', mask: true });
+    try {
+      const result = await runSensitiveBackfill((progress) => {
+        wx.showLoading({ title: `回填 ${progress.scanned} 条`, mask: true });
+      });
+      wx.hideLoading();
+
+      const tail = result.complete
+        ? ''
+        : '\n保险箱已自动锁定，重新解锁后可继续；已处理的记录不会重复加密。';
+      wx.showModal({
+        title: result.failed > 0 ? '回填完成（有失败）' : '回填完成',
+        content: `扫描 ${result.scanned} 条，加密 ${result.sealedRecords} 条 / ${result.sealedFields} 个字段，跳过 ${result.skipped} 条，失败 ${result.failed} 条。${tail}`,
+        showCancel: false
+      });
+    } catch (error) {
+      wx.hideLoading();
+      wx.showModal({ title: '回填失败', content: toAppError(error).message, showCancel: false });
+    } finally {
+      this.setData({ backfilling: false });
+    }
   },
 
   onCopyLimits() {

@@ -77,6 +77,13 @@
         <view class="row__arrow"></view>
       </view>
     </view>
+    <view wx:if="{{vaultEnabled}}" class="row" bindtap="onBackfillTap" hover-class="row--hover">
+      <text class="row__label">回填历史明文</text>
+      <view class="row__right">
+        <text class="row__value">{{backfilling ? '回填中' : vaultUnlocked ? '逐条加密' : '需先解锁'}}</text>
+        <view class="row__arrow"></view>
+      </view>
+    </view>
   </view>
 
   <view class="section">

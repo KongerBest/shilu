@@ -423,4 +423,37 @@ async function setArchived({ openid, payload }) {
   return { item: toListItem(Object.assign({}, existing, { is_archived: value ? 1 : 0, _id: id })) };
 }
 
-module.exports = { list, detail, create, update, remove, setFavorite, setArchived };
+/**
+ * 回填扫描：按 `_id` 升序分页返回原始 `values`。
+ *
+ * 只服务于「存量敏感字段加密回填」。为什么不让客户端走 list + detail：
+ * list 不返回 values，逐条 detail 是 N 次往返；而详情页拿不到全量待扫描集合。
+ * 这里只做读取与分页，敏感判定留给客户端（模板定义在前端缓存里，
+ * 服务端再实现一遍同样的规则只会两边漂移）。
+ */
+async function backfillBatch({ openid, payload }) {
+  const limit = normalizeLimit(payload.limit, 20);
+  const afterId = optionalId(payload.afterId, 'afterId');
+
+  const base = Object.assign({ owner_openid: openid }, NOT_DELETED);
+  const where = afterId ? _.and([base, { _id: _.gt(afterId) }]) : base;
+
+  const res = await db
+    .collection(COLLECTIONS.records)
+    .where(where)
+    .orderBy('_id', 'asc')
+    .limit(limit + 1)
+    .get();
+
+  const hasMore = res.data.length > limit;
+  const items = res.data.slice(0, limit).map((doc) => ({
+    _id: doc._id,
+    template_id: doc.template_id || null,
+    values: doc.values || {}
+  }));
+  const last = items[items.length - 1];
+
+  return { items, hasMore, nextAfterId: hasMore && last ? last._id : null };
+}
+
+module.exports = { list, detail, create, update, remove, setFavorite, setArchived, backfillBatch };
