@@ -12,11 +12,11 @@
 | 项 | 命令 | 结果 |
 |---|---|---|
 | TypeScript 类型检查 | `npx tsc --noEmit` | ✅ **0 error** |
-| 单元测试 | `npx vitest run` | ✅ **185 passed / 0 failed**（14 个文件） |
+| 单元测试 | `npx vitest run` | ✅ **190 passed / 0 failed**（15 个文件） |
 
 ```
-Test Files  14 passed (14)
-     Tests  185 passed (185)
+Test Files  15 passed (15)
+     Tests  190 passed (190)
 ```
 
 | 测试文件 | 用例数 | 覆盖 |
@@ -35,6 +35,7 @@ Test Files  14 passed (14)
 | `vault-keys.test.ts` | 13 | 密钥生命周期、恢复码、错误密码 |
 | `attachments.test.ts` | 8 | 附件上下文、文件名加密、mime |
 | **`crypto-fields.test.ts`** | **11** | **字段信封往返、类型保真、AAD 绑定、篡改、记录 ID** |
+| **`backfill-plan.test.ts`** | **5** | **回填判定：只加密有值且未封包的敏感字段，空白/信封/非敏感/无模板均跳过** |
 
 ---
 
@@ -178,6 +179,19 @@ Test Files  14 passed (14)
 | console 错误 | ✅ 全流程 `grep -i 'error|fail|uncaught'` 无命中 |
 | 主按钮宽度 | ✅ 修复 `button:not([size]){width:184px}` 特异性压制后，通栏按钮实测 378px（视口 375 − 左右 padding） |
 | 真机 | ❌ 未验证 | 模拟器 only；PBKDF2 600k 在低端机的解锁耗时仍未测 |
+
+#### 3.3.1 存量明文回填（2026-11-05 晚，同环境）
+
+| 项 | 结果 |
+|---|---|
+| 测试数据 | 用控制台把「生日」记录的 `values.phone` 置为明文 `13900002222`（原值 null） |
+| `record.backfillBatch` | ✅ 按 `_id` 升序返回原始 `values`，`code: 0` |
+| 首轮回填 | ❌ 失败：`record.update` 写含 `__enc` 的嵌套对象返回 500（tcb `update` 深合并限制） |
+| 修复 | 带 `values` 的更新改走「读旧文档 → 合并 → 整文档 `set`」，`DATABASE.md` 已记录 |
+| 修复后重跑 | ✅ 回填完成，`values.phone` 变为 `{__enc:1, ct, iv, kv:1}`，`ct` 为真实 Base64URL 密文 |
+| 解密校验 | ✅ 详情页 `encryptedCount=0`，`手机号` 行 `raw=13900002222`，姓名/生日保持明文 |
+| 幂等性 | ✅ 已加密的字段再次回填不会重复处理（`planSensitiveSeal` 跳过信封，5 项单测覆盖） |
+| 回填后清理 | 测试手机号已还原为 null，保险箱重置为未初始化 |
 
 ---
 

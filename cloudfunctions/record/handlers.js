@@ -322,7 +322,16 @@ async function update({ openid, payload }) {
     });
   }
 
-  await db.collection(COLLECTIONS.records).doc(id).update({ data: patch });
+  // 实测：tcb 的 doc().update() 写入含 `__enc` 的嵌套对象会抛错（对外 500），
+  // 而 create 用的 doc().set() 能正常存信封。所以带 values 的更新走整文档 set。
+  // 代价是「读-合并-覆盖」，并发写会互相覆盖；本产品是单用户单端，接受这个取舍。
+  if (patch.values !== undefined) {
+    const merged = Object.assign({}, existing, patch);
+    delete merged._id;
+    await db.collection(COLLECTIONS.records).doc(id).set({ data: merged });
+  } else {
+    await db.collection(COLLECTIONS.records).doc(id).update({ data: patch });
+  }
 
   if (Object.prototype.hasOwnProperty.call(patch, 'is_favorite')) {
     await syncFavorite(openid, existing.user_id, id, patch.is_favorite === 1);

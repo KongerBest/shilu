@@ -213,6 +213,8 @@ type FieldType =
 
 > `_id` 通常由云数据库生成；但**含敏感字段的新建记录由客户端预生成**（32 位 hex，`utils/id.ts`），随 `record.create` 的 `clientId` 传入：字段加密的 AAD 绑定 `userId:recordId:fieldKey`，先写库再回填会留下明文窗口。云函数先查该 ID 是否被占用，占用直接返回 409，绝不覆盖。
 
+> **写 `values` 只能用 `doc().set()`，不能用 `doc().update()`**：实测 tcb 的 `update` 深合并含 `__enc` 的嵌套对象会抛错（对外 500），`set` 正常。因此 `record.update` 在带 `values` 时走「读旧文档 → 合并 patch → 整文档 set」，代价是并发写会互相覆盖（单用户单端可接受）。
+
 索引（10，预算 20）：
 
 | # | 索引 | 服务的查询 |
