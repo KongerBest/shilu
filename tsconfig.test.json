@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2019", "ES2022"],
+    "types": ["node", "miniprogram-api-typings"]
+  },
+  "include": ["tests/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules", "cloudfunctions"]
+}

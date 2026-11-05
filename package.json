@@ -4,7 +4,7 @@
   "private": true,
   "description": "拾录 SHILU - 个人数字资料库微信小程序",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "sync:shared": "node scripts/sync-shared.js",
@@ -12,6 +12,7 @@
     "check": "npm run typecheck && npm run test"
   },
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "miniprogram-api-typings": "^4.0.4",
     "typescript": "^5.6.3",
     "vitest": "^2.1.8"

@@ -24,6 +24,6 @@
     },
     "noEmit": true
   },
-  "include": ["miniprogram/**/*.ts", "tests/**/*.ts"],
+  "include": ["miniprogram/**/*.ts"],
   "exclude": ["node_modules", "cloudfunctions"]
 }

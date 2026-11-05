@@ -97,6 +97,30 @@ async function loadTemplateFields(openid, templateId, strict) {
   return { template: res.data, fields: Array.isArray(res.data.fields) ? res.data.fields : [] };
 }
 
+/**
+ * 校验关联人物的归属。
+ *
+ * 别的云函数（纪念日、附件）都做了这一步，资料这里原本只校验 ID 形态，
+ * 于是 A 可以把 B 的联系人 ID 存进自己的 `contact_ids`。虽然详情页是
+ * 「拿 ID 去自己的联系人列表里找」，找不到就不显示，暂时没泄露内容，
+ * 但这属于指向他人数据的悬空引用——任何一处不加 owner 过滤的反查都会漏。
+ * 关联字段必须和主字段用同一套归属规则。
+ */
+async function assertContactsOwned(openid, contactIds) {
+  if (!Array.isArray(contactIds) || contactIds.length === 0) return [];
+  const res = await db
+    .collection(COLLECTIONS.contacts)
+    .where({ owner_openid: openid, _id: _.in(contactIds), is_deleted: 0 })
+    .limit(contactIds.length)
+    .get();
+  const owned = new Set((res.data || []).map((doc) => doc._id));
+  if (owned.size !== contactIds.length) {
+    // 不区分「不存在」与「不是你的」：区分会让攻击者能试探出哪些 ID 真实存在
+    throw forbidden('存在无法访问的人物');
+  }
+  return contactIds;
+}
+
 /** 按模板定义做服务端校验（L2）。前端校验可被绕过，这里才是权威。 */
 
 async function list({ openid, payload }) {
@@ -178,7 +202,10 @@ async function create({ openid, payload }) {
   assertValues(fields, values);
 
   const tags = requireArrayOfIds(payload.tags, 'tags', LIMITS.tagCount);
-  const contactIds = requireArrayOfIds(payload.contactIds, 'contactIds', LIMITS.contactCount);
+  const contactIds = await assertContactsOwned(
+    openid,
+    requireArrayOfIds(payload.contactIds, 'contactIds', LIMITS.contactCount)
+  );
 
   const summary = buildSummary(values, fields);
   const searchText = buildSearchText({ title, summary, values, fields, categoryName: category.name });
@@ -283,7 +310,10 @@ async function update({ openid, payload }) {
   }
 
   if (Object.prototype.hasOwnProperty.call(payload, 'contactIds')) {
-    patch.contact_ids = requireArrayOfIds(payload.contactIds, 'contactIds', LIMITS.contactCount);
+    patch.contact_ids = await assertContactsOwned(
+      openid,
+      requireArrayOfIds(payload.contactIds, 'contactIds', LIMITS.contactCount)
+    );
   }
 
   if (Object.prototype.hasOwnProperty.call(payload, 'archived')) {

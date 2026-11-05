@@ -178,9 +178,22 @@ async function importTemplates(openid, user, items, maps, links) {
     result.inserted += 1;
   }
 
-  // 回填分类的默认模板：分类先于模板导入，只能在这里补
+  // 回填分类的默认模板：分类先于模板导入，只能在这里补。
+  // links 的 key 来自客户端备份文件，必须先确认分类归属——否则一份伪造的备份
+  // 就能把别人分类的默认模板指向自己的模板。
   if (links && typeof links === 'object') {
-    for (const categoryId of Object.keys(links)) {
+    const candidateIds = Object.keys(links).slice(0, 200);
+    let ownedIds = new Set();
+    if (candidateIds.length > 0) {
+      const owned = await db
+        .collection(COLLECTIONS.categories)
+        .where({ owner_openid: openid, _id: _.in(candidateIds), is_deleted: 0 })
+        .limit(200)
+        .get();
+      ownedIds = new Set((owned.data || []).map((doc) => doc._id));
+    }
+    for (const categoryId of candidateIds) {
+      if (!ownedIds.has(categoryId)) continue;
       const target = result.mapped[links[categoryId]];
       if (!target) continue;
       const patched = await db
@@ -359,6 +372,16 @@ async function finishImport(openid, user, payload) {
   } else {
     const raw = Array.isArray(payload.category_ids) ? payload.category_ids : [];
     ids = raw.filter((id) => typeof id === 'string').slice(0, 200);
+    // category_ids 是客户端传的，不能拿它直接 .doc(id).update()：
+    // 塞一个别人的分类 id，就会把对方的 record_count 改成自己的记录数。
+    if (ids.length > 0) {
+      const owned = await db
+        .collection(COLLECTIONS.categories)
+        .where({ owner_openid: openid, _id: _.in(ids), is_deleted: 0 })
+        .limit(200)
+        .get();
+      ids = (owned.data || []).map((doc) => doc._id);
+    }
   }
 
   let fixed = 0;
