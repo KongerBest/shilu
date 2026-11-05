@@ -5,6 +5,7 @@ import {
   BACKUP_APP,
   BACKUP_SCHEMA_VERSION,
   backupFileName,
+  buildKeepIds,
   chunk,
   formatSize,
   formatTimestamp,
@@ -113,6 +114,64 @@ describe('账号与文案', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
     expect(chunk([], 10)).toEqual([]);
     expect(chunk([1, 2], 10)).toEqual([[1, 2]]);
+  });
+});
+
+describe('覆盖恢复：保留集与清理目标', () => {
+  it('保留集用映射后的真实 ID，而不是备份里的旧 ID', () => {
+    const keep = buildKeepIds(
+      {
+        ...(parseBackup(JSON.stringify(file())).data as BackupFile),
+        categories: [
+          { _id: 'old-cat', name: '朋友', is_system: 1, system_key: 'friend' },
+          { _id: 'mine', name: '自建', is_system: 0, system_key: '' }
+        ] as never,
+        templates: [{ _id: 'old-tpl', name: '书影音' }] as never
+      },
+      { 'old-cat': 'lib-cat' },
+      { 'old-tpl': 'lib-tpl' }
+    );
+    // 系统分类被对齐到库里已有那条，保留集必须写 lib-cat；写 old-cat 会把刚恢复好的分类删掉
+    expect(keep.categories).toEqual(['lib-cat', 'mine']);
+    expect(keep.templates).toEqual(['lib-tpl']);
+  });
+
+  it('保留集去重：同一 ID 在备份里出现两次不会重复', () => {
+    const keep = buildKeepIds(
+      {
+        ...(parseBackup(JSON.stringify(file())).data as BackupFile),
+        records: [{ _id: 'r1' }, { _id: 'r1' }] as never
+      },
+      {},
+      {}
+    );
+    expect(keep.records).toEqual(['r1']);
+  });
+
+  it('备份里某一类结构异常时宁可报错，也不能退化成「全删」', () => {
+    // 空数组在覆盖模式里等于「这一类全清」，所以结构不对必须停下来
+    const broken = {
+      ...(parseBackup(JSON.stringify(file())).data as BackupFile),
+      records: undefined
+    } as unknown as BackupFile;
+    expect(() => buildKeepIds(broken, {}, {})).toThrow();
+  });
+
+  it('清理目标 = 库里有、保留集里没有；保留的绝不删', () => {
+    expect(schema.selectVictims(['a', 'b', 'c'], ['b'])).toEqual(['a', 'c']);
+    expect(schema.selectVictims(['a'], ['a'])).toEqual([]);
+    // 保留集里有库里没有的 ID（刚导入还没生效）不会凭空多删东西
+    expect(schema.selectVictims(['a'], ['a', 'z'])).toEqual([]);
+  });
+
+  it('清理目标：空保留集等于清空该类，这是覆盖模式的正常语义', () => {
+    expect(schema.selectVictims(['a', 'b'], [])).toEqual(['a', 'b']);
+  });
+
+  it('清理目标：脏值不参与，非数组入参退化成空结果', () => {
+    expect(schema.selectVictims(['a', null, 42, '', 'b'], ['a'])).toEqual(['b']);
+    expect(schema.selectVictims(null, ['a'])).toEqual([]);
+    expect(schema.selectVictims(['a'], null)).toEqual(['a']);
   });
 });
 

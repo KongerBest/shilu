@@ -312,6 +312,20 @@ function normalizeItems(stage, rawItems) {
   return { ok: errors.length === 0, items, errors };
 }
 
+/**
+ * 覆盖恢复的「该删谁」判定：当前库里、且不在保留集里的 ID。
+ *
+ * 单独抽出来是因为这是整条恢复链路里唯一会删用户数据的判断，
+ * 必须有独立单测钉住：保留集里的绝不删、非字符串脏值不参与。
+ */
+function selectVictims(currentIds, keepIds) {
+  const keep = new Set(Array.isArray(keepIds) ? keepIds : []);
+  return (Array.isArray(currentIds) ? currentIds : []).filter(
+    // 空串不是合法 _id，若真出现说明库里有脏文档，不能当作「可删」去 update
+    (id) => typeof id === 'string' && id.length > 0 && !keep.has(id)
+  );
+}
+
 /** 文件级校验：客户端解析后再给服务端过一遍，两边都不省。 */
 function validatePayload(raw) {
   const errors = [];
@@ -375,5 +389,6 @@ module.exports = {
   normalizeAnniversary,
   normalizeRecord,
   normalizeItems,
-  validatePayload
+  validatePayload,
+  selectVictims
 };

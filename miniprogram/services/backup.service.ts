@@ -14,7 +14,7 @@ import { userService } from './user.service';
 import { vaultSession } from './vault-session';
 import { call } from './transport';
 import { contactPhoneContext } from './contact-crypto';
-import { BACKUP_APP, BACKUP_SCHEMA_VERSION, chunk, countOf } from '../utils/backup';
+import { BACKUP_APP, BACKUP_SCHEMA_VERSION, buildKeepIds, chunk, countOf, totalItems } from '../utils/backup';
 import type { BackupFile } from '../utils/backup';
 import { fieldContext, isEnvelope, openFieldValue, sealFieldValue } from '../utils/crypto/fields';
 import type { Anniversary, Category, Contact, Envelope, ShiluRecord, Template } from '../types/models';
@@ -45,7 +45,11 @@ export type ImportPhase =
   | 'contacts'
   | 'anniversaries'
   | 'records'
+  | 'prune'
   | 'finish';
+
+/** 合并：按 ID 补齐或覆盖，不动备份之外的数据；覆盖：以备份为准，备份里没有的清掉。 */
+export type RestoreMode = 'merge' | 'replace';
 
 export interface ImportProgress {
   phase: ImportPhase;
@@ -58,8 +62,11 @@ export interface ImportSummary {
   inserted: number;
   updated: number;
   skipped: number;
+  /** 覆盖恢复里被清掉的条数（合并模式恒为 0） */
+  removed: number;
   droppedEnvelopes: number;
   sameAccount: boolean;
+  mode: RestoreMode;
   stats: UserStats | null;
 }
 
@@ -70,6 +77,7 @@ const PHASE_LABEL: Record<ImportPhase, string> = {
   contacts: '人物',
   anniversaries: '纪念日',
   records: '资料',
+  prune: '清理',
   finish: '收尾'
 };
 
@@ -89,6 +97,11 @@ interface ImportStageResponse {
   template_links?: Record<string, string>;
   touched_categories?: string[];
   stats?: UserStats;
+}
+
+interface PruneResponse {
+  removed: Record<string, number>;
+  total: number;
 }
 
 function emptyFile(userId: string): BackupFile {
@@ -207,8 +220,13 @@ export const backupService = {
    */
   async importAll(
     file: BackupFile,
-    onProgress: (progress: ImportProgress) => void
+    onProgress: (progress: ImportProgress) => void,
+    options: { mode?: RestoreMode } = {}
   ): Promise<ImportSummary> {
+    const mode: RestoreMode = options.mode === 'replace' ? 'replace' : 'merge';
+    // 空备份走覆盖只会把库清空，没有任何好处；这种情况直接按合并处理（等于什么都不做）
+    const replaceApplied = mode === 'replace' && totalItems(file.counts) > 0;
+
     const { user } = await userService.login();
     const sameAccount = !!file.user_id && file.user_id === user._id;
 
@@ -223,16 +241,22 @@ export const backupService = {
       inserted: 0,
       updated: 0,
       skipped: 0,
+      removed: 0,
       droppedEnvelopes,
       sameAccount,
+      mode,
       stats: null
     };
 
-    const collect = (res: ImportStageResponse) => {
+    const collect = (res: ImportStageResponse, phase: ImportPhase) => {
       totals.inserted += res.inserted || 0;
       totals.updated += res.updated || 0;
       totals.skipped += res.skipped || 0;
-      if (res.mapped) Object.assign(categoryMap, res.mapped);
+      // 分类与模板都会返回 mapped，但它们是两套映射，混在一起会让资料的 template_id 指错
+      if (res.mapped) {
+        if (phase === 'categories') Object.assign(categoryMap, res.mapped);
+        else if (phase === 'templates') Object.assign(templateMap, res.mapped);
+      }
       if (res.template_links) Object.assign(templateLinks, res.template_links);
       if (res.touched_categories) {
         for (const id of res.touched_categories) {
@@ -255,7 +279,7 @@ export const backupService = {
           items: batch,
           ...extra
         });
-        collect(res);
+        collect(res, phase);
         done += batch.length;
         onProgress({ phase, label: PHASE_LABEL[phase], done, total: items.length });
       }
@@ -266,17 +290,28 @@ export const backupService = {
       maps: { category: categoryMap },
       links: templateLinks
     });
-    // 模板映射要带上，资料里的 template_id 得换成真实存在的那条
     await runStage('contacts', file.contacts as unknown[]);
     await runStage('anniversaries', file.anniversaries as unknown[]);
+    // 模板映射要带上，资料里的 template_id 得换成真实存在的那条
     await runStage('records', file.records as unknown[], {
       maps: { category: categoryMap, template: templateMap }
     });
+    // 覆盖模式：先导入、再清理。中途失败时数据仍完整，重跑一次即可；
+    // 反过来「先清空再导入」一旦导入失败就只剩一个空库。
+    if (replaceApplied) {
+      const keep = buildKeepIds(file, categoryMap, templateMap);
+      onProgress({ phase: 'prune', label: PHASE_LABEL.prune, done: 0, total: 1 });
+      const pruned = await call<PruneResponse>('backup', 'prune', { keep });
+      totals.removed = pruned.total || 0;
+      onProgress({ phase: 'prune', label: PHASE_LABEL.prune, done: 1, total: 1 });
+    }
 
     // 分类计数必须现算：重复导入时靠自增会越加越大
     const fin = await call<ImportStageResponse>('backup', 'importStage', {
       stage: 'finish',
-      category_ids: touchedCategories
+      category_ids: touchedCategories,
+      // 覆盖模式删过东西，受影响的分类不止导入的那些，只能全量重数
+      refresh_all: replaceApplied
     });
     totals.stats = fin.stats || null;
     onProgress({ phase: 'finish', label: PHASE_LABEL.finish, done: 1, total: 1 });
@@ -284,7 +319,9 @@ export const backupService = {
     logger.info('backup', 'import done', {
       inserted: totals.inserted,
       updated: totals.updated,
-      skipped: totals.skipped
+      skipped: totals.skipped,
+      // 只记条数，不记内容
+      count: totals.removed
     });
     return totals;
   },

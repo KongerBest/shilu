@@ -126,6 +126,48 @@ export function isSameAccount(file: BackupFile, userId: string): boolean {
   return !!file.user_id && file.user_id === userId;
 }
 
+export interface BackupKeepIds {
+  categories: string[];
+  templates: string[];
+  contacts: string[];
+  anniversaries: string[];
+  records: string[];
+}
+
+/**
+ * 覆盖恢复要保留的 ID 集。
+ *
+ * 系统分类/模板可能被对齐到库里已有的那一条（ID 与备份里的不同），
+ * 保留集必须用映射后的真实 ID，否则「以备份为准」会把自己刚恢复好的分类删掉。
+ */
+export function buildKeepIds(
+  file: BackupFile,
+  categoryMap: Record<string, string> = {},
+  templateMap: Record<string, string> = {}
+): BackupKeepIds {
+  const toKeys = (items: { _id: string }[], map: Record<string, string>): string[] => {
+    // 这里宁可抛错也不兜底成空数组：空数组等于「这一类全删」，兜底会把格式异常放大成数据丢失
+    if (!Array.isArray(items)) throw new Error('备份结构异常，已停止覆盖恢复');
+    const out: string[] = [];
+    const seen: Record<string, true> = {};
+    for (const item of items) {
+      const id = map[item._id] || item._id;
+      if (!id || seen[id]) continue;
+      seen[id] = true;
+      out.push(id);
+    }
+    return out;
+  };
+
+  return {
+    categories: toKeys(file.categories, categoryMap),
+    templates: toKeys(file.templates, templateMap),
+    contacts: toKeys(file.contacts, {}),
+    anniversaries: toKeys(file.anniversaries, {}),
+    records: toKeys(file.records, {})
+  };
+}
+
 /** 导出文件名：带日期，避免多次导出互相覆盖。 */
 export function backupFileName(now: number): string {
   const date = new Date(now);

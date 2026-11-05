@@ -261,7 +261,8 @@ getWXContext().OPENID
 |---|---|---|
 | `exportPart` | `{ part: 'categories' \| 'templates' \| 'contacts' \| 'anniversaries' \| 'records', offset? }` | `{ part, items, next_offset, has_more, truncated }` |
 | `importStage` | `{ stage, items, maps?, links? }` | `{ stage, count, inserted, updated, conflict, skipped, mapped?, template_links?, touched_categories? }` |
-| `importStage` | `{ stage: 'finish', category_ids }` | `{ stats, categories_fixed }` |
+| `importStage` | `{ stage: 'finish', category_ids, refresh_all? }` | `{ stats, categories_fixed }` |
+| `prune` | `{ keep: { categories, templates, contacts, anniversaries, records } }` | `{ removed: { part: n }, total }` |
 
 约束与约定：
 
@@ -272,6 +273,15 @@ getWXContext().OPENID
 - 写库统一走 `doc(id).set()`：同一份备份重复导入结果一致（幂等），中途失败可从当前阶段重来。
 - 系统分类 / 模板按 `system_key` 对齐到账号里已有的那条，**不会出现第二套「人物档案」**；分类的默认模板在 `templates` 阶段回填。
 - 记录写入时按真实模板重算 `summary` / `search_text`（敏感字段依旧不进索引）；模板缺失则沿用文件里的值。
+
+**覆盖恢复（`prune`）**：
+
+- 客户端在 `importStage` 全部跑完后才调 `prune`，顺序不能反：先清空再导入一旦中途失败就只剩空库。
+- `keep` 的五个键**必须齐全**，少传一类视为参数错误——空数组即「这一类全清」，不允许靠默认值猜。
+- 保留集用的是**映射后的真实 ID**（系统分类/模板可能被对齐到库里已有那条），所以客户端要在 `templates` 阶段后才能算（`buildKeepIds`）。
+- 删除顺序 `records → anniversaries → contacts → templates → categories`，先子后父，中间态不会出现「分类没了但记录还挂着」。
+- 全部是**软删**（`is_deleted=1`），云数据库里还能捞回来；记录的收藏与附件跟着软删，避免指针悬空和 `attachments_count` 虚高。
+- 清理后必须带 `refresh_all` 调 `finish`：受影响的分类不止导入过的那些，靠 `category_ids` 局部重算会留下错数。
 
 ---
 

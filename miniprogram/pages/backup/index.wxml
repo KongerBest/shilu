@@ -52,7 +52,7 @@
   <view class="card">
     <text class="card__title">从备份恢复</text>
     <text class="form-hint">
-      按原 ID 补齐或覆盖，不会删除你现有的其它数据；同一份备份重复恢复结果一致。附件不会恢复。
+      默认按原 ID 合并：补齐或覆盖同一条，不动其它数据。也可以选「以备份为准」，把备份之外的内容清理掉。附件不会恢复。
     </text>
 
     <button
@@ -83,13 +83,45 @@
         </view>
       </view>
 
+      <view class="modes">
+        <view
+          class="mode {{mode === 'merge' ? 'is-on' : ''}}"
+          data-mode="merge"
+          hover-class="mode--hover"
+          bindtap="onModeTap"
+        >
+          <view class="mode__head">
+            <view class="mode__dot"></view>
+            <text class="mode__title">合并恢复</text>
+          </view>
+          <text class="mode__desc">补齐或覆盖同一条，不动其它数据</text>
+        </view>
+
+        <view
+          class="mode {{mode === 'replace' ? 'is-on' : ''}}"
+          data-mode="replace"
+          hover-class="mode--hover"
+          bindtap="onModeTap"
+        >
+          <view class="mode__head">
+            <view class="mode__dot"></view>
+            <text class="mode__title">以备份为准</text>
+          </view>
+          <text class="mode__desc">备份里没有的内容会被清理</text>
+        </view>
+      </view>
+
+      <view wx:if="{{mode === 'replace'}}" class="mode-warn">
+        恢复时会删除备份之外的内容，此操作无法撤销。
+      </view>
+
       <button
         class="btn-primary"
         hover-class="btn-primary--hover"
         loading="{{importing}}"
         disabled="{{importing}}"
         bindtap="onStartRestore"
-      >{{importing ? '正在恢复' : '开始恢复'}}</button>
+      >{{importing ? '正在恢复' : (mode === 'replace' ? '覆盖恢复' : '开始恢复')}}</button>
 
       <view wx:if="{{importing}}" class="progress">
         <view class="progress__track">

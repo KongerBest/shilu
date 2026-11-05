@@ -15,7 +15,8 @@ const { db, _, COLLECTIONS } = require('./common/db');
 const { ensureUser } = require('./common/auth');
 const { param } = require('./common/response');
 const { recomputeStats } = require('./common/stats');
-const { normalizeItems, LIMITS } = require('./common/backup-schema');
+const { normalizeItems, LIMITS, selectVictims } = require('./common/backup-schema');
+const { isPlainObject } = require('./common/validate');
 const { buildSummary, buildSearchText } = require('./common/normalize');
 const { logger } = require('./common/logger');
 
@@ -29,6 +30,9 @@ const PART_COLLECTION = {
   anniversaries: COLLECTIONS.anniversaries,
   records: COLLECTIONS.records
 };
+
+/** 覆盖恢复的删除顺序：先删子、再删父，中间态里不会出现「分类没了但记录还挂着」。 */
+const PRUNE_ORDER = ['records', 'anniversaries', 'contacts', 'templates', 'categories'];
 
 /** 这些是服务端自有的记账字段，导出时丢掉；导入时一律重写，绝不采信文件里的值。 */
 const INTERNAL_FIELDS = ['owner_openid', 'user_id', 'is_deleted', 'deleted_at', 'schema_version', 'field_history'];
@@ -343,8 +347,19 @@ async function importRecords(openid, user, items) {
 
 /** 收尾：重算分类计数与用户统计。计数靠 count() 现算，所以重复导入不会把数字越加越大。 */
 async function finishImport(openid, user, payload) {
-  const raw = Array.isArray(payload.category_ids) ? payload.category_ids : [];
-  const ids = raw.filter((id) => typeof id === 'string').slice(0, 200);
+  // 覆盖恢复会删掉一批文档，受影响的分类不止「导入过的那些」，只能全量重算
+  let ids;
+  if (payload.refresh_all === true) {
+    const all = await db
+      .collection(COLLECTIONS.categories)
+      .where({ owner_openid: openid, is_deleted: 0 })
+      .limit(200)
+      .get();
+    ids = (all.data || []).map((doc) => doc._id);
+  } else {
+    const raw = Array.isArray(payload.category_ids) ? payload.category_ids : [];
+    ids = raw.filter((id) => typeof id === 'string').slice(0, 200);
+  }
 
   let fixed = 0;
   for (const categoryId of ids) {
@@ -364,6 +379,83 @@ async function finishImport(openid, user, payload) {
 
   const stats = await recomputeStats(openid, user._id);
   return { stats, categories_fixed: fixed };
+}
+
+/** 分页取全部未删除文档的 ID。用 _id 游标而不是 skip：删到后面也不会漏页。 */
+async function listLiveIds(collection, openid) {
+  const ids = [];
+  let after = '';
+
+  for (;;) {
+    const base = { owner_openid: openid, is_deleted: 0 };
+    const where = after ? _.and([base, { _id: _.gt(after) }]) : base;
+    const res = await db.collection(collection).where(where).orderBy('_id', 'asc').limit(PAGE).get();
+    const rows = res.data || [];
+    for (const row of rows) ids.push(row._id);
+    // 2 万条是防御上限：真到这个量级，备份本身也不该走云函数分片了
+    if (rows.length < PAGE || ids.length >= 20000) break;
+    after = rows[rows.length - 1]._id;
+  }
+
+  return ids;
+}
+
+/**
+ * 覆盖恢复：把「不在备份里」的文档软删掉，让库对齐备份那份快照。
+ *
+ * 为什么先导入再删，而不是先清空再导入：
+ * 先清空的话，导入中途失败就只剩一个空库；先导入再删，任何一步失败都还有一份完整数据，
+ * 重新点一次恢复即可。软删（不是物理删）也让误操作在云数据库里还能捞回来。
+ */
+async function prune({ openid, payload }) {
+  const keep = payload.keep;
+  if (!isPlainObject(keep)) throw param('keep 必须是对象');
+
+  // 五个键必须齐全：少传一类就等于「把这一类全删了」，不能靠默认值猜
+  for (const part of PRUNE_ORDER) {
+    if (!Array.isArray(keep[part])) throw param(`keep.${part} 必须是数组`);
+  }
+
+  const now = Date.now();
+  const removed = {};
+  let total = 0;
+
+  for (const part of PRUNE_ORDER) {
+    const collection = PART_COLLECTION[part];
+    const ids = await listLiveIds(collection, openid);
+    const victims = selectVictims(ids, keep[part]);
+
+    // 每 100 个一批，和导入的批次上限保持一致
+    for (let i = 0; i < victims.length; i += PAGE) {
+      const batch = victims.slice(i, i + PAGE);
+      await db
+        .collection(collection)
+        .where({ owner_openid: openid, _id: _.in(batch) })
+        .update({ data: { is_deleted: 1, deleted_at: now, updated_at: now } });
+
+      if (part === 'records') {
+        // 收藏是独立集合，跟着记录一起清，避免出现指向已删记录的收藏
+        await db
+          .collection(COLLECTIONS.favorites)
+          .where({ owner_openid: openid, target_type: 'record', target_id: _.in(batch) })
+          .remove()
+          .catch(() => undefined);
+
+        // 附件不在备份里，记录没了附件就成了孤儿；不跟着软删会让 attachments_count 虚高
+        await db
+          .collection(COLLECTIONS.attachments)
+          .where({ owner_openid: openid, biz_type: 'record', biz_id: _.in(batch), is_deleted: 0 })
+          .update({ data: { is_deleted: 1, deleted_at: now, updated_at: now } })
+          .catch(() => undefined);
+      }
+    }
+
+    removed[part] = victims.length;
+    total += victims.length;
+  }
+
+  logger.info('backup', 'prune done', { count: total });
+  return { removed, total };
 }
 
 async function importStage({ openid, payload }) {
@@ -404,5 +496,6 @@ async function importStage({ openid, payload }) {
 
 module.exports = {
   exportPart,
-  importStage
+  importStage,
+  prune
 };

@@ -1,5 +1,5 @@
 import { backupService } from '../../services/backup.service';
-import type { ImportProgress } from '../../services/backup.service';
+import type { ImportProgress, RestoreMode } from '../../services/backup.service';
 import { backupFileName, formatSize, formatTimestamp, parseBackup, totalItems } from '../../utils/backup';
 import type { BackupFile } from '../../utils/backup';
 import { toAppError } from '../../utils/errors';
@@ -31,6 +31,8 @@ interface BackupData {
 
   picking: boolean;
   importing: boolean;
+  /** 合并 = 只补不删；覆盖 = 以备份为准 */
+  mode: RestoreMode;
   preview: Preview | null;
   progressLabel: string;
   progressPercent: number;
@@ -57,6 +59,7 @@ Page({
     total: 0,
     picking: false,
     importing: false,
+    mode: 'merge' as RestoreMode,
     preview: null,
     progressLabel: '',
     progressPercent: 0,
@@ -194,6 +197,8 @@ Page({
     const counts = parsed.data.counts;
     this.setData({
       error: '',
+      // 换了一份备份就回到最安全的模式，不让上一次的选择影响这一次
+      mode: 'merge',
       preview: {
         fileName,
         exportedAt: formatTimestamp(parsed.data.exported_at),
@@ -207,22 +212,60 @@ Page({
     });
   },
 
-  async onStartRestore() {
+  onModeTap(e: WechatMiniprogram.TouchEvent) {
+    const mode = e.currentTarget.dataset.mode as RestoreMode;
+    if (mode !== 'merge' && mode !== 'replace') return;
+    if (mode === 'replace' && this.data.preview && this.data.preview.total === 0) {
+      wx.showToast({ title: '备份里没有内容，无需覆盖', icon: 'none' });
+      return;
+    }
+    haptic('light');
+    this.setData({ mode });
+  },
+
+  onStartRestore() {
     if (!pending || this.data.importing) return;
+
+    if (this.data.mode !== 'replace') {
+      void this.runRestore();
+      return;
+    }
+
+    // 覆盖会删数据，必须再问一次；文案写清楚删的是什么，不写「确定吗」这种空话
+    wx.showModal({
+      title: '以备份为准恢复？',
+      content: '备份里没有的资料、人物、纪念日会被清理掉，且无法撤销。建议先导出一份当前数据。',
+      confirmText: '继续恢复',
+      confirmColor: '#c24c3f',
+      cancelText: '取消',
+      success: (res) => {
+        if (res.confirm) void this.runRestore();
+      }
+    });
+  },
+
+  async runRestore() {
+    if (!pending || this.data.importing) return;
+    const target = pending;
 
     haptic('medium');
     this.setData({ importing: true, error: '', result: '', progressLabel: '准备', progressPercent: 0 });
 
     try {
-      const summary = await backupService.importAll(pending, (progress: ImportProgress) => {
-        const percent = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
-        this.setData({
-          progressLabel: `${progress.label} ${progress.done}/${progress.total}`,
-          progressPercent: percent
-        });
-      });
+      const summary = await backupService.importAll(
+        target,
+        (progress: ImportProgress) => {
+          const percent = progress.total > 0 ? Math.round((progress.done / progress.total) * 100) : 0;
+          this.setData({
+            progressLabel: `${progress.label} ${progress.done}/${progress.total}`,
+            progressPercent: percent
+          });
+        },
+        { mode: this.data.mode }
+      );
 
       const parts = [`已写入 ${summary.inserted} 条`, `更新 ${summary.updated} 条`];
+      if (summary.removed > 0) parts.push(`清理 ${summary.removed} 条备份中没有的内容`);
       if (summary.skipped > 0) parts.push(`跳过 ${summary.skipped} 条（分类不存在）`);
       if (summary.droppedEnvelopes > 0) {
         parts.push(`丢弃 ${summary.droppedEnvelopes} 个密文字段（换了账号且保险箱未解锁，需重新填写）`);
@@ -232,7 +275,8 @@ Page({
         importing: false,
         progressPercent: 100,
         result: parts.join('，'),
-        preview: null
+        preview: null,
+        mode: 'merge'
       });
       pending = null;
       wx.showToast({ title: '恢复完成', icon: 'none' });
