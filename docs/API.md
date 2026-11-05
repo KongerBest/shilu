@@ -254,15 +254,24 @@ getWXContext().OPENID
 
 ### 5.12 `backup`
 
+**文件式备份**：导出成一份 JSON 由用户自己保管，不占云存储、不上传云端。
+（原计划的「加密后上传 `backups` 集合」未做，`backups` 集合当前为空表。）
+
 | action | payload | 返回 |
 |---|---|---|
-| `create` | `{ type: 'full'\|'vault', fileId, sha256, size, counts, encrypted, encMeta? }` | `{ item }` |
-| `list` | `{ cursor? }` | `{ items, nextCursor, hasMore }` |
-| `remove` | `{ id }` | `{ ok }` |
-| `restorePrepare` | `{ id }` | `{ manifest, collections }`（分片读取，≤ 100 条/次） |
-| `restoreChunk` | `{ id, collection, cursor? }` | `{ items, nextCursor }` |
-| `migrate` | `{ targetVersion }` | `{ done, processed, total }` |
-| `purgeDeleted` | — | 定时触发，清理软删除满 30 天数据与文件 |
+| `exportPart` | `{ part: 'categories' \| 'templates' \| 'contacts' \| 'anniversaries' \| 'records', offset? }` | `{ part, items, next_offset, has_more, truncated }` |
+| `importStage` | `{ stage, items, maps?, links? }` | `{ stage, count, inserted, updated, conflict, skipped, mapped?, template_links?, touched_categories? }` |
+| `importStage` | `{ stage: 'finish', category_ids }` | `{ stats, categories_fixed }` |
+
+约束与约定：
+
+- 每片 / 每批 **最多 100 条**；`records` 上限 5000，其它集合上限 200–2000（`_shared/backup-schema.js`）。
+- 导出只带业务字段，`owner_openid` / `user_id` / `is_deleted` / `field_history` 一律剥掉；导入时由服务端重写，**文件里的同名字段不被采信**。
+- **附件不导出**。文件本体在云存储，元数据带出去也恢复不了内容，只会让人误以为附件回来了。
+- **`_id` 不重排**：字段密文的 AAD 是 `userId:recordId:fieldKey`，同账号恢复原样可解；换账号由客户端用新 `userId` 重封，锁着则丢弃密文并保留脱敏值。
+- 写库统一走 `doc(id).set()`：同一份备份重复导入结果一致（幂等），中途失败可从当前阶段重来。
+- 系统分类 / 模板按 `system_key` 对齐到账号里已有的那条，**不会出现第二套「人物档案」**；分类的默认模板在 `templates` 阶段回填。
+- 记录写入时按真实模板重算 `summary` / `search_text`（敏感字段依旧不进索引）；模板缺失则沿用文件里的值。
 
 ---
 

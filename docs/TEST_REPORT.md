@@ -12,11 +12,11 @@
 | 项 | 命令 | 结果 |
 |---|---|---|
 | TypeScript 类型检查 | `npx tsc --noEmit` | ✅ **0 error** |
-| 单元测试 | `npx vitest run` | ✅ **248 passed / 0 failed**（19 个文件） |
+| 单元测试 | `npx vitest run` | ✅ **273 passed / 0 failed**（20 个文件） |
 
 ```
-Test Files  19 passed (19)
-     Tests  248 passed (248)
+Test Files  20 passed (20)
+     Tests  273 passed (273)
 ```
 
 | 测试文件 | 用例数 | 覆盖 |
@@ -39,6 +39,8 @@ Test Files  19 passed (19)
 | **`recur-parity.test.ts`** | **13** | **云函数 `_shared/recur.js` 与客户端 `utils/date.ts` 的重复规则逐条一致（闰日、月末、自定义、不重复、非法日期）** |
 | **`crypto-phone.test.ts`** | **8** | **手机号脱敏（11 位 / 带区号 / 7 位 / 短号 / 空白）、脱敏必含星号、AAD 换人即失效** |
 | **`reminder-plan.test.ts`** | **11** | **提醒到期判定：当天 / 提前 N 天 / 多点独立命中 / 无提醒点 / 不重复已过 / 闰日提前一天 / 排序 / 每用户上限 / 文案** |
+| **`backup.test.ts`** | **25** | **解析 / 版本 / 同账号判定 / 分批 / 文件命名，以及服务端白名单校验（不采信 owner_openid、ID 形态、重复 ID、真实日期、信封完整性、values 体积）** |
+| **`backup.test.ts`** | **25** | **解析 / 版本 / 同账号判定 / 分批 / 文件命名，以及服务端白名单校验（不采信 owner_openid、ID 形态、重复 ID、真实日期、信封完整性、values 体积）** |
 | **`calendar.test.ts`** | **26** | **月历网格（42 格 / 补位 / 闰年 2 月 / 今天标记 / 同日计数）、某天是否命中（每年 / 闰日 / 月末 / 自定义 / 开始日前 / 不重复 / 非法日期）、与 `nextOccurrence` 首命中一致、换月与文案、默认选中** |
 
 ---
@@ -265,6 +267,31 @@ Test Files  19 passed (19)
 | 命中一致性 | ✅ 单测用「日历里第一个命中的日子 = 列表里的下次日期」批量比对 6 种规则，两边不打架 |
 | 空月 | ⚠️ 未截图（造的数据里每月都有条目）；该分支由单测覆盖 |
 | 清理 | ✅ 4 条测试纪念日已删除，`anniversaries_count` 已重算 |
+
+---
+
+---
+
+### 3.8 备份导出与恢复（P6，2026-11-05 晚）
+
+`backup` 云函数 19 文件 / 34.0 KB。首次部署仍报「函数处于 Creating 状态」，20 秒后重试成功（与 anniversary / contact / reminder 同因）。
+
+| 项 | 结果 |
+|---|---|
+| 导出（页面按钮） | ✅ 14 条（分类 7 / 模板 6 / 资料 1），文件 `shilu-backup-20261105-2236.json`、8.5 KB |
+| 导出内容 | ✅ 顶层键 `app / schema_version / user_id / exported_at / counts + 五类数据`；记录里**没有** `owner_openid` / `is_deleted` / `field_history` |
+| 文件落盘 | ✅ 写入 `wx.env.USER_DATA_PATH`，能从本地读回并 `JSON.parse` 成功 |
+| 恢复（含 5 条新数据） | ✅ 返回「已写入 5 条，更新 1 条」：自定义分类 / 模板 / 资料 / 人物 / 纪念日各一条，原资料按 ID 幂等覆盖 |
+| 引用重写 | ✅ 资料的 `category_id` / `template_id` / `contact_ids` 全部指向新导入的分类、模板、人物；纪念日 `contact_id` 正确 |
+| summary / search_text | ✅ 按真实模板重算为「E2E资料 测试昵称 E2E分类 测试昵称」，敏感字段未进索引 |
+| 服务端重写归属 | ✅ 文件里的 `owner_openid` / `user_id` 被丢弃，落库用的是当前账号 |
+| 系统分类对齐 | ✅ 恢复后仍是 7 个系统分类，没有出现第二套「人物档案」；`person` 分类的 `template_id` 指向原有模板（未被换坏） |
+| 分类计数 | ✅ `finish` 用 `count()` 现算，E2E 分类 `record_count=1`；删除测试资料后归零 |
+| 用户统计 | ✅ 恢复后 `records_count=2 / contacts_count=1 / anniversaries_count=1`；清理后回到 `1 / 0 / 0` |
+| UI | ✅ 三个动作（发送到聊天 / 存到电脑 / 复制）与结果提示条正常；恢复完成自动收起预览 |
+| 选择文件 | ⚠️ 模拟器走的是 `applyBackupText` 直接注入（系统文件选择框无法自动化）；`wx.chooseMessageFile` 与「粘贴兜底」两条真实入口未跑通验证 |
+| 跨账号重封 | ❌ 未验证（需要第二个微信号的账号态） |
+| 清理 | ✅ 5 条测试数据经 `record/anniversary/contact/template/category.remove` 删除，统计已重算 |
 
 ---
 

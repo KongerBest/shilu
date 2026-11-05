@@ -10,7 +10,6 @@ import { syncTheme, themeClass } from '../../utils/theme';
 interface Preview {
   fileName: string;
   exportedAt: string;
-  sameAccount: boolean;
   total: number;
   records: number;
   contacts: number;
@@ -198,7 +197,6 @@ Page({
       preview: {
         fileName,
         exportedAt: formatTimestamp(parsed.data.exported_at),
-        sameAccount: !!parsed.data.user_id,
         total: totalItems(counts),
         records: counts.records,
         contacts: counts.contacts,
