@@ -66,6 +66,27 @@
       </text>
     </view>
 
+    <view class="card">
+      <view class="form-row">
+        <text class="form-label">关联人物</text>
+        <view class="contact-pick">
+          <text class="contact-pick__summary">{{contactSummary}}</text>
+          <text wx:if="{{contacts.length > 0}}" class="link" bindtap="onToggleContactPicker">{{showContactPicker ? '收起' : '选择'}}</text>
+          <text wx:else class="link" bindtap="onCreateContact">新建人物</text>
+        </view>
+      </view>
+      <view class="chips" wx:if="{{showContactPicker}}">
+        <view
+          wx:for="{{contacts}}"
+          wx:key="_id"
+          class="chip {{item.on ? 'is-on' : ''}}"
+          data-index="{{index}}"
+          bindtap="onContactToggle"
+          hover-class="chip--hover"
+        >{{item.name}}</view>
+      </view>
+    </view>
+
     <view wx:if="{{hasSensitiveFields}}" class="crypto-note" bindtap="onUnlockTap" hover-class="crypto-note--hover">
       <view class="crypto-note__head">
         <text class="crypto-note__title">{{vaultUnlocked ? '敏感字段将以密文保存' : '敏感字段尚未加密'}}</text>

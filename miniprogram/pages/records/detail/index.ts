@@ -1,4 +1,5 @@
 import { categoryService } from '../../../services/category.service';
+import { contactService } from '../../../services/contact.service';
 import { countEnvelopes, hasEnvelopes, openEnvelopes } from '../../../services/record-crypto';
 import { recordService } from '../../../services/record.service';
 import { templateService, sortedFields } from '../../../services/template.service';
@@ -50,6 +51,8 @@ interface DetailData {
   encryptedAttachments: boolean;
   /** 是否证件资料（system_key=document）：附件区渲染为正/反/其他三区 */
   isDocument: boolean;
+  /** 关联人物（只保留仍存在的） */
+  contacts: { _id: string; name: string }[];
 }
 
 Page({
@@ -73,7 +76,8 @@ Page({
     encryptedCount: 0,
     attachmentCount: 0,
     encryptedAttachments: ENCRYPTED_ATTACHMENT_ENABLED,
-    isDocument: false
+    isDocument: false,
+    contacts: []
   } as DetailData,
 
   onLoad(options: Record<string, string | undefined>) {
@@ -132,6 +136,22 @@ Page({
       const now = Date.now();
       const categoryName = category ? category.name : '未分类';
 
+      // 只在真有绑定关系时才拉人物表，避免每条资料详情都多一次请求
+      let contacts: { _id: string; name: string }[] = [];
+      if ((item.contact_ids || []).length > 0) {
+        try {
+          const list = await contactService.list();
+          contacts = (item.contact_ids || []).reduce<{ _id: string; name: string }[]>((acc, cid) => {
+            const found = list.items.find((entry) => entry._id === cid);
+            if (found) acc.push({ _id: found._id, name: found.name });
+            return acc;
+          }, []);
+        } catch (error) {
+          // 人物模块不可用不影响资料详情本身
+          logger.warn('record-detail', 'contact load failed', { code: toAppError(error).code });
+        }
+      }
+
       this.setData({
         loading: false,
         title: item.title,
@@ -149,6 +169,7 @@ Page({
         encryptedCount,
         attachmentCount: item.attachment_count || 0,
         isDocument: category ? category.system_key === 'document' : false,
+        contacts,
         revealSensitive: false
       });
     } catch (error) {
@@ -220,6 +241,12 @@ Page({
         if (res.confirm) wx.navigateTo({ url: '/pages/vault/index' });
       }
     });
+  },
+
+  onContactTap(e: WechatMiniprogram.TouchEvent) {
+    const id = e.currentTarget.dataset.id as string;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/contacts/detail/index?id=${id}` });
   },
 
   onEditTap() {

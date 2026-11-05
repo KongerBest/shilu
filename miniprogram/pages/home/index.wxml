@@ -45,6 +45,15 @@
       <search-bar readonly="{{true}}" value="" placeholder="搜索标题或内容" bind:tap="onSearchTap" />
     </view>
 
+    <view class="contact-entry" bindtap="onContactsTap" hover-class="contact-entry--hover">
+      <view class="contact-entry__icon">人</view>
+      <view class="contact-entry__main">
+        <text class="contact-entry__title">人物档案</text>
+        <text class="contact-entry__desc">{{contactsCount > 0 ? contactsCount + ' 位人物 · 生日自动倒数' : '把家人朋友存进来，生日自动倒数'}}</text>
+      </view>
+      <view class="chevron"></view>
+    </view>
+
     <view class="section">
       <view class="section__head">
         <view class="section__title">快捷新增</view>

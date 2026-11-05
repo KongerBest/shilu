@@ -13,6 +13,7 @@ const EMPTY_STATS = {
   records_count: 0,
   attachments_count: 0,
   anniversaries_count: 0,
+  contacts_count: 0,
   vault_items_count: 0
 };
 
@@ -23,6 +24,7 @@ function toStats(doc) {
     records_count: doc.records_count || 0,
     attachments_count: doc.attachments_count || 0,
     anniversaries_count: doc.anniversaries_count || 0,
+    contacts_count: doc.contacts_count || 0,
     vault_items_count: doc.vault_items_count || 0
   };
 }
@@ -74,10 +76,15 @@ async function bumpStat(openid, userId, field, delta) {
 
 /** 全量重算。 */
 async function recomputeStats(openid, userId) {
-  const [records, attachments, anniversaries, vaultItems] = await Promise.all([
+  const [records, attachments, anniversaries, contacts, vaultItems] = await Promise.all([
     db.collection(COLLECTIONS.records).where({ owner_openid: openid, is_deleted: 0 }).count(),
     db.collection(COLLECTIONS.attachments).where({ owner_openid: openid, is_deleted: 0 }).count(),
     db.collection(COLLECTIONS.anniversaries).where({ owner_openid: openid, is_deleted: 0 }).count(),
+    db
+      .collection(COLLECTIONS.contacts)
+      .where({ owner_openid: openid, is_deleted: 0 })
+      .count()
+      .catch(() => ({ total: 0 })),
     db
       .collection(COLLECTIONS.secureItems)
       .where({ owner_openid: openid, is_deleted: 0 })
@@ -89,6 +96,7 @@ async function recomputeStats(openid, userId) {
     records_count: records.total,
     attachments_count: attachments.total,
     anniversaries_count: anniversaries.total,
+    contacts_count: contacts.total,
     vault_items_count: vaultItems.total
   };
 

@@ -19,6 +19,7 @@ export interface UserStats {
   records_count: number;
   attachments_count: number;
   anniversaries_count: number;
+  contacts_count: number;
   vault_items_count: number;
 }
 
@@ -197,8 +198,56 @@ export interface Anniversary {
   contact_id: string | null;
   record_id: string | null;
   remind_days_before: number[];
+  /** 由人物生日自动生成（删人物或清空生日时随之软删） */
+  auto_generated?: 0 | 1;
   next_date?: string | null;
   days?: number | null;
   created_at: number;
+  updated_at: number;
+}
+
+/**
+ * 人物档案。
+ * 手机号只以信封 `phone_enc` 存在，云端没有明文；`phone_mask` 是客户端算好的脱敏值。
+ */
+export interface Contact {
+  _id: string;
+  name: string;
+  nickname: string;
+  avatar_file_id: string;
+  relations: string[];
+  /** 信封（推荐）或明文串（保险箱未解锁时用户明确选择的风险路径） */
+  phone_enc: Envelope | string | null;
+  phone_mask: string;
+  birthday: string | null;
+  remark: string;
+  record_ids: string[];
+  anniversary_ids: string[];
+  /** 生日自动生成的纪念日 id，用于「改生日同步 / 删人物一并删」 */
+  birthday_anniversary_id: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+/** 人物详情里挂的纪念日，已带倒计时。 */
+export interface ContactAnniversary {
+  _id: string;
+  title: string;
+  type: AnniversaryType;
+  date: string;
+  repeat_rule: RepeatRule;
+  custom_rule: CustomRule | null;
+  remind_days_before: number[];
+  auto_generated: 0 | 1;
+  next_date: string | null;
+  days: number | null;
+}
+
+/** 人物详情里挂的资料。 */
+export interface ContactLinkedRecord {
+  _id: string;
+  title: string;
+  summary: string;
+  category_id: string;
   updated_at: number;
 }

@@ -61,3 +61,25 @@
   line-height: 1.55;
   color: var(--c-text-3);
 }
+
+/* 关联人物：摘要靠右，过长省略，操作链接固定不被挤走 */
+.contact-pick {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  margin-left: var(--sp-4);
+}
+
+.contact-pick__summary {
+  max-width: 340rpx;
+  font-size: var(--fs-body);
+  color: var(--c-text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contact-pick .link {
+  flex-shrink: 0;
+  margin-left: var(--sp-2);
+}

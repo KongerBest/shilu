@@ -114,6 +114,20 @@
       </view>
     </block>
 
+    <view class="card" wx:if="{{contacts.length > 0}}">
+      <text class="form-hint">关联人物</text>
+      <view class="contact-links">
+        <text
+          wx:for="{{contacts}}"
+          wx:key="_id"
+          class="contact-link"
+          data-id="{{item._id}}"
+          bindtap="onContactTap"
+          hover-class="contact-link--hover"
+        >{{item.name}}</text>
+      </view>
+    </view>
+
     <view class="card" wx:if="{{hasSensitive}}">
       <text class="form-hint">
         敏感字段不会进入搜索索引与列表摘要，详情页默认掩码。保险箱解锁后新保存的敏感字段以密文存云端；

@@ -32,6 +32,8 @@ interface HomeData {
   categories: Category[];
   recent: RecordListItem[];
   favorites: RecordListItem[];
+  /** 人物档案入口卡片上的数字，来自 user_stats.contacts_count */
+  contactsCount: number;
   loaded: boolean;
 }
 
@@ -48,6 +50,7 @@ Page({
     categories: [] as Category[],
     recent: [] as RecordListItem[],
     favorites: [] as RecordListItem[],
+    contactsCount: 0,
     loaded: false
   } as HomeData,
 
@@ -75,7 +78,8 @@ Page({
       this.setData({
         initial: nickname ? nickname.slice(0, 1) : '拾',
         avatarFileId: session.user.avatarFileId || '',
-        displayName
+        displayName,
+        contactsCount: session.stats.contacts_count || 0
       });
 
       this.animateStats({
@@ -160,6 +164,10 @@ Page({
 
   onNewTap() {
     wx.navigateTo({ url: '/pages/records/edit/index' });
+  },
+
+  onContactsTap() {
+    wx.navigateTo({ url: '/pages/contacts/index' });
   },
 
   onCategoryTap(e: WechatMiniprogram.TouchEvent) {

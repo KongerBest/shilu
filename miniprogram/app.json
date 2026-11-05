@@ -11,7 +11,10 @@
     "pages/settings/index",
     "pages/vault/index",
     "pages/anniversaries/index",
-    "pages/anniversaries/edit/index"
+    "pages/anniversaries/edit/index",
+    "pages/contacts/index",
+    "pages/contacts/detail/index",
+    "pages/contacts/edit/index"
   ],
   "window": {
     "backgroundTextStyle": "dark",

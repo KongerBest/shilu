@@ -1,0 +1,74 @@
+<view class="page {{themeClass}}">
+  <search-bar
+    value="{{keyword}}"
+    placeholder="搜索姓名"
+    bind:input="onKeywordInput"
+    bind:confirm="onKeywordInput"
+  />
+
+  <loading wx:if="{{loading}}" mode="block" text="正在读取" />
+  <empty-state
+    wx:elif="{{error}}"
+    title="加载失败"
+    desc="{{error}}"
+    action-text="重试"
+    bind:action="onRetry"
+  />
+  <block wx:else>
+    <view class="section" wx:if="{{items.length > 0}}">
+      <view class="section__head">
+        <text class="section__title">{{keyword ? '搜索结果' : '全部人物'}}</text>
+        <text class="section__action">{{total}} 位</text>
+      </view>
+
+      <view class="card list">
+        <view
+          wx:for="{{items}}"
+          wx:key="_id"
+          class="crow"
+          data-id="{{item._id}}"
+          bindtap="onItemTap"
+          hover-class="crow--hover"
+        >
+          <view class="crow__avatar">{{item.initial}}</view>
+          <view class="crow__main">
+            <view class="crow__head">
+              <text class="crow__name">{{item.name}}</text>
+              <text wx:if="{{item.nickname}}" class="crow__nick">{{item.nickname}}</text>
+              <text wx:if="{{item.countdown}}" class="crow__count">{{item.countdown}}</text>
+            </view>
+            <view class="crow__meta">
+              <text wx:if="{{item.relationText}}" class="tag tag--accent">{{item.relationText}}</text>
+              <text wx:if="{{item.phoneText}}" class="crow__phone tabular">{{item.phoneText}}</text>
+              <text wx:elif="{{!item.relationText}}" class="crow__phone">未填联系方式</text>
+              <text wx:if="{{item.isPlainPhone}}" class="tag tag--warn">明文</text>
+            </view>
+            <text wx:if="{{item.birthdayText}}" class="crow__birth">{{item.birthdayText}}</text>
+          </view>
+          <view class="chevron"></view>
+        </view>
+      </view>
+    </view>
+
+    <empty-state
+      wx:elif="{{keyword}}"
+      title="没有匹配的人物"
+      desc="换个关键词试试，比如姓名或昵称。"
+    />
+
+    <empty-state
+      wx:else
+      title="还没有人物档案"
+      desc="把家人朋友存进来：填了生日会自动生成纪念日，到点就能看见倒计时。"
+      action-text="新建人物"
+      bind:action="onCreateTap"
+    />
+
+    <button
+      wx:if="{{items.length > 0}}"
+      class="btn-primary"
+      hover-class="btn-primary--hover"
+      bindtap="onCreateTap"
+    >新建人物</button>
+  </block>
+</view>

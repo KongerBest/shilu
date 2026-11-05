@@ -388,3 +388,32 @@ button {
   border-top: 1rpx solid var(--c-line);
 }
 
+/* ---------- 可选 chips（关系标签 / 关联人物） ---------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}
+
+.chip {
+  padding: 12rpx 24rpx;
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 999rpx;
+  background: var(--glass-bg-soft);
+  box-shadow: var(--glass-highlight);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.chip--hover {
+  background: var(--glass-bg-strong);
+}
+
+.chip.is-on {
+  color: var(--c-accent);
+  border-color: var(--c-accent);
+  background: var(--c-accent-glass-soft);
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+}

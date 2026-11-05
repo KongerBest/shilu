@@ -73,6 +73,24 @@
       </view>
     </view>
 
+    <view class="card" wx:if="{{contacts.length > 0}}">
+      <view class="form-row">
+        <text class="form-label">关联人物</text>
+        <text class="form-picker-text">{{contactSummary}}</text>
+      </view>
+      <view class="chips">
+        <view
+          wx:for="{{contacts}}"
+          wx:key="_id"
+          class="chip {{item.on ? 'is-on' : ''}}"
+          data-id="{{item._id}}"
+          bindtap="onContactTap"
+          hover-class="chip--hover"
+        >{{item.name}}</view>
+      </view>
+      <text class="form-hint">关联后，这个日子也会出现在该人物的详情页；再点一次可取消。</text>
+    </view>
+
     <view class="card">
       <text class="form-label">提醒</text>
       <view class="remind">

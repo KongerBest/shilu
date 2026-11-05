@@ -22,3 +22,6 @@ export async function newRecordId(): Promise<string> {
   }
   return out;
 }
+
+/** 人物同理：手机号的 AAD 绑定 contactId，建之前就要有稳定 id。 */
+export const newContactId = newRecordId;

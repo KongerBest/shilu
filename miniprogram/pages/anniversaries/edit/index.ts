@@ -1,5 +1,6 @@
 import { ANNIVERSARY_ENABLED } from '../../../config/features';
 import { anniversaryService, todayText } from '../../../services/anniversary.service';
+import { contactService } from '../../../services/contact.service';
 import type { Anniversary, AnniversaryType, RepeatRule, RepeatUnit } from '../../../types/models';
 import { toAppError } from '../../../utils/errors';
 import { haptic } from '../../../utils/haptics';
@@ -52,6 +53,11 @@ interface EditData {
   unitOptions: string[];
   showCustom: boolean;
   remindOptions: { days: number; label: string; on: boolean }[];
+
+  /** 关联人物（单选）：生日纪念日通常就属于某个人 */
+  contacts: { _id: string; name: string; on: boolean }[];
+  selectedContactId: string;
+  contactSummary: string;
 }
 
 function remindLabel(days: number): string {
@@ -80,7 +86,10 @@ Page({
     unitIndex: 3,
     unitOptions: UNITS.map((item) => item.label),
     showCustom: false,
-    remindOptions: REMIND_CHOICES.map((days) => ({ days, label: remindLabel(days), on: days === 0 }))
+    remindOptions: REMIND_CHOICES.map((days) => ({ days, label: remindLabel(days), on: days === 0 })),
+    contacts: [],
+    selectedContactId: '',
+    contactSummary: '未关联'
   } as EditData,
 
   onShow() {
@@ -97,8 +106,14 @@ Page({
       return;
     }
 
+    // 人物模块不可用时不该挡住纪念日编辑
+    const contactList = await contactService.list().catch(() => null);
+
     if (!id) {
-      this.setData({ loading: false });
+      this.setData({
+        loading: false,
+        contacts: this.buildContacts(contactList ? contactList.items : [], '')
+      });
       return;
     }
 
@@ -109,11 +124,19 @@ Page({
         this.setData({ loading: false, error: '纪念日不存在或已删除' });
         return;
       }
+      this.setData({ contacts: this.buildContacts(contactList ? contactList.items : [], item.contact_id || '') });
       this.fill(item);
     } catch (error) {
       logger.warn('anniversary-edit', 'load failed', { code: toAppError(error).code });
       this.setData({ loading: false, error: toAppError(error).message });
     }
+  },
+
+  buildContacts(
+    all: { _id: string; name: string }[],
+    selectedId: string
+  ): { _id: string; name: string; on: boolean }[] {
+    return all.map((entry) => ({ _id: entry._id, name: entry.name, on: entry._id === selectedId }));
   },
 
   fill(item: Anniversary) {
@@ -134,11 +157,30 @@ Page({
       showCustom: item.repeat_rule === 'custom',
       customInterval: String((item.custom_rule && item.custom_rule.interval) || 1),
       unitIndex,
+      selectedContactId: item.contact_id || '',
+      contactSummary: this.contactName(item.contact_id || ''),
       remindOptions: REMIND_CHOICES.map((days) => ({
         days,
         label: remindLabel(days),
         on: chosen.indexOf(days) >= 0
       }))
+    });
+  },
+
+  contactName(id: string): string {
+    if (!id) return '未关联';
+    const found = this.data.contacts.find((entry) => entry._id === id);
+    return found ? found.name : '未关联';
+  },
+
+  onContactTap(e: WechatMiniprogram.TouchEvent) {
+    const id = e.currentTarget.dataset.id as string;
+    // 再点一次取消；点别人则替换
+    const next = this.data.selectedContactId === id ? '' : id;
+    this.setData({
+      selectedContactId: next,
+      contactSummary: this.contactName(next),
+      contacts: this.data.contacts.map((entry) => ({ ...entry, on: entry._id === next }))
     });
   },
 
@@ -209,7 +251,8 @@ Page({
       date: this.data.date,
       repeatRule: rule,
       customRule,
-      remindDays: this.data.remindOptions.filter((item) => item.on).map((item) => item.days)
+      remindDays: this.data.remindOptions.filter((item) => item.on).map((item) => item.days),
+      contactId: this.data.selectedContactId || null
     };
 
     this.setData({ saving: true });
@@ -234,7 +277,8 @@ Page({
   },
 
   onDelete() {
-    if (!this.data.isEdit) return;    wx.showModal({
+    if (!this.data.isEdit) return;
+    wx.showModal({
       title: '删除这个纪念日？',
       content: '删除后不再出现在倒计时里，关联的资料与人物不受影响。',
       confirmText: '删除',

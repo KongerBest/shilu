@@ -1,4 +1,5 @@
 import { categoryService } from '../../../services/category.service';
+import { contactService } from '../../../services/contact.service';
 import { hasEnvelopes, openEnvelopes, sealSensitiveValues } from '../../../services/record-crypto';
 import { recordService } from '../../../services/record.service';
 import { templateService, sortedFields } from '../../../services/template.service';
@@ -12,6 +13,12 @@ import { newRecordId } from '../../../utils/id';
 import { logger } from '../../../utils/logger';
 import { LIMITS } from '../../../utils/validate';
 import { syncTheme, themeClass } from '../../../utils/theme';
+
+interface ContactChip {
+  _id: string;
+  name: string;
+  on: boolean;
+}
 
 interface FieldView {
   key: string;
@@ -51,6 +58,12 @@ interface EditData {
   vaultUnlocked: boolean;
   /** 记录含密文且未解锁：整页停在「需解锁」态，不进表单 */
   locked: boolean;
+
+  /** 关联人物：默认收起，点「选择」展开 chips */
+  contacts: ContactChip[];
+  showContactPicker: boolean;
+  contactSummary: string;
+  selectedContactIds: string[];
 }
 
 /** 字段值不放进 data，避免逐字输入时整页 diff；只在需要回填时同步到 fieldViews。 */
@@ -82,7 +95,11 @@ function emptyData(): EditData {
     isArchived: false,
     hasSensitiveFields: false,
     vaultUnlocked: false,
-    locked: false
+    locked: false,
+    contacts: [],
+    showContactPicker: false,
+    contactSummary: '',
+    selectedContactIds: []
   };
 }
 
@@ -119,12 +136,19 @@ Page({
 
     try {
       // 登录态有内存缓存，这里拿 userId 只为拼字段加密的 AAD 上下文
-      const [categories, session] = await Promise.all([categoryService.list(), userService.login()]);
+      const [categories, session, contactList] = await Promise.all([
+        categoryService.list(),
+        userService.login(),
+        // 人物模块不可用时不该挡住资料编辑：失败就当没有人物可选
+        contactService.list().catch(() => ({ items: [], total: 0 }))
+      ]);
+      const contactItems = contactList.items.map((item) => ({ _id: item._id, name: item.name }));
 
       let categoryId = options.categoryId || '';
       let title = '';
       let templateId: string | null = null;
       let isArchived = false;
+      let selectedContactIds: string[] = [];
 
       if (id) {
         const { item } = await recordService.detail(id);
@@ -132,6 +156,7 @@ Page({
         categoryId = item.category_id;
         templateId = item.template_id;
         isArchived = item.is_archived === 1;
+        selectedContactIds = item.contact_ids || [];
         valuesStash = { ...item.values };
 
         // 密文必须解开才能进表单，否则显示的是 [object Object]，保存还可能把密文弄丢
@@ -172,12 +197,23 @@ Page({
       // 新建时沿用分类的默认模板；编辑时以记录自身绑定的模板为准
       if (!id) templateId = category ? category.template_id : null;
 
+      // 人物可能已被删除：只保留仍存在的那几个，避免保存时提交脏 ID
+      selectedContactIds = selectedContactIds.filter((cid) =>
+        contactItems.some((item) => item._id === cid)
+      );
+
       this.setData({
         categories,
         categoryNames: categories.map((item: Category) => item.name),
         categoryIndex,
         title,
         isArchived,
+        contacts: contactItems.map((item) => ({
+          ...item,
+          on: selectedContactIds.indexOf(item._id) >= 0
+        })),
+        selectedContactIds,
+        contactSummary: this.summaryOf(contactItems, selectedContactIds),
         loading: false
       });
 
@@ -318,6 +354,38 @@ Page({
     this.setData(patch);
   },
 
+  /** 关联人物摘要：最多列 3 个，多了折叠成 +N，避免把行撑爆。 */
+  summaryOf(all: { _id: string; name: string }[], ids: string[]): string {
+    if (ids.length === 0) return '未关联';
+    const names = ids
+      .map((cid) => (all.find((item) => item._id === cid) || { name: '' }).name)
+      .filter(Boolean);
+    if (names.length === 0) return '未关联';
+    return names.length > 3 ? `${names.slice(0, 3).join('、')} +${names.length - 3}` : names.join('、');
+  },
+
+  onToggleContactPicker() {
+    this.setData({ showContactPicker: !this.data.showContactPicker });
+  },
+
+  onCreateContact() {
+    wx.navigateTo({ url: '/pages/contacts/edit/index' });
+  },
+
+  onContactToggle(e: WechatMiniprogram.TouchEvent) {
+    const index = Number(e.currentTarget.dataset.index);
+    const contacts = this.data.contacts.slice();
+    if (!contacts[index]) return;
+    contacts[index] = { ...contacts[index], on: !contacts[index].on };
+
+    const selected = contacts.filter((item) => item.on).map((item) => item._id);
+    this.setData({
+      contacts,
+      selectedContactIds: selected,
+      contactSummary: this.summaryOf(contacts, selected)
+    });
+  },
+
   async onSave() {
     if (this.data.saving) return;
 
@@ -423,6 +491,7 @@ Page({
           id: this.data.id,
           title,
           templateId,
+          contactIds: this.data.selectedContactIds,
           // 没有模板时不提交 values，避免把已有字段值清空
           ...(fields.length > 0 ? { values: payloadValues } : {})
         });
@@ -433,6 +502,7 @@ Page({
           // 只有加密路径才需要预生成 _id，普通新建交给云端生成
           ...(recordId ? { clientId: recordId } : {}),
           templateId,
+          contactIds: this.data.selectedContactIds,
           ...(fields.length > 0 ? { values: payloadValues } : {})
         });
 

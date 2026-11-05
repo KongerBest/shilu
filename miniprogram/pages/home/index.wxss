@@ -8,6 +8,56 @@
   margin: var(--sp-4) 0;
 }
 
+/* 人物档案入口：单独一条，不与分类 grid 混排 —— 它跨分类 */
+.contact-entry {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--sp-4);
+  padding: var(--sp-4);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
+  background-color: var(--glass-bg-soft);
+  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
+  box-shadow: var(--glass-highlight), var(--glass-ring);
+  transition: background-color 140ms ease;
+}
+
+.contact-entry--hover {
+  background-color: var(--glass-bg-strong);
+}
+
+.contact-entry__icon {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  margin-right: var(--sp-3);
+  border-radius: 50%;
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-size: var(--fs-body);
+  line-height: 64rpx;
+  text-align: center;
+}
+
+.contact-entry__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-entry__title {
+  display: block;
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+
+.contact-entry__desc {
+  display: block;
+  margin-top: 4rpx;
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+}
+
+
 .section__title {
   display: flex;
   align-items: center;

@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "人物档案",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "loading": "/components/loading/index",
+    "empty-state": "/components/empty-state/index",
+    "search-bar": "/components/search-bar/index"
+  }
+}

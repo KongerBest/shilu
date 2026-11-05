@@ -102,3 +102,24 @@
   font-weight: 600;
   color: var(--c-text);
 }
+
+/* 关联人物：点击跳人物详情 */
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.contact-link {
+  padding: 10rpx 22rpx;
+  font-size: var(--fs-caption);
+  color: var(--c-accent);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 999rpx;
+  background: var(--c-accent-soft);
+}
+
+.contact-link--hover {
+  background: var(--c-accent-glass-soft);
+}

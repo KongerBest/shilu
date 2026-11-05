@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "人物",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "loading": "/components/loading/index",
+    "empty-state": "/components/empty-state/index"
+  }
+}
