@@ -1,4 +1,4 @@
-import { HOME_RECENT_LIMIT } from '../../config/features';
+import { HOME_RECENT_LIMIT, SEARCH_PAGE_ENABLED } from '../../config/features';
 import { categoryService } from '../../services/category.service';
 import { recordService } from '../../services/record.service';
 import { userService } from '../../services/user.service';
@@ -158,7 +158,11 @@ Page({
   },
 
   onSearchTap() {
-    // 搜索页在阶段六接入，当前先在信息库内就地过滤，保证入口可用
+    if (SEARCH_PAGE_ENABLED) {
+      wx.navigateTo({ url: '/pages/search/index' });
+      return;
+    }
+    // 搜索页未开启的构建，退回在信息库内就地过滤，保证入口不落空
     wx.reLaunch({ url: '/pages/records/index?focus=1' });
   },
 

@@ -1,0 +1,106 @@
+<template name="hitRow">
+  <view
+    class="hit"
+    hover-class="hit--hover"
+    data-url="{{url}}"
+    data-relaunch="{{relaunch}}"
+    bindtap="onHitTap"
+  >
+    <view class="hit__glyph hit__glyph--{{type}}">{{glyph}}</view>
+    <view class="hit__main">
+      <view class="hit__title">
+        <text>{{titleBefore}}</text>
+        <text wx:if="{{titleHit}}" class="hl">{{titleHit}}</text>
+        <text>{{titleAfter}}</text>
+      </view>
+      <view class="hit__meta" wx:if="{{metaBefore || metaHit || metaAfter}}">
+        <text>{{metaBefore}}</text>
+        <text wx:if="{{metaHit}}" class="hl">{{metaHit}}</text>
+        <text>{{metaAfter}}</text>
+      </view>
+    </view>
+    <text wx:if="{{badge}}" class="hit__badge">{{badge}}</text>
+  </view>
+</template>
+
+<view class="page {{themeClass}}">
+  <view class="sbar-row">
+    <view class="sbar-slot">
+      <search-bar
+        value="{{keyword}}"
+        focus="{{focus}}"
+        placeholder="搜资料、人物、纪念日"
+        bind:input="onInput"
+        bind:confirm="onConfirm"
+      />
+    </view>
+    <view class="cancel" hover-class="cancel--hover" bindtap="onCancel">取消</view>
+  </view>
+
+  <!-- 还没输入：给最近搜索与最近更新，避免一进来就是空页 -->
+  <block wx:if="{{!keyword}}">
+    <view class="section" wx:if="{{history.length > 0}}">
+      <view class="section__head">
+        <text class="section__title">最近搜索</text>
+        <text class="section__action" bindtap="onClearHistory">清空</text>
+      </view>
+      <view class="chips">
+        <view
+          wx:for="{{history}}"
+          wx:key="*this"
+          class="chip"
+          hover-class="chip--hover"
+          data-kw="{{item}}"
+          bindtap="onHistoryTap"
+        >{{item}}</view>
+      </view>
+    </view>
+
+    <view class="section" wx:if="{{recent.length > 0}}">
+      <view class="section__head">
+        <text class="section__title">最近更新</text>
+      </view>
+      <view class="card list">
+        <block wx:for="{{recent}}" wx:key="key">
+          <template is="hitRow" data="{{...item}}" />
+        </block>
+      </view>
+    </view>
+
+    <view class="scope card">
+      <text class="scope__title">搜索范围</text>
+      <text class="scope__line">资料标题与正文 · 人物姓名、备注、手机号 · 纪念日 · 分类 · 模板</text>
+      <text class="scope__line scope__line--muted">密码、证件号等加密字段不会进入搜索索引，搜不到是正常的。</text>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="tip" wx:if="{{pending}}">正在搜索资料…</view>
+
+    <view class="errorbox" wx:if="{{error}}">
+      <text class="errorbox__title">资料搜索失败</text>
+      <text class="errorbox__desc">{{error}}</text>
+      <view class="errorbox__btn" hover-class="errorbox__btn--hover" bindtap="onRetry">重试</view>
+    </view>
+
+    <view class="result-count" wx:if="{{!pending && total > 0}}">找到 {{total}} 条</view>
+
+    <empty-state
+      wx:if="{{searched && !pending && !error && total === 0}}"
+      title="没找到相关内容"
+      desc="试试更短的关键词，或确认内容是否已经保存"
+    />
+
+    <view wx:for="{{groups}}" wx:for-item="group" wx:key="key" class="section">
+      <view class="section__head">
+        <text class="section__title">{{group.label}}</text>
+        <text class="section__action tabular">{{group.count}}</text>
+      </view>
+      <view class="card list">
+        <block wx:for="{{group.items}}" wx:key="key">
+          <template is="hitRow" data="{{...item}}" />
+        </block>
+      </view>
+    </view>
+  </block>
+</view>

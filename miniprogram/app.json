@@ -15,7 +15,8 @@
     "pages/contacts/index",
     "pages/contacts/detail/index",
     "pages/contacts/edit/index",
-    "pages/backup/index"
+    "pages/backup/index",
+    "pages/search/index"
   ],
   "window": {
     "backgroundTextStyle": "dark",

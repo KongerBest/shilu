@@ -1,0 +1,189 @@
+.page {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--sp-6));
+}
+
+/* 搜索条吸顶：结果几十行时还能改关键词。
+   用和卡片同一套玻璃材质，滚动时不会出现一条生硬的纯色带。 */
+.sbar-row {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 0 calc(-1 * var(--sp-4));
+  padding: var(--sp-3) var(--sp-4);
+  background-color: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-bottom: 1rpx solid var(--glass-border-soft);
+}
+
+.sbar-slot {
+  flex: 1;
+  min-width: 0;
+}
+
+.cancel {
+  flex-shrink: 0;
+  padding: var(--sp-1) 0 var(--sp-1) var(--sp-2);
+  font-size: var(--fs-body);
+  color: var(--c-accent);
+}
+
+.cancel--hover {
+  opacity: 0.6;
+}
+
+.tip {
+  margin: var(--sp-2) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.result-count {
+  margin: var(--sp-3) 0 0;
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+/* 列表用卡片，行与行之间只留一条发丝线，避免几十行都套一层投影 */
+.list {
+  padding: 0;
+}
+
+.hit {
+  display: flex;
+  align-items: center;
+  padding: var(--sp-3) var(--sp-4);
+  transition: background-color 140ms ease;
+}
+
+.hit + .hit {
+  border-top: 1rpx solid var(--c-line);
+}
+
+.hit--hover {
+  background: var(--glass-bg-strong);
+}
+
+.hit__glyph {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  margin-right: var(--sp-3);
+  border-radius: 50%;
+  background-color: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-size: var(--fs-caption);
+  line-height: 64rpx;
+  text-align: center;
+}
+
+/* 分类/模板是结构性条目，灰底与内容条目区分开，扫列表时更容易分层 */
+.hit__glyph--category,
+.hit__glyph--template {
+  background-color: var(--c-surface-sunken);
+  color: var(--c-text-2);
+}
+
+.hit__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.hit__title {
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hit__meta {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* 高亮只染命中片段：加底色比只改字色更快被眼睛抓到 */
+.hl {
+  color: var(--c-accent);
+  background-color: var(--c-accent-glass-soft);
+  border-radius: 4rpx;
+}
+
+.hit__badge {
+  flex-shrink: 0;
+  max-width: 180rpx;
+  margin-left: var(--sp-2);
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.scope {
+  margin-top: var(--sp-4);
+  padding: var(--sp-4);
+}
+
+.scope__title {
+  display: block;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  color: var(--c-text-2);
+}
+
+.scope__line {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-caption);
+  line-height: 1.7;
+  color: var(--c-text-3);
+}
+
+.scope__line--muted {
+  opacity: 0.85;
+}
+
+.errorbox {
+  margin-top: var(--sp-3);
+  padding: var(--sp-4);
+  border-radius: var(--radius-card);
+  background: var(--c-warn-soft);
+  border: 1rpx solid var(--c-warn-line);
+}
+
+.errorbox__title {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-warn-text);
+}
+
+.errorbox__desc {
+  display: block;
+  margin-top: var(--sp-1);
+  font-size: var(--fs-caption);
+  color: var(--c-warn-text);
+}
+
+.errorbox__btn {
+  display: inline-block;
+  margin-top: var(--sp-3);
+  padding: var(--sp-1) var(--sp-4);
+  border-radius: var(--radius-pill);
+  border: 1rpx solid var(--c-warn-line);
+  font-size: var(--fs-caption);
+  color: var(--c-warn-text);
+}
+
+.errorbox__btn--hover {
+  background: var(--c-warn-line);
+}

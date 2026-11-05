@@ -22,8 +22,8 @@ export const ENCRYPTED_ATTACHMENT_ENABLED = true;
  */
 export const ANNIVERSARY_ENABLED = true;
 
-/** 搜索页（阶段六接入）。为 false 时首页搜索框改为在信息库内就地过滤。 */
-export const SEARCH_PAGE_ENABLED = false;
+/** 全局搜索页（阶段六）。为 false 时首页搜索框改为在信息库内就地过滤。 */
+export const SEARCH_PAGE_ENABLED = true;
 
 /** 是否展示「未完成事项」入口（内部版用；上架版保留，审核要求如实披露）。 */
 export const SHOW_KNOWN_LIMITS = true;

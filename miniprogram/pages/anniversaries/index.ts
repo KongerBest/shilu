@@ -1,7 +1,8 @@
 import { ANNIVERSARY_ENABLED } from '../../config/features';
 import { anniversaryService } from '../../services/anniversary.service';
 import { reminderService } from '../../services/reminder.service';
-import type { Anniversary, AnniversaryType } from '../../types/models';
+import type { Anniversary } from '../../types/models';
+import { anniversaryTypeMeta, repeatLabel } from '../../utils/anniversary-meta';
 import { buildMonthGrid, dayLabel, defaultSelection, itemsOn, monthLabel, shiftMonth } from '../../utils/calendar';
 import type { MonthCell } from '../../utils/calendar';
 import { countdownText } from '../../utils/date';
@@ -18,21 +19,6 @@ interface AnniversaryView extends Anniversary {
   nextText: string;
   accent: string;
 }
-
-const TYPE_META: Record<AnniversaryType, { label: string; accent: string }> = {
-  birthday: { label: '生日', accent: '#C2703C' },
-  meet: { label: '相遇', accent: '#B0577A' },
-  anniversary: { label: '纪念', accent: '#2F5D50' },
-  school: { label: '校园', accent: '#3E5C76' },
-  custom: { label: '自定义', accent: '#5A5470' }
-};
-
-const REPEAT_LABEL: Record<string, string> = {
-  none: '不重复',
-  yearly: '每年',
-  monthly: '每月',
-  custom: '自定义'
-};
 
 type ViewMode = 'list' | 'calendar';
 
@@ -72,11 +58,8 @@ interface ListData {
 }
 
 function toView(item: Anniversary): AnniversaryView {
-  const meta = TYPE_META[item.type] || TYPE_META.custom;
-  const repeat =
-    item.repeat_rule === 'custom' && item.custom_rule
-      ? `每 ${item.custom_rule.interval}${item.custom_rule.unit === 'day' ? '天' : item.custom_rule.unit === 'week' ? '周' : item.custom_rule.unit === 'month' ? '个月' : '年'}`
-      : REPEAT_LABEL[item.repeat_rule] || '不重复';
+  const meta = anniversaryTypeMeta(item.type);
+  const repeat = repeatLabel(item.repeat_rule, item.custom_rule);
 
   return {
     ...item,
