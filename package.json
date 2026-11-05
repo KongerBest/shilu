@@ -6,6 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "sync:shared": "node scripts/sync-shared.js",
     "sync:noble-npm": "node scripts/sync-noble-npm.js",
@@ -13,6 +14,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.19.43",
+    "@vitest/coverage-v8": "^2.1.9",
     "miniprogram-api-typings": "^4.0.4",
     "typescript": "^5.6.3",
     "vitest": "^2.1.8"

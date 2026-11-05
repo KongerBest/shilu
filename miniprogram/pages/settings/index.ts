@@ -1,5 +1,6 @@
 import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { VAULT_ENABLED } from '../../config/features';
+import { KNOWN_LIMITS } from '../../config/known-limits';
 import { runSensitiveBackfill } from '../../services/backfill.service';
 import { userService } from '../../services/user.service';
 import { vaultSession } from '../../services/vault-session';
@@ -16,18 +17,9 @@ function accountTag(id: string): string {
 }
 
 /**
- * 已知限制。这份清单与 docs/PRD.md §8 同步维护，
- * 不允许为了"看起来更完整"而从界面上删掉。
+ * 已知限制清单来自 config/known-limits.ts（与「关于」页共用），
+ * 与 docs/PRD.md §8 同步维护；不允许为了「看起来更完整」从界面上删掉。
  */
-
-const KNOWN_LIMITS: string[] = [
-  '密码保险箱只保留在开发构建：平台规则禁止小程序收集或存储用户密码，上架包会关闭入口，云端也有二次校验。',
-  '提醒是一次性订阅：一次授权仅一条额度，用完需再授权；未配置订阅消息模板的构建不会真正推送。',
-  '模板内新建「图片 / 文件」字段尚未开放（附件可单独上传，且已默认客户端加密）。',
-  '加密附件不生成缩略图以保护隐私，查看需解锁；丢失主密码与恢复码将无法解密，请务必保存恢复码。',
-  '敏感字段：解锁后新保存的以密文存云端（不进搜索索引、详情页掩码）；历史记录需手动执行一次「回填历史明文」。',
-  '全局搜索将在阶段六接入，当前在信息库内按标题与内容过滤。'
-];
 
 Page({
   onShow() {
@@ -51,10 +43,7 @@ Page({
     recalculating: false
   },
 
-  async onLoad(options: Record<string, string | undefined>) {
-    if (options.section === 'about') {
-      wx.setNavigationBarTitle({ title: '关于拾录' });
-    }
+  async onLoad() {
     try {
       const session = await userService.login();
       this.setData({
@@ -169,6 +158,14 @@ Page({
     } finally {
       this.setData({ backfilling: false });
     }
+  },
+
+  onOpenPrivacy() {
+    wx.navigateTo({ url: '/pages/legal/index?type=privacy' });
+  },
+
+  onOpenTerms() {
+    wx.navigateTo({ url: '/pages/legal/index?type=terms' });
   },
 
   onCopyLimits() {

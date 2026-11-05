@@ -1,0 +1,19 @@
+<view class="page page--plain {{themeClass}}">
+  <view class="card doc">
+    <text class="doc__title">{{title}}</text>
+    <text class="doc__date">最近更新：{{updatedAt}}</text>
+    <text class="doc__intro">{{intro}}</text>
+
+    <view wx:for="{{sections}}" wx:key="title" wx:for-index="sIdx" class="clause">
+      <text class="clause__title">{{sIdx + 1}}. {{item.title}}</text>
+      <text
+        wx:for="{{item.paragraphs}}"
+        wx:for-item="para"
+        wx:key="*this"
+        class="clause__p"
+      >{{para}}</text>
+    </view>
+
+    <text class="doc__foot">{{footer}}</text>
+  </view>
+</view>

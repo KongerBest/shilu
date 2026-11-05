@@ -1,0 +1,122 @@
+/* 关于页沿用设置页的玻璃卡片语言；这些类是页面级的，app.wxss 只提供 .card / .section */
+.page--plain {
+  padding-bottom: var(--sp-6);
+}
+
+.group {
+  background-color: var(--glass-bg);
+  background-image:
+    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
+    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
+  border: 1rpx solid var(--glass-border);
+  border-radius: 24rpx;
+  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 104rpx;
+  padding: 0 var(--sp-4);
+}
+
+.row + .row {
+  border-top: 1rpx solid var(--c-line);
+}
+
+.row--hover {
+  background: var(--glass-bg-strong);
+}
+
+.row__label {
+  font-size: var(--fs-body);
+  color: var(--c-text);
+}
+
+.row__right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.row__arrow {
+  width: 14rpx;
+  height: 14rpx;
+  border-right: 2rpx solid var(--c-text-3);
+  border-bottom: 2rpx solid var(--c-text-3);
+  transform: rotate(-45deg);
+}
+
+.info {
+  padding: 0 var(--sp-4);
+}
+
+.kv {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 84rpx;
+}
+
+.kv__k {
+  font-size: var(--fs-body);
+  color: var(--c-text-2);
+}
+
+.kv__v {
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.kv__v.is-ok {
+  color: var(--c-accent);
+}
+
+.kv__v.is-bad {
+  color: var(--c-danger);
+}
+
+.kv__v.is-off {
+  color: var(--c-text-3);
+}
+
+.limits {
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.limit {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+}
+
+.limit + .limit {
+  border-top: 1rpx solid var(--c-line);
+}
+
+.limit__index {
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  padding-top: 6rpx;
+  flex-shrink: 0;
+  width: 32rpx;
+}
+
+.limit__text {
+  flex: 1;
+  font-size: var(--fs-caption);
+  color: var(--c-text-2);
+  line-height: 1.65;
+}
+
+.note {
+  margin-top: var(--sp-4);
+  font-size: var(--fs-micro);
+  color: var(--c-text-3);
+  line-height: 1.6;
+  text-align: center;
+}

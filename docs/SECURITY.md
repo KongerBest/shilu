@@ -309,12 +309,37 @@ CI 层面：`tests/security.log.test.ts` 断言日志函数对 `password` / `tok
 
 ## 9. 安全检查清单（每阶段结束必跑）
 
-- [ ] 无硬编码密钥 / salt / 恢复码（`grep -r "salt.*=.*['\"]" miniprogram`）
-- [ ] 无 `console.log` 打印敏感值（只允许经 `logger`）
-- [ ] 每个云函数有越权用例且通过
-- [ ] 每个集合安全规则为 `read:false, write:false`
-- [ ] 同一明文加密 1000 次 nonce 无重复（单测）
-- [ ] 篡改密文任一字节 → 解密抛错而非返回垃圾（单测）
-- [ ] 跨用户密文搬运 → AAD 校验失败（单测）
-- [ ] `vault` 在 `public` 构建下 403（单测）
-- [ ] 主密码不出现在任何 `wx.cloud.callFunction` 的 `data` 中（代码审查 + 单测断言）
+P7 体检（2026-11-06）逐条核对结果，验证方式写在括号里，便于下次复核。
+
+- [x] 无硬编码密钥 / salt / 恢复码（`tests/security-static.test.ts` 正则扫描 + `grep -rEn "salt.*=.*['\"]" miniprogram` 为空）
+- [x] 无 `console.log` 打印敏感值（同上：除 `utils/logger.ts` 外无裸 console；`tests/logger.test.ts` 验证输出前经 `sanitize`）
+- [x] 每个云函数有越权用例且通过（10 个 `tests/authz-*.test.ts`，共 65 项，全部真跑 handlers）
+- [ ] **每个集合安全规则为 `read:false, write:false`（不通过，发布阻塞项，见 §9.1）**
+- [x] 同一明文加密 1000 次 nonce 无重复（`tests/crypto.test.ts` → `nonce 连续 1000 次全不相同`）
+- [x] 篡改密文任一字节 → 解密抛错而非返回垃圾（`tests/crypto.test.ts` → 逐字节翻转 ct / iv）
+- [x] 跨用户密文搬运 → AAD 校验失败（`tests/crypto-fields.test.ts` → 换用户 / 换记录 / 换字段都解不开）
+- [x] `vault` 在 `public` 构建下 403（`tests/authz-vault.test.ts` → dispatcher 整条路由拦截，`private` 才放行）
+- [x] 主密码不出现在任何 `wx.cloud.callFunction` 的 `data` 中（`tests/security-static.test.ts`：云函数只有 `transport.ts` 一处入口、`call()` 载荷无明文字段、`VaultSecrets` 字段白名单）
+
+### 9.1 未通过项：云数据库集合权限
+
+P7 在模拟器里直接调用 `wx.cloud.database()` 探测（不经过任何云函数）：
+
+| 探测 | 结果 | 含义 |
+|---|---|---|
+| `collection('records').limit(3).get()` | 不抛错，返回 0 条（云端实际有 9 条） | 客户端直读被数据隔离挡住，但**不是 `read:false`** |
+| `collection('records').count()` | `total: 0` | 同上 |
+| `collection(name).doc('__probe_no_such_doc__').update(...)` | `ALLOWED`，`updated: 0` | **客户端有写权限**，`updated:0` 只因目标文档不存在 |
+
+覆盖 `records / categories / vaults / users` 四个集合，写权限结果一致。`vaults` 同样可直写，属于必须修掉的配置。
+
+当前所有业务写入都经云函数（管理员身份），云函数创建的文档不带客户端 `_openid`，所以客户端读不到真实数据；但「能通过客户端直写插入文档」本身已偏离设计，不满足 `DEPLOYMENT.md §10` 的验收条件，不能勾选。
+
+**修正方式**（需在云开发控制台手工完成，工具链做不到）：
+云开发控制台 → 数据库 → 逐个集合 → 权限设置 → 选「所有用户不可读写」（`read:false, write:false`），
+对 15 个集合 `users / user_stats / categories / templates / records / contacts / anniversaries /
+reminders / tags / attachments / favorites / vaults / secure_items / security_logs / backups` 全部执行。
+`cloud_db_write_struct` 只支持创建/删除集合与索引，没有权限设置能力；修改后重新跑一遍上面的探测，
+以 `get()` 抛权限错误、`update()` 返回 `DENIED` 为通过。
+
+在此之前不要把本项写成「已通过」，也不要据此宣称上架检查完成。

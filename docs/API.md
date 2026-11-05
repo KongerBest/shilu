@@ -282,6 +282,7 @@ getWXContext().OPENID
 - 删除顺序 `records → anniversaries → contacts → templates → categories`，先子后父，中间态不会出现「分类没了但记录还挂着」。
 - 全部是**软删**（`is_deleted=1`），云数据库里还能捞回来；记录的收藏与附件跟着软删，避免指针悬空和 `attachments_count` 虚高。
 - 清理后必须带 `refresh_all` 调 `finish`：受影响的分类不止导入过的那些，靠 `category_ids` 局部重算会留下错数。
+- **备份文件里的 ID 一律不采信归属**：`finish.category_ids`、`templates.links` 的 key、`items[]._id` 都先按 `owner_openid` 过滤；撞到他人文档只跳过或计为 `conflict`，绝不写入（P7 补的归属校验，`tests/authz-backup.test.ts` 固定）。
 
 ---
 

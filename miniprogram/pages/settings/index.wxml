@@ -121,6 +121,22 @@
     </view>
   </view>
 
+  <view class="section">
+    <view class="section__head">
+      <text class="section__title">法律信息</text>
+    </view>
+    <view class="group">
+      <view class="row" bindtap="onOpenPrivacy" hover-class="row--hover">
+        <text class="row__label">隐私政策</text>
+        <view class="row__right"><view class="row__arrow"></view></view>
+      </view>
+      <view class="row" bindtap="onOpenTerms" hover-class="row--hover">
+        <text class="row__label">用户协议</text>
+        <view class="row__right"><view class="row__arrow"></view></view>
+      </view>
+    </view>
+  </view>
+
   <view class="note">
     本页面列出的限制均为真实未完成事项，不随版本宣传口径调整而删除。
   </view>

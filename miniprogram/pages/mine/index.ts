@@ -175,7 +175,7 @@ Page({
   },
 
   onOpenAbout() {
-    wx.navigateTo({ url: '/pages/settings/index?section=about' });
+    wx.navigateTo({ url: '/pages/about/index' });
   },
 
   onRetry() {

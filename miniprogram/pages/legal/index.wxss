@@ -1,0 +1,60 @@
+/* 协议是长文，排版重点是「标题能扫、正文能读」，不叠加玻璃层以免降低对比度 */
+.page--plain {
+  padding-bottom: var(--sp-6);
+}
+
+.doc {
+  padding: var(--sp-5) var(--sp-4);
+}
+
+.doc__title {
+  display: block;
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.doc__date {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+}
+
+.doc__intro {
+  display: block;
+  margin-top: var(--sp-4);
+  font-size: var(--fs-body);
+  color: var(--c-text-2);
+  line-height: var(--lh-body);
+}
+
+.clause {
+  margin-top: var(--sp-5);
+}
+
+.clause__title {
+  display: block;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  color: var(--c-text);
+  line-height: var(--lh-body);
+}
+
+.clause__p {
+  display: block;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-body);
+  color: var(--c-text-2);
+  line-height: var(--lh-body);
+}
+
+.doc__foot {
+  display: block;
+  margin-top: var(--sp-5);
+  padding-top: var(--sp-3);
+  border-top: 1rpx solid var(--c-line);
+  font-size: var(--fs-caption);
+  color: var(--c-text-3);
+  line-height: var(--lh-body);
+}

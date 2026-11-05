@@ -9,6 +9,8 @@
     "pages/template/edit/index",
     "pages/mine/index",
     "pages/settings/index",
+    "pages/about/index",
+    "pages/legal/index",
     "pages/vault/index",
     "pages/anniversaries/index",
     "pages/anniversaries/edit/index",

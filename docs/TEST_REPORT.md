@@ -1,9 +1,10 @@
 # 拾录 SHILU — 测试报告
 
-> 更新时间：2026-11-06 ｜ 阶段：P3 + P5 加密 + P6 搜索/备份（字段级加密、全局搜索、导出与合并/覆盖恢复已接入）
+> 更新时间：2026-11-06 ｜ 阶段：P3 + P5 加密 + P6 搜索/备份 + **P7 测试 / 安全体检 / 性能 / 发布前检查**
 > 环境：Windows / Node v24.22.2（LTS）/ npm 11.19.1 / 微信开发者工具 + 云环境（本地注入，见 `config/env.local.example.ts`）
-> 测试命令：`npm run check`（单进程串行，见 `vitest.config.ts` 注释）
+> 测试命令：`npm run check`（类型检查 + 单进程串行单测）、`npm run test:coverage`（覆盖率）
 > 本报告只写实际执行结果。**没有执行过的，一律标「未验证」，不使用「通过」二字。**
+> P7 有两项未闭环：云数据库集合权限不达标、三处云函数修复尚待部署（详见 §3.11 / §4）。
 
 ---
 
@@ -11,12 +12,13 @@
 
 | 项 | 命令 | 结果 |
 |---|---|---|
-| TypeScript 类型检查 | `npx tsc --noEmit` | ✅ **0 error** |
-| 单元测试 | `npx vitest run` | ✅ **294 passed / 0 failed**（21 个文件） |
+| TypeScript 类型检查 | `npm run typecheck` | ✅ **0 error**（小程序 / 测试两套 tsconfig） |
+| 单元测试 | `npx vitest run` | ✅ **381 passed / 0 failed**（33 个文件） |
+| 覆盖率 | `npm run test:coverage` | ✅ `crypto` 98.42%、`validate` 100%、`cursor` 100%（Stmts），均达标 |
 
 ```
-Test Files  21 passed (21)
-     Tests  294 passed (294)
+Test Files  33 passed (33)
+     Tests  381 passed (381)
 ```
 
 | 测试文件 | 用例数 | 覆盖 |
@@ -42,6 +44,18 @@ Test Files  21 passed (21)
 | **`backup.test.ts`** | **31** | **解析 / 版本 / 同账号判定 / 分批 / 文件命名，服务端白名单校验（不采信 owner_openid、ID 形态、重复 ID、真实日期、信封完整性、values 体积），以及覆盖恢复的保留集（映射后 ID、去重、结构异常必报错）与清理目标（保留的不删、脏值不参与、空保留集即全清）** |
 | **`calendar.test.ts`** | **26** | **月历网格（42 格 / 补位 / 闰年 2 月 / 今天标记 / 同日计数）、某天是否命中（每年 / 闰日 / 月末 / 自定义 / 开始日前 / 不重复 / 非法日期）、与 `nextOccurrence` 首命中一致、换月与文案、默认选中** |
 | **`search.test.ts`** | **15** | **全局搜索纯逻辑：关键词归一、大小写不敏感命中、高亮只切首个匹配、多字段加权（权重优先于位置、完全相等 > 前缀 > 中间）、取最高分不累加** |
+| **`authz-category.test.ts`** | **6** | 分类越权：列表隔离、改删他人分类、绑定他人模板、同名判定只在本人范围 |
+| **`authz-record.test.ts`** | **10** | 资料越权：详情/改删/收藏/归档、搜索隔离、他人分类与 clientId、**他人 `contactIds`（真实缺口）** |
+| **`authz-template.test.ts`** | **6** | 模板越权：详情/改删/复制/历史版本/恢复、列表隔离 |
+| **`authz-anniversary.test.ts`** | **6** | 纪念日越权：改删、创建与更新时挂他人人物/资料、列表与 upcoming 隔离 |
+| **`authz-contact.test.ts`** | **6** | 人物越权：详情/改删、**级联生日纪念日不被误删**、脏关联不串库、clientId 不能覆盖他人文档 |
+| **`authz-attachment.test.ts`** | **7** | 附件越权：上传路径与业务归属、路径指纹、批量 reorder/reSign 混入他人 ID 时整批失败 |
+| **`authz-backup.test.ts`** | **7** | 备份越权：导出脱敏、ID 撞库不覆盖、prune 只删自己、**finish/links 不能改他人分类**、脏 category_id 跳过 |
+| **`authz-reminder.test.ts`** | **5** | 提醒越权：额度只加自己、runMine 不发他人、**runDaily 跨账号内容与收件人一一对应**、未配置时如实降级 |
+| **`authz-vault.test.ts`** | **6** | 保险箱越权：密文隔离、改密/恢复/重置不碰他人、只删自己那份、**public 构建整条路由 403** |
+| **`authz-user.test.ts`** | **6** | 用户越权：资料/设置/统计/预设播种隔离、**payload 伪造 openid 不切换账号** |
+| **`crypto-runtime.test.ts`** | **13** | 小程序 wx 替身：随机源三条分支与 65536 字节分块、附件文件系统读写删、加密→临时文件→解密往返 |
+| **`security-static.test.ts`** | **9** | 安全清单源码级断言：单一云函数入口、无裸 console、无硬编码密钥、载荷无明文口令、**vault 闸门必须挂在 index.js** |
 
 ---
 
@@ -151,20 +165,22 @@ Test Files  21 passed (21)
 > 隔离测试用的两条文档由控制台直接写入（`owner_openid` 为 `oFOREIGN_TEST_OPENID_0001`），
 > 未经云函数创建，因此不受"写入时补归属"逻辑影响，能真实模拟另一个用户的数据。
 
-### 3.2 仍未验证
+### 3.2 仍未验证（P7 复核后）
+
+> 下表只列**确实没跑过**的项。已完成的从表里移走，不留在「未验证」里充数。
 
 | 项 | 原因 | 影响 |
 |---|---|---|
-| **`field-renderer` 交互** | 尚未跑完动态表单 | 逐字输入是否跳光标、`observers` 触发顺序、`type: null` 属性透传——仍未实测 |
-| 云数据库索引生效 | 已建 19 个，未压测 | 是否真的命中、`limit` 20/100 边界未实测 |
-| 模板版本回滚 | 未造数据 | `field_history` 写入与 `restore` 未实测 |
-| 云存储客户端权限 | 控制台权限项未能通过工具读取 | 已按「仅创建者可读写」部署，需人工确认该项；临时链接由云函数签发，不受影响 |
-| 附件客户端加密 | 已在模拟器验证上传/解密链路（P3），真机耗时未测 | 大文件（>5MB）加密耗时与内存峰值未实测 |
-| 敏感字段存量回填 | 未实现（P5 待办） | 早于字段加密版本保存的记录仍是明文，`SECURITY.md §3.2` 已如实披露 |
+| `field-renderer` 交互 | 尚未跑完动态表单 | 逐字输入是否跳光标、`observers` 触发顺序、`type: null` 属性透传——仍未实测 |
+| 索引命中与深翻页 | 38 个索引结构与数量已核对；库内仅 9 条记录，未造万级数据压测 | `skip`/游标在大数据量下的表现、`limit` 20/100 边界未实测 |
+| 模板版本回滚 | 未造数据 | `field_history` 写入与 `restore` 未实测（越权侧已测：他人模板不能 restore） |
+| 云存储客户端权限 | 控制台权限项未能通过工具读取 | 临时链接由云函数签发，不受影响 |
 | 大文件与弱网 | 未实测 | 20MB 上限、断点重试、进度回退未验证 |
-| 订阅消息下发 | 无模板 ID | — |
-| 真机加密性能 | 只有模拟器 | PBKDF2 600k 迭代耗时未测 |
-| 真机安全区/键盘 | 只有模拟器 | 键盘弹起时输入框遮挡、不同机型安全区未实测 |
+| 订阅消息真实下发 | 无模板 ID | 代码路径 / 额度 / 未配置降级已由单测与模拟器覆盖 |
+| **真机性能** | 只有微信开发者工具模拟器 | PBKDF2 600k 耗时、5MB 图加密、冷启动、列表翻页的真机数字全部**未验证**；模拟器实测见 §3.11 |
+| 真机安全区 / 键盘 | 只有模拟器 | 键盘弹起时输入框遮挡、不同机型安全区未实测 |
+| **云数据库集合权限** | 实测**不通过** | 客户端可直写，见 `SECURITY.md §9.1`；这是发布阻塞项，不是「未验证」 |
+| **三处云函数修复的云端生效** | 部署确认弹窗待人工点，云端仍是旧代码 | `vault.status` 实测 `code=0`，说明构建闸门尚未部署；详见 §3.11 |
 
 ### 3.3 字段级加密端到端验证（2026-11-05，模拟器 + 真实云环境）
 
@@ -337,25 +353,125 @@ Test Files  21 passed (21)
 
 > 测试数据已全部清理：4 条测试记录经 `record.remove` 删除，库里回到 1 条「生日」，`records_count = 1`。
 
+### 3.11 P7 发布前体检（2026-11-06）
+
+#### 3.11.1 覆盖率
+
+`npm run test:coverage`（`@vitest/coverage-v8`，只统计三个目标模块）：
+
+| 模块 | Stmts | Branch | Funcs | Lines | 结论 |
+|---|---|---|---|---|---|
+| `utils/validate.ts` | 100% | 100% | 100% | 100% | ✅ 达标 |
+| `utils/cursor.ts` | 100% | 94.73% | 100% | 100% | ✅ 达标 |
+| `utils/crypto/**` | 98.42% | 93.85% | 100% | 98.42% | ✅ 达标 |
+| 合计 | 98.58% | 94.20% | 100% | 98.58% | — |
+
+补测前 `crypto` 只有 82.02%（`attachments.ts` 31%、`random.ts` 66% 是短板，因为代码读全局 `wx`，
+Node 下跑不到分支）。新增 `tests/crypto-runtime.test.ts` 装最小 wx 替身后分别升到 98.92% / 94.28%。
+云函数 `handlers.js` 走 CommonJS `require`，v8 提供器统计不到，因此**不纳入 include**——
+写进报告只会制造「没测」的假象，它们的验证依据是 65 项真跑 handlers 的越权用例。
+
+#### 3.11.2 越权用例
+
+10 个云函数各一组，共 **65 项**，全部通过。基础设施是 `tests/stubs/wx-server-sdk`（内存数据库替身）
++ `tests/setup/cloud-stub.ts`（改 `Module._resolveFilename` 把 `wx-server-sdk` 重定向到替身）
++ `tests/helpers/cloud.ts`（双账号、清库、断言 403 且对方数据未变）。
+
+顺带查出并修掉 **3 个真实缺口**，都不是「测试写不出来」而是代码确实漏了：
+
+| # | 位置 | 问题 | 修复 |
+|---|---|---|---|
+| 1 | `record.create/update` | 只校验 `contactIds` 形态，不校验归属；A 能把 B 的人物 ID 写进自己资料 | 新增 `assertContactsOwned`，不区分「不存在/不是你的」，统一 403 |
+| 2 | `backup.finishImport` | 客户端传的 `category_ids` 直接 `.doc(id).update()`，可把他人分类 `record_count` 改成自己的数字 | 先按 `owner_openid` 过滤，只重算自己的分类 |
+| 3 | `backup.importTemplates` | `links` 的 key 直接 `.doc(id).update()`，可把他人分类的默认模板换掉 | 先查出本人拥有的分类 ID，只回填交集 |
+
+#### 3.11.3 安全检查清单
+
+`SECURITY.md §9` 共 9 项，**8 项通过、1 项不通过**。通过的项由
+`tests/security-static.test.ts`（源码级）+ 既有加密单测固定下来，逐条证据写在 §9 里。
+
+不通过的那项值得单独说：在模拟器里直接用 `wx.cloud.database()` 探测，
+`collection('records').limit(3).get()` 不抛错但返回 0 条（云端实际 9 条），
+而 `doc('__probe_no_such_doc__').update(...)` 返回 **`ALLOWED`**，`updated:0` 只是文档不存在。
+`records / categories / vaults / users` 四个集合结果一致，说明客户端**有写权限**，
+不满足 `read:false, write:false`。`cloud_db_write_struct` 只支持集合与索引，改不了权限，
+必须到云开发控制台手工设置，详见 `SECURITY.md §9.1`。**这是发布阻塞项。**
+
+#### 3.11.4 性能实测
+
+| 项 | 环境 | 实测结果 |
+|---|---|---|
+| `App.onLaunch` | 模拟器，两次冷启动 | 63 ms / 78 ms |
+| 首屏云函数（热） | 模拟器 | `user.login` 670 ms、`category.list` 421 ms、`record.list` 416 / 443 ms |
+| 首屏云函数（冷） | 模拟器 | `user.login` 1994 ms、`category.list` 1722 ms、`record.list` 4522 / 3582 ms |
+| 列表连续 5 次 | 模拟器 | 2253 ms（云函数冷启动）→ 437 / 547 / 450 / 449 ms（热，约 470 ms） |
+| 5 MB 文件加密 | 模拟器，真实 `filecipher` 模块 | **273 ms**，密文 5,242,916 B |
+| 5 MB 文件解密 | 同上 | **256 ms**，往返字节一致 |
+| 真机全部性能项 | — | **未验证**（无真机，不把模拟器数字当真机数字） |
+
+冷启动波动主要来自云函数冷启动，不是小程序框架（`onLaunch` 稳定在 63~78 ms）。
+一次冷启动采样里，刷新后等 3 秒截图仍停在「正在打开资料库」加载态；再截图时首页已完整显示
+（标题 / 统计 / 搜索框 / 快捷新增 / 最近记录，数字与库内一致，无占位假数据）。
+也就是说**冷启动首屏可见约 3~5 秒**，这是当前最明显的体验短板，真机数字仍未验证。
+库内只有 9 条记录，**深翻页性能未覆盖**；不为此造假数据。
+
+#### 3.11.5 双构建切换
+
+| 层 | 验证方式 | 结果 |
+|---|---|---|
+| 前端入口 | 临时 `VAULT_ENABLED=false` → 编译 → 「我的」页 | `vaultEnabled=false`，保险箱整行不渲染 ✅ |
+| 前端页面 | public 构建下直接 `reLaunch` 到 `/pages/vault/index` | 页面立刻跳回 `pages/home/index`（栈深 1）✅ |
+| 云端 dispatcher | 单测 `route('vault', h, {feature:'vault'})` | `SHILU_BUILD=public` → 403；`private` → 0 ✅ |
+| 云端真实环境 | 模拟器调 `vault.status` | **`code=0`，未通过**——修复后的云函数还没部署 |
+
+验证中发现 `cloudfunctions/vault/index.js` 原本是 `route('vault', handlers)`，
+**根本没挂 feature 闸门**，此前单测验证的是「应当如此」的配置而非线上实际。已改为
+`route('vault', handlers, { feature: 'vault' })`，并加静态断言防止再次漏配；保险箱页也补了
+`VAULT_ENABLED` 闸门。验证完已把 `features.ts` 恢复为 `true`（开发构建）。
+
+#### 3.11.6 待人工完成（不能写成「已验证」）
+
+`cloud_fn_deploy` 返回 `status: pending`，确认动作在开发者工具窗口内，CLI 没有自动确认参数。
+三个云函数改了代码但**云端仍是旧版本**：
+
+| 云函数 | 待生效的改动 |
+|---|---|
+| `record` | `contactIds` 归属校验 |
+| `backup` | `finishImport` / `importTemplates` 归属过滤 |
+| `vault` | 构建闸门（`SHILU_BUILD=public` 时整条路由 403） |
+
+部署命令（逐个执行，务必带 `--remote-npm-install`，否则漏装 `wx-server-sdk`）：
+
+```bash
+wechatide -c WorkBuddy cloud_fn_deploy --appid <APPID> --env <ENV_ID> \
+  --path <项目路径>/cloudfunctions/record --remote-npm-install
+```
+
+部署后还要在云开发控制台把 `SHILU_BUILD` 设为 `private`（当前私有开发环境）才能继续用保险箱；
+上架构建改为 `public` + `VAULT_ENABLED=false`。改完重跑 `vault.status`，
+以 `public` 下返回 403 为通过。同时按 `SECURITY.md §9.1` 修正 15 个集合的权限。
+
 ---
 
 ## 4. 已知技术债
 
 | # | 问题 | 计划 |
 |---|---|---|
-| 1 | `record.create/remove` 用补偿写而非事务，统计可能短暂不一致 | 阶段七有云环境后切 `db.startTransaction()`；现有 `user.recalcStats` 兜底 |
+| 1 | `record.create/remove` 用补偿写而非事务，统计可能短暂不一致 | 切 `db.startTransaction()`；现有 `user.recalcStats` 兜底 |
 | 2 | 未实现 Argon2id | P5-PoC 单独验证，通过后按 `key_version` 迁移 |
-| 3 | 头像上传未接入，首页/我的显示昵称首字 | 阶段三随附件服务接入 |
-| 4 | 存量记录的敏感字段可能仍是明文（回填需在设置页手动触发一次） | 新写入已加密；回填幂等，见 `SECURITY.md §3.2` |
-| 5 | **`image` / `file` 字段类型未开放** | 阶段三附件服务落地后，同时打开服务端 `ATTACHMENT_FIELDS_ENABLED` 与客户端同名常量 |
-| 6 | 字段删除后 `values` 里遗留旧键（软隐藏） | 接受；用户改回同一 key 即可恢复显示 |
-| 7 | 分类排序一次提交全部条目，服务端逐条 `update` | 分类数 ≤ 100，可接受；后续可改批量 `command` |
-| 8 | 人物头像上传未接入（`avatar_file_id` 恒为空串） | 复用附件服务后再接 |
-| 9 | 全局搜索页未建，搜索降级为信息库内 `search_text` 正则 | 阶段六 |
-| 10 | **订阅消息未配置模板 ID**，提醒只计数不真发 | 在公众平台申请一次性模板 → 填 `_shared/reminder-config.js` → 重新部署 |
-| 11 | 定时触发器可能未随 `cloud_fn_deploy` 创建 | 到云开发控制台核对「每天 09:00」触发器，没有就手动建 |
+| 3 | 历史记录的敏感字段可能是明文 | 回填功能已实现并端到端验证（§3.3.1），但需用户手动触发一次 |
+| 4 | `image` / `file` 字段类型未开放 | 附件只能单独上传；已在「已知限制」披露 |
+| 5 | 字段删除后 `values` 里遗留旧键（软隐藏） | 接受；用户改回同一 key 即可恢复显示 |
+| 6 | 分类排序一次提交全部条目，服务端逐条 `update` | 分类数 ≤ 100，可接受；后续可改批量 `command` |
+| 7 | 人物头像上传未接入页面（`avatar_file_id` 恒为空串） | 复用附件服务后再接 |
+| 8 | **订阅消息未配置模板 ID**，提醒只计数不真发 | 在公众平台申请一次性模板 → 填 `_shared/reminder-config.js` → 重新部署 |
+| 9 | 定时触发器可能未随 `cloud_fn_deploy` 创建 | 到云开发控制台核对「每天 09:00」触发器，没有就手动建 |
+| 10 | **云数据库集合权限不是 `read:false, write:false`** | 发布阻塞项，控制台手工修，见 `SECURITY.md §9.1` |
+| 11 | **三处云函数修复尚未部署** | 确认弹窗待人工点，见 §3.11.6；不部署则云端修复不生效 |
+| 12 | 真机性能（PBKDF2 600k / 5MB 加密 / 冷启动 / 深翻页）未测 | 只有模拟器数字，需真机实测后再调参 |
 
-> 第 3~9 项在界面「设置 → 已知限制」中如实展示，不从产品里隐藏。
+> 未完成项的唯一数据源是 `miniprogram/config/known-limits.ts`，「设置」页与「关于拾录」页共用，
+> 与 `docs/PRD.md §8` 同步维护，不从产品里隐藏。
 
 ---
 
@@ -364,14 +480,16 @@ Test Files  21 passed (21)
 ```bash
 cd shilu
 npm install
-npm run sync:shared
-npm run typecheck   # 期望：无输出，退出码 0
-npm run check       # 类型检查 + 测试；期望：Test Files 10 passed / Tests 131 passed
+npm run sync:shared          # _shared 改动后同步到各云函数 common/
+npm run typecheck            # 小程序 + 测试两套 tsconfig，期望：无输出，退出码 0
+npm run check                # typecheck + 单测；期望：Test Files 33 passed / Tests 381 passed
+npm run test:coverage        # 覆盖率；期望：crypto / validate / cursor 三个模块 Stmts ≥ 90%
 ```
 
-> 只跑 `npm run test` 时务必确认汇总行是 **10 个文件**。旧配置下并行 worker 抢写 vite 的 SSR 缓存会偶发
-> EPERM，vitest 会静默漏收集测试文件（131 个用例只剩 102 个），退出码仍是 0。现已在
-> `vitest.config.ts` 固定 `pool: 'forks'` + `singleFork: true` 规避。
+> 只跑 `npm run test` 时务必确认汇总行是 **33 个文件 / 381 项**。旧配置下并行 worker 抢写
+> vite 的 SSR 缓存会偶发 EPERM，vitest 会静默漏收集测试文件（用例数变少但退出码仍是 0）。
+> 现已在 `vitest.config.ts` 固定 `pool: 'forks'` + `singleFork: true` 规避。
+> 覆盖率报告落在 `coverage/`（已忽略，不入库）。
 
 ---
 

@@ -1,3 +1,4 @@
+import { VAULT_ENABLED } from '../../config/features';
 import { vaultSession, VaultLockedError } from '../../services/vault-session';
 import { vaultService } from '../../services/vault.service';
 import { toAppError } from '../../utils/errors';
@@ -32,6 +33,15 @@ Page({
   },
 
   async onLoad() {
+    // 上架构建不注册入口，但页面路径仍可被直接跳转。这里再拦一次，
+    // 保证 public 构建下连页面都停留不了，而不是留一个「点了报错」的空壳。
+    if (!VAULT_ENABLED) {
+      wx.reLaunch({
+        url: '/pages/home/index',
+        complete: () => wx.showToast({ title: '当前版本不提供该功能', icon: 'none' })
+      });
+      return;
+    }
     try {
       const status = await vaultSession.status();
       this.setData({ mode: status.initialized ? 'unlock' : 'setup' });
