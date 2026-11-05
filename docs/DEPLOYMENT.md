@@ -247,10 +247,10 @@ export const TMPL_ANNIVERSARY = 'your-template-id';
 ## 10. 发布前检查
 
 > P7 体检结果（2026-11-06）。打勾 = 实际验证过；未勾 = 不通过或待人工完成，理由写在同一行。
-> **当前尚未达到发布条件**，前两条是硬阻塞。
+> **当前尚未达到发布条件**：`record` / `backup` 部署待确认、构建开关组合不一致、真机性能未测。
 
-- [ ] `features.ts` 与 `SHILU_BUILD` 一致（上架必须 `false` + `public`）— 当前 `VAULT_ENABLED=true`（开发构建）；云端 `SHILU_BUILD` 需在控制台核对；`vault` 闸门修复尚未部署
-- [ ] 15 个集合安全规则均为 `read:false, write:false` — **13/15 已生效**（复验 `DENIED/DENIED`）；剩 `anniversaries`、`attachments` 仍可直读直写，见 `SECURITY.md §9.1`、`TEST_REPORT.md §3.11.3`
+- [ ] `features.ts` 与 `SHILU_BUILD` 一致（上架必须 `false` + `public`）— `vault` 云函数已部署，`public` 下 `vault.status` 实测 **403**，闸门生效；但当前是 `VAULT_ENABLED=true` + 云端 `SHILU_BUILD=public` 的**不一致**组合：开发环境需把 `SHILU_BUILD` 设为 `private`，上架时改回 `VAULT_ENABLED=false` + `public`
+- [x] 15 个集合安全规则均为 `read:false, write:false` — **15/15 复验 `DENIED/DENIED`**，见 `SECURITY.md §9.1`、`TEST_REPORT.md §3.11.3`
 - [ ] 38 个索引状态均为「正常」— 部分验证：`cloud_db_read_struct` 可查集合与索引结构（抽查 `records` 12 个索引），但工具不返回「状态」字段，未逐条核对
 - [x] `docs/PRD.md §8` 未完成项已同步到小程序「关于」页 — 独立 `pages/about/index`，清单唯一数据源 `config/known-limits.ts`，设置页共用
 - [x] 隐私政策与用户协议页面可访问（审核必查）— `pages/legal/index?type=privacy|terms`，模拟器实测两份文档均渲染（11 / 8 节），设置页与关于页各有一组入口
@@ -260,8 +260,8 @@ export const TMPL_ANNIVERSARY = 'your-template-id';
 
 ### 10.1 发布前的剩余动作（按顺序）
 
-1. 到云开发控制台把剩下 2 个集合（`anniversaries`、`attachments`）的权限也改为「所有用户不可读写」（其余 13 个已改好），重跑 `SECURITY.md §9.1` 的探测，15 个全部 `DENIED/DENIED` 才算通过。
-2. 部署 `record` / `backup` / `vault` 三个云函数（必须带 `--remote-npm-install`），确认弹窗需在开发者工具窗口人工点。
-3. 按构建形态设置 `SHILU_BUILD`：上架 `public` + `VAULT_ENABLED=false`；私有 `private` + `VAULT_ENABLED=true`。
-4. 复核 `vault.status` 在 `public` 下返回 403；复核 38 个索引状态。
+1. ✅ 集合权限已全部修完（15/15 复验通过，`SECURITY.md §9.1`）。
+2. **在微信开发者工具窗口确认 `record` / `backup` 两个云函数部署**：部署请求已发起（`status: pending`），确认交互在开发者工具内、不在聊天里；也可以直接在云开发面板右键目录「上传并部署：云端安装依赖」。`vault` 已部署成功（19 文件 / 33.4 KB）。
+3. 按构建形态设置 `SHILU_BUILD`：当前私有开发环境设 `private`（否则 `VAULT_ENABLED=true` 的保险箱会一直 403）；上架时改回 `public` 并设 `VAULT_ENABLED=false`。
+4. 复核 `vault.status` 在 `public` 下返回 403（已验证）、在 `private` 下可用；复核 38 个索引状态（工具不返回状态，需人工核对）。
 5. 真机实测性能（PBKDF2 600k / 5MB 加密 / 冷启动 / 深翻页），把结果补进 `TEST_REPORT.md`，不要拿模拟器数字冒充真机。

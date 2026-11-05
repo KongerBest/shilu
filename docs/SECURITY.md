@@ -314,7 +314,7 @@ P7 体检（2026-11-06）逐条核对结果，验证方式写在括号里，便�
 - [x] 无硬编码密钥 / salt / 恢复码（`tests/security-static.test.ts` 正则扫描 + `grep -rEn "salt.*=.*['\"]" miniprogram` 为空）
 - [x] 无 `console.log` 打印敏感值（同上：除 `utils/logger.ts` 外无裸 console；`tests/logger.test.ts` 验证输出前经 `sanitize`）
 - [x] 每个云函数有越权用例且通过（10 个 `tests/authz-*.test.ts`，共 65 项，全部真跑 handlers）
-- [ ] **每个集合安全规则为 `read:false, write:false`（复验 13/15 已生效，剩 `anniversaries` 与 `attachments`，见 §9.1）**
+- [x] 每个集合安全规则为 `read:false, write:false`（**15/15 复验通过**，见 §9.1）
 - [x] 同一明文加密 1000 次 nonce 无重复（`tests/crypto.test.ts` → `nonce 连续 1000 次全不相同`）
 - [x] 篡改密文任一字节 → 解密抛错而非返回垃圾（`tests/crypto.test.ts` → 逐字节翻转 ct / iv）
 - [x] 跨用户密文搬运 → AAD 校验失败（`tests/crypto-fields.test.ts` → 换用户 / 换记录 / 换字段都解不开）
@@ -331,24 +331,19 @@ P7 体检（2026-11-06）逐条核对结果，验证方式写在括号里，便�
 | `collection('records').count()` | `total: 0` | 同上 |
 | `collection(name).doc('__probe_no_such_doc__').update(...)` | `ALLOWED`，`updated: 0` | **客户端有写权限**，`updated:0` 只因目标文档不存在 |
 
-**手工修正后复验（2026-11-06 01:40）**：对 15 个集合逐个跑 `get()` 与 `doc().update()`，
-刷新模拟器后分批执行，结果如下（`DENIED/DENIED` = 读、写都被拒）：
+**最终复验（15/15 通过）**：用户补齐 `anniversaries`、`attachments` 后，
+刷新模拟器把 15 个集合逐个跑了一遍 `get()` + `doc().update()`，分三批执行（一次全测会超时）：
 
-| 结果 | 集合 |
+| 集合 | 读 / 写 |
 |---|---|
-| ✅ `DENIED/DENIED`（13 个） | `records`、`categories`、`vaults`、`users`、`templates`、`contacts`、`favorites`、`reminders`、`tags`、`secure_items`、`security_logs`、`user_stats`、`backups` |
-| ❌ `OPEN/ALLOWED`（2 个） | **`anniversaries`**、**`attachments`** |
+| `records` `categories` `vaults` `users` `templates` | `DENIED / DENIED` |
+| `anniversaries` `contacts` `attachments` `favorites` `reminders` | `DENIED / DENIED` |
+| `tags` `secure_items` `security_logs` `user_stats` `backups` | `DENIED / DENIED` |
 
 被拒的错误是 `Permission denied`（`DATABASE_PERMISSION_DENIED`），与 `read:false, write:false` 一致。
-`anniversaries` 与 `attachments` 单独复跑两次仍是 `OPEN/ALLOWED`（`get()` 返回 0 条、
-`update()` 返回 `updated:0`），说明这两个集合的权限**还没改到**，不是偶发或缓存。
+**没有误伤业务**：权限收紧后 `user.getProfile` / `record.list` / `anniversary.list` / `category.list`
+四个云函数调用全部 `code=0`——云函数走管理员权限，不受客户端权限规则约束。
 
-**没有误伤业务**：权限收紧后，`user.getProfile` / `record.list` / `anniversary.list` / `category.list`
-四个云函数调用全部返回 `code=0`——云函数走管理员权限，不受客户端权限规则约束。
-
-**收尾动作**：云开发控制台 → 数据库 → 把 `anniversaries`、`attachments` 两个集合的权限
-也设为「所有用户不可读写」（`read:false, write:false`），然后重跑上面的探测，
-15 个集合全部 `DENIED/DENIED` 才算本项通过。`cloud_db_write_struct` 只支持创建/删除集合与索引，
-没有权限设置能力，这一步只能人工完成。
-
-在这两个集合改完之前，本项保持未勾选，`DEPLOYMENT.md §10` 不能宣称发布检查完成。
+`cloud_db_write_struct` 只支持创建/删除集合与索引，没有权限设置能力，这一步由用户在
+云开发控制台 → 数据库 → 逐个集合 → 权限设置 → 「所有用户不可读写」完成。工具链做不到，
+所以复验以客户端探测为准，不看控制台上的勾选状态。**本项已通过，可勾选。**

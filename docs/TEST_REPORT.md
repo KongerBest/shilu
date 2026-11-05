@@ -4,7 +4,8 @@
 > 环境：Windows / Node v24.22.2（LTS）/ npm 11.19.1 / 微信开发者工具 + 云环境（本地注入，见 `config/env.local.example.ts`）
 > 测试命令：`npm run check`（类型检查 + 单进程串行单测）、`npm run test:coverage`（覆盖率）
 > 本报告只写实际执行结果。**没有执行过的，一律标「未验证」，不使用「通过」二字。**
-> P7 有两项未闭环：集合权限还剩 2 个集合未改、三处云函数修复尚待部署（详见 §3.11 / §4）。
+> P7 未闭环：`record` / `backup` 部署待在开发者工具确认、构建开关组合需一致、真机性能与索引状态未验证（详见 §3.11 / §4）。
+> 集合权限（15/15）与 `vault` 云端闸门已复验通过。
 
 ---
 
@@ -179,7 +180,6 @@ Test Files  33 passed (33)
 | 订阅消息真实下发 | 无模板 ID | 代码路径 / 额度 / 未配置降级已由单测与模拟器覆盖 |
 | **真机性能** | 只有微信开发者工具模拟器 | PBKDF2 600k 耗时、5MB 图加密、冷启动、列表翻页的真机数字全部**未验证**；模拟器实测见 §3.11 |
 | 真机安全区 / 键盘 | 只有模拟器 | 键盘弹起时输入框遮挡、不同机型安全区未实测 |
-| **云数据库集合权限** | 手工修正后复验 **13/15 通过** | `anniversaries`、`attachments` 仍可直读直写，见 `SECURITY.md §9.1`；发布阻塞项，不是「未验证」 |
 | **三处云函数修复的云端生效** | 部署确认弹窗待人工点，云端仍是旧代码 | `vault.status` 实测 `code=0`，说明构建闸门尚未部署；详见 §3.11 |
 
 ### 3.3 字段级加密端到端验证（2026-11-05，模拟器 + 真实云环境）
@@ -387,20 +387,18 @@ Node 下跑不到分支）。新增 `tests/crypto-runtime.test.ts` 装最小 wx 
 
 #### 3.11.3 安全检查清单
 
-`SECURITY.md §9` 共 9 项，**8 项通过、1 项部分通过（13/15）**。通过的项由
-`tests/security-static.test.ts`（源码级）+ 既有加密单测固定下来，逐条证据写在 §9 里。
+`SECURITY.md §9` 共 9 项，**全部通过**。通过的项由 `tests/security-static.test.ts`（源码级）
++ 既有加密单测 + 模拟器实测固定下来，逐条证据写在 §9 里。
 
 集合权限这项在体检时**不通过**：模拟器里直接 `wx.cloud.database()` 探测，
 `collection('records').limit(3).get()` 不抛错但返回 0 条（云端实际 9 条），
 而 `doc('__probe_no_such_doc__').update(...)` 返回 **`ALLOWED`**，`updated:0` 只是文档不存在。
 `cloud_db_write_struct` 只支持集合与索引，改不了权限，只能到云开发控制台手工设置。
 
-用户手工修正后复验（2026-11-06 01:40，刷新模拟器、15 个集合逐个跑读写）：
-**13 个集合已变为 `DENIED/DENIED`**（`Permission denied` / `DATABASE_PERMISSION_DENIED`），
-但 **`anniversaries` 与 `attachments` 仍是 `OPEN/ALLOWED`**，单独复跑两次结果一致。
+用户手工修正后分三批复验（第一次 13/15，补齐 `anniversaries`、`attachments` 后最终 15/15）：
+**15 个集合全部 `DENIED/DENIED`**（`Permission denied` / `DATABASE_PERMISSION_DENIED`，读写都拒）。
 同时确认 `user.getProfile` / `record.list` / `anniversary.list` / `category.list` 四个云函数
-都返回 `code=0`，权限收紧没有误伤业务（云函数走管理员权限）。
-因此本项仍是发布阻塞项，只差这 2 个集合，详见 `SECURITY.md §9.1`。
+都返回 `code=0`，权限收紧没有误伤业务（云函数走管理员权限）。详见 `SECURITY.md §9.1`。
 
 #### 3.11.4 性能实测
 
@@ -427,34 +425,47 @@ Node 下跑不到分支）。新增 `tests/crypto-runtime.test.ts` 装最小 wx 
 | 前端入口 | 临时 `VAULT_ENABLED=false` → 编译 → 「我的」页 | `vaultEnabled=false`，保险箱整行不渲染 ✅ |
 | 前端页面 | public 构建下直接 `reLaunch` 到 `/pages/vault/index` | 页面立刻跳回 `pages/home/index`（栈深 1）✅ |
 | 云端 dispatcher | 单测 `route('vault', h, {feature:'vault'})` | `SHILU_BUILD=public` → 403；`private` → 0 ✅ |
-| 云端真实环境 | 模拟器调 `vault.status` | **`code=0`，未通过**——修复后的云函数还没部署 |
+| 云端真实环境 | `vault` 部署确认成功后，模拟器调 `vault.status` | ✅ **`code=403`**「当前版本不提供该功能」，闸门已生效 |
 
 验证中发现 `cloudfunctions/vault/index.js` 原本是 `route('vault', handlers)`，
 **根本没挂 feature 闸门**，此前单测验证的是「应当如此」的配置而非线上实际。已改为
 `route('vault', handlers, { feature: 'vault' })`，并加静态断言防止再次漏配；保险箱页也补了
 `VAULT_ENABLED` 闸门。验证完已把 `features.ts` 恢复为 `true`（开发构建）。
 
-#### 3.11.6 待人工完成（不能写成「已验证」）
+> 注意：云端 `SHILU_BUILD` 目前是 `public`（默认值），所以 `vault.status` 返回 403 是**符合预期**的；
+> 但它与本地 `VAULT_ENABLED=true` 构成了不一致组合——开发环境里保险箱入口看得见却用不了。
+> 要继续用保险箱，需到云开发控制台把 `SHILU_BUILD` 设为 `private`；上架时改回
+> `public` + `VAULT_ENABLED=false`。这一项对应 `DEPLOYMENT.md §10` 第一条，仍未勾选。
 
-`cloud_fn_deploy` 返回 `status: pending`，确认动作在开发者工具窗口内，CLI 没有自动确认参数。
-三个云函数改了代码但**云端仍是旧版本**：
+#### 3.11.6 部署确认：怎么操作、还剩什么
 
-| 云函数 | 待生效的改动 |
-|---|---|
-| `record` | `contactIds` 归属校验 |
-| `backup` | `finishImport` / `importTemplates` 归属过滤 |
-| `vault` | 构建闸门（`SHILU_BUILD=public` 时整条路由 403） |
+`cloud_fn_deploy` 属于「写操作」，返回 `status: pending` + `taskId`，**确认交互在微信开发者工具窗口内，
+不在聊天里**，CLI 没有 `--yes` / `--auto-confirm` 之类的参数。发起后切到标题为 `shilu` 的
+开发者工具窗口，会看到操作确认框，逐个点「确认」即可；每个任务各点一次。
 
-部署命令（逐个执行，务必带 `--remote-npm-install`，否则漏装 `wx-server-sdk`）：
+| 云函数 | 改动 | 当前状态 |
+|---|---|---|
+| `vault` | 构建闸门（`SHILU_BUILD=public` 时整条路由 403） | ✅ **已部署成功**：`polling_task_result` 返回 `success`，19 文件 / 33.4 KB；`vault.status` 实测 403 |
+| `record` | `contactIds` 归属校验 | ⏳ 已发起，待确认：`confirmation_cloud_fn_deploy_b6bc5242-83dd-4328-8ef7-c1d401b04a22` |
+| `backup` | `finishImport` / `importTemplates` 归属过滤 | ⏳ 已发起，待确认：`confirmation_cloud_fn_deploy_e6eff6c7-f51f-4db9-8d77-359170aa42e3` |
+
+**替代做法**（完全绕开确认框）：在微信开发者工具里打开「云开发」→ 云函数，
+对 `cloudfunctions/record` 与 `cloudfunctions/backup` 目录分别右键
+「上传并部署：云端安装依赖」。部署前先跑 `npm run sync:shared` 保证 `common/` 副本最新（已执行）。
+
+确认后可用下面的命令查结果，不要重复发起同一个部署：
 
 ```bash
-wechatide -c WorkBuddy cloud_fn_deploy --appid <APPID> --env <ENV_ID> \
-  --path <项目路径>/cloudfunctions/record --remote-npm-install
+wechatide -c WorkBuddy polling_task_result --task-id <上面的 taskId>
 ```
 
-部署后还要在云开发控制台把 `SHILU_BUILD` 设为 `private`（当前私有开发环境）才能继续用保险箱；
-上架构建改为 `public` + `VAULT_ENABLED=false`。改完重跑 `vault.status`，
-以 `public` 下返回 403 为通过。同时按 `SECURITY.md §9.1` 修正 15 个集合的权限。
+`pending` 不是失败；只有 `success` 才算部署完成。确认完成后还要：
+1. 云开发控制台 → 云函数 → 版本与配置 → 环境变量，把 `SHILU_BUILD` 设为 `private`（当前私有开发环境），
+   否则 `VAULT_ENABLED=true` 的保险箱会一直 403；上架时改回 `public` + `VAULT_ENABLED=false`。
+2. 复核 38 个索引状态（工具不返回状态，需人工核对）。
+3. 真机实测性能。
+
+集合权限已 15/15 修完，不再列在这里。
 
 ---
 
@@ -471,8 +482,8 @@ wechatide -c WorkBuddy cloud_fn_deploy --appid <APPID> --env <ENV_ID> \
 | 7 | 人物头像上传未接入页面（`avatar_file_id` 恒为空串） | 复用附件服务后再接 |
 | 8 | **订阅消息未配置模板 ID**，提醒只计数不真发 | 在公众平台申请一次性模板 → 填 `_shared/reminder-config.js` → 重新部署 |
 | 9 | 定时触发器可能未随 `cloud_fn_deploy` 创建 | 到云开发控制台核对「每天 09:00」触发器，没有就手动建 |
-| 10 | **2 个集合权限仍不是 `read:false, write:false`**（13 个已改好） | 发布阻塞项：`anniversaries`、`attachments` 待控制台手工修，见 `SECURITY.md §9.1` |
-| 11 | **三处云函数修复尚未部署** | 确认弹窗待人工点，见 §3.11.6；不部署则云端修复不生效 |
+| 10 | **`record` / `backup` 部署待确认**（`vault` 已部署成功并实测 403） | 在微信开发者工具窗口点确认，或云开发面板手动部署，见 §3.11.6 |
+| 11 | **构建开关组合不一致**：本地 `VAULT_ENABLED=true` + 云端 `SHILU_BUILD=public` | 开发环境把 `SHILU_BUILD` 设 `private`；上架改回 `VAULT_ENABLED=false` + `public` |
 | 12 | 真机性能（PBKDF2 600k / 5MB 加密 / 冷启动 / 深翻页）未测 | 只有模拟器数字，需真机实测后再调参 |
 
 > 未完成项的唯一数据源是 `miniprogram/config/known-limits.ts`，「设置」页与「关于拾录」页共用，
