@@ -95,7 +95,9 @@ page,
 
   --h-control: 88rpx;
   --h-chip: 56rpx;
-  --tabbar-height: 108rpx;
+  /* WEUI Tabbar 含图标、文字与安全区留白，实测约 80px；页面底部据此预留，
+     否则 .weui-footer 一类尾部内容会被固定 tabbar 盖住。 */
+  --tabbar-height: 160rpx;
 
   /* 滚动边界氛围已随玻璃层移除；原生导航栏统一用 WEUI 平面色 */
   --edge-top-tint: transparent;

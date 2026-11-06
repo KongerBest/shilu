@@ -1,20 +1,27 @@
-<view class="weui-tabbar {{compact ? 'is-compact' : ''}}">
+<view class="weui-tabbar {{compact ? 'is-compact' : ''}}" style="display: flex; align-items: stretch;">
   <view
     wx:for="{{tabs}}"
     wx:key="key"
     class="weui-tabbar__item {{current === item.key ? 'weui-bar__item_on' : ''}}"
+    style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;"
     data-key="{{item.key}}"
     bindtap="onTap"
     hover-class="weui-cell_active"
     hover-stay-time="60"
   >
-    <view class="weui-tabbar__icon">
+    <view
+      class="weui-tabbar__icon"
+      style="display: flex; align-items: center; justify-content: center; width: {{compact ? '28px' : '24px'}}; height: {{compact ? '28px' : '24px'}}; margin-bottom: {{compact ? '0px' : '2px'}};"
+    >
       <icon
         type="{{item.icon === 'home' ? 'info' : item.icon === 'library' ? 'search' : item.icon === 'calendar' ? 'waiting' : 'success_no_circle'}}"
-        size="24"
+        size="{{compact ? 26 : 24}}"
         color="{{current === item.key ? '#07C160' : '#9A9A9A'}}"
       />
     </view>
-    <text class="weui-tabbar__label">{{item.label}}</text>
+    <text
+      class="weui-tabbar__label"
+      style="display: {{compact ? 'none' : 'block'}}; text-align: center; font-size: 12px; line-height: 1.4;"
+    >{{item.label}}</text>
   </view>
 </view>

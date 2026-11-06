@@ -164,7 +164,9 @@
 }
 
 .footer {
-  margin-top: var(--sp-6);
+  /* 固定 tabbar 会盖住页面底部 ~80px，页脚收紧上边距，保证短页面首屏就能完整看到 */
+  margin-top: var(--sp-2);
+  padding-bottom: var(--sp-4);
   text-align: center;
   font-size: var(--fs-micro);
   color: var(--c-text-3);

@@ -1,4 +1,6 @@
-/* WEUI Tabbar：贴底、无悬浮胶囊、无渐变；选中态用 weui-bar__item_on */
+/* WEUI Tabbar：贴底、无悬浮胶囊、无渐变；选中态用 weui-bar__item_on。
+   图标与文字的上下居中布局写在 WXML 内联样式里，避免 WEUI 全局
+   .weui-tabbar__icon{display:inline-block} 压过组件 WXSS 导致图标与文字并排。 */
 .weui-tabbar {
   position: fixed;
   left: 0;
@@ -15,30 +17,10 @@
   padding: 12rpx 0 40rpx;
 }
 
-.weui-tabbar__icon {
-  width: 48rpx;
-  height: 48rpx;
-  margin-bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .weui-tabbar__label {
-  font-size: 24rpx;
   color: var(--weui-FG-1);
 }
 
 .weui-tabbar__item.weui-bar__item_on .weui-tabbar__label {
   color: var(--weui-BRAND);
-}
-
-/* 收缩态：只留图标，页面底部留白仍由 .page 保证 */
-.weui-tabbar.is-compact .weui-tabbar__label {
-  display: none;
-}
-
-.weui-tabbar.is-compact .weui-tabbar__icon {
-  width: 56rpx;
-  height: 56rpx;
 }

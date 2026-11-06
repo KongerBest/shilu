@@ -233,31 +233,33 @@
 }
 
 /* 视图切换：列表 / 日历 */
-.view-switch {
+/* 列表 / 日历切换：改用 WEUI Navbar 平面样式，去掉自定义胶囊分段控件 */
+.view-switch.weui-navbar {
   display: flex;
-  margin-top: var(--sp-4);
-  padding: 4rpx;
-  border: 1rpx solid var(--glass-border);
-  border-radius: 999rpx;
-  background-color: var(--glass-bg-soft);
-  
+  margin: 32rpx 0 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1rpx solid var(--weui-FG-3);
+  border-radius: 0;
+  background-color: var(--weui-BG-2);
 }
 
-.view-switch__item {
+.view-switch__item.weui-navbar__item {
   flex: 1;
-  padding: 14rpx 0;
-  font-size: var(--fs-caption);
-  color: var(--c-text-2);
+  padding: 20rpx 0;
+  font-size: 30rpx;
+  font-weight: 400;
+  color: var(--weui-FG-1);
   text-align: center;
-  border-radius: 999rpx;
-  transition: background-color 140ms ease, color 140ms ease;
+  border-radius: 0;
+  background: transparent;
 }
 
-.view-switch__item.is-on {
-  color: var(--c-accent);
-  font-weight: 600;
-  background: var(--c-surface);
-  
+.view-switch__item.weui-navbar__item.weui-bar__item_on {
+  color: var(--weui-BRAND);
+  font-weight: 500;
+  background-color: var(--weui-BG-2);
+  border-bottom: 4rpx solid var(--weui-BRAND);
 }
 
 /* 月历：6 行固定高度，换月不跳动 */
@@ -371,31 +373,33 @@
 }
 
 /* 视图切换：列表 / 日历 */
-.view-switch {
+/* 列表 / 日历切换：改用 WEUI Navbar 平面样式，去掉自定义胶囊分段控件 */
+.view-switch.weui-navbar {
   display: flex;
-  margin-top: var(--sp-4);
-  padding: 4rpx;
-  border: 1rpx solid var(--glass-border);
-  border-radius: 999rpx;
-  background-color: var(--glass-bg-soft);
-  
+  margin: 32rpx 0 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1rpx solid var(--weui-FG-3);
+  border-radius: 0;
+  background-color: var(--weui-BG-2);
 }
 
-.view-switch__item {
+.view-switch__item.weui-navbar__item {
   flex: 1;
-  padding: 14rpx 0;
-  font-size: var(--fs-caption);
-  color: var(--c-text-2);
+  padding: 20rpx 0;
+  font-size: 30rpx;
+  font-weight: 400;
+  color: var(--weui-FG-1);
   text-align: center;
-  border-radius: 999rpx;
-  transition: background-color 140ms ease, color 140ms ease;
+  border-radius: 0;
+  background: transparent;
 }
 
-.view-switch__item.is-on {
-  color: var(--c-accent);
-  font-weight: 600;
-  background: var(--c-surface);
-  
+.view-switch__item.weui-navbar__item.weui-bar__item_on {
+  color: var(--weui-BRAND);
+  font-weight: 500;
+  background-color: var(--weui-BG-2);
+  border-bottom: 4rpx solid var(--weui-BRAND);
 }
 
 /* 月历：6 行固定高度，换月不跳动 */

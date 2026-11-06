@@ -2,6 +2,16 @@
   padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--sp-6));
 }
 
+/* 页面去掉了整页横向内边距，卡片外的文案自己补 WEUI 的 16px 页边距 */
+.page--plain > .vault-hint,
+.page--plain > .vault-head,
+.page--plain > .vault-error,
+.page--plain > .vault-warn,
+.page--plain > .vault-reset {
+  padding-left: 32rpx;
+  padding-right: 32rpx;
+}
+
 .vault-hint {
   display: block;
   padding: var(--sp-6) 0;

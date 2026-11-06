@@ -110,3 +110,20 @@
    `useExtendedLib.weui` 的 `mp-*` 组件不占包体积。若需压包，可裁剪未使用的 WEUI 选择器。
 10. **交互数据未变**：所有 `bind*`、`catch*`、`data-*`、`wx:if/wx:for`、组件属性与事件名保持原样；
     需在真机上按原有流程走一遍：新建/编辑/删除资料、模板字段、人物、纪念日、保险箱、备份恢复、搜索。
+
+## 7. 补充修正（用户反馈：tabbar 图标居中）
+
+模拟器全页巡检后的第二轮修正，涉及 7 个文件：
+
+| 问题 | 原因 | 修正 |
+| --- | --- | --- |
+| tabbar 图标与文字并排、图标未居中 | WEUI 全局 `.weui-tabbar__icon{display:inline-block}` 压过组件 WXSS；`<text>` 是行内元素，与图标排在同一行 | `components/custom-tabbar/index.wxml` 用内联样式锁定 `flex` 列布局 + `align-items:center`；compact 收缩态改由 `{{compact ? ...}}` 内联表达式控制 |
+| `--tabbar-height` 偏小，短页面尾部内容被固定 tabbar 盖住 | 108rpx 不足以覆盖「图标 + 文字 + 安全区」 | `tokens.wxss` 提到 160rpx；`pages/mine/index.wxss` 页脚收紧上边距 |
+| 保险箱页标题/说明/错误文案贴屏幕左边 | `.page` 去掉整页横向内边距后，卡片外文案失去页边距 | `pages/vault/index.wxss` 给 `.page--plain` 的卡片外直接子元素补 32rpx 左右内边距 |
+| 搜索页「取消」被右边缘裁掉 | 旧 `.sbar-row` 用 `margin: 0 -32rpx` 做通栏，依赖已被移除的整页内边距 | `pages/search/index.wxss` 改为 `margin:0` + 32rpx 内边距 |
+| 纪念日「列表/日历」仍是自定义胶囊分段控件 | 页面 WXSS 覆盖了 WEUI Navbar | `pages/anniversaries/index.wxss` 改为扁平 `weui-navbar` + 品牌绿下划线选中态 |
+
+补充验证：mine / about / legal / vault / contacts/index / anniversaries/index / anniversaries/edit /
+template/index / template/edit / search / backup / category 全部截图复核通过；
+`contacts/detail`、`contacts/edit` 因当前账号无人物数据，仅能验证错误态，需在真机补测。
+tabbar 四组图标均已居中于文字正上方，选中态、收缩态与暗色主题保持不变。

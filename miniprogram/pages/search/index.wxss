@@ -11,7 +11,8 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  margin: 0 calc(-1 * var(--sp-4));
+  /* 页面已改为 WEUI 无整页内边距，不能再靠负边距做通栏，否则右侧「取消」会被裁掉 */
+  margin: 0;
   padding: var(--sp-3) var(--sp-4);
   background-color: var(--glass-bg-strong);
   
