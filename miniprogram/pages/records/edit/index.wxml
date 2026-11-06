@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" />
   <empty-state
     wx:elif="{{locked}}"
@@ -28,7 +28,7 @@
     </view>
 
     <view class="card">
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">分类</text>
         <picker range="{{categoryNames}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
           <view class="form-picker">
@@ -37,7 +37,7 @@
           </view>
         </picker>
       </view>
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">表单模板</text>
         <picker range="{{templateOptions}}" value="{{templateIndex}}" bindchange="onTemplateChange">
           <view class="form-picker">
@@ -67,7 +67,7 @@
     </view>
 
     <view class="card">
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">关联人物</text>
         <view class="contact-pick">
           <text class="contact-pick__summary">{{contactSummary}}</text>
@@ -97,7 +97,7 @@
       </text>
     </view>
 
-    <button class="btn-primary" hover-class="btn-primary--hover" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+    <button class="btn-primary weui-btn weui-btn_primary" hover-class="btn-primary--hover" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
       {{saving ? '保存中…' : '保存'}}
     </button>
 

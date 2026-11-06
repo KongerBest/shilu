@@ -1,11 +1,11 @@
-<view class="rcard" wx:if="{{view}}" bindtap="onTap" hover-class="rcard--hover" hover-stay-time="60">
-  <view class="rcard__top">
-    <text class="rcard__title">{{view.title}}</text>
-    <view wx:if="{{view.is_favorite === 1}}" class="rcard__fav"></view>
+<view wx:if="{{view}}" class="weui-media-box rcard" bindtap="onTap" hover-class="weui-cell_active" hover-stay-time="60">
+  <view class="weui-media-box__title rcard__title">
+    {{view.title}}
+    <text wx:if="{{view.is_favorite === 1}}" class="weui-badge rcard__fav">收藏</text>
   </view>
-  <text wx:if="{{view.summary}}" class="rcard__summary">{{view.summary}}</text>
-  <view class="rcard__foot">
-    <text class="rcard__time">{{view.timeText}}</text>
-    <text wx:if="{{view.metaText}}" class="rcard__meta">{{view.metaText}}</text>
+  <view wx:if="{{view.summary}}" class="weui-media-box__desc rcard__summary">{{view.summary}}</view>
+  <view class="weui-media-box__info rcard__foot">
+    <view class="weui-media-box__info__meta rcard__time">{{view.timeText}}</view>
+    <view wx:if="{{view.metaText}}" class="weui-media-box__info__meta weui-media-box__info__meta_extra rcard__meta">{{view.metaText}}</view>
   </view>
 </view>

@@ -1,144 +1,44 @@
-.tabbar {
+/* WEUI Tabbar：贴底、无悬浮胶囊、无渐变；选中态用 weui-bar__item_on */
+.weui-tabbar {
   position: fixed;
-  left: var(--sp-4);
-  right: var(--sp-4);
-  /* 悬浮胶囊：离开底边一点，让页面内容从它后面透过去，玻璃才有存在感 */
-  bottom: calc(env(safe-area-inset-bottom) + 12rpx);
-  z-index: 100;
-  display: flex;
-  align-items: stretch;
-  height: var(--tabbar-height);
-  border-radius: var(--radius-pill);
-  background: var(--glass-tabbar);
-  -webkit-backdrop-filter: blur(32rpx) saturate(180%);
-  backdrop-filter: blur(32rpx) saturate(180%);
-  border: 1rpx solid var(--glass-border);
-  /* 顶部亮线 + 底部暗边，构成一块有厚度的玻璃 */
-  box-shadow: var(--shadow-float), var(--glass-highlight), inset 0 -2rpx 0 rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  /* 收缩动画要同时改高度、左右边距和圆角，全部走同一条缓动曲线才像一块整体 */
-  transition:
-    height var(--dur-base) var(--ease-out),
-    left var(--dur-base) var(--ease-out),
-    right var(--dur-base) var(--ease-out),
-    border-radius var(--dur-base) var(--ease-out);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 500;
+  height: auto;
+  min-height: var(--tabbar-height);
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid var(--weui-FG-3);
 }
 
-/* 下滑时收成只留图标的窄胶囊：视野让给内容，但仍能看见自己在哪一栏 */
-.tabbar.is-compact {
-  left: calc(var(--sp-4) + 100rpx);
-  right: calc(var(--sp-4) + 100rpx);
-  height: 84rpx;
+.weui-tabbar__item {
+  padding: 12rpx 0 40rpx;
 }
 
-.tabbar__item {
-  flex: 1;
+.weui-tabbar__icon {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
-  position: relative;
-  transition: opacity 120ms ease, gap var(--dur-base) var(--ease-out);
 }
 
-.tabbar.is-compact .tabbar__item {
-  gap: 0;
+.weui-tabbar__label {
+  font-size: 24rpx;
+  color: var(--weui-FG-1);
 }
 
-.tabbar__item--hover {
-  opacity: 0.6;
+.weui-tabbar__item.weui-bar__item_on .weui-tabbar__label {
+  color: var(--weui-BRAND);
 }
 
-/* 选中项背后的一团主色柔光，替代实心胶囊，避免底栏显得笨重 */
-.tabbar__item.is-active::before {
-  content: '';
-  position: absolute;
-  top: 12rpx;
-  left: 50%;
-  width: 100rpx;
-  height: 64rpx;
-  transform: translateX(-50%);
-  border-radius: var(--radius-pill);
-  background: radial-gradient(62% 62% at 50% 50%, var(--c-accent-soft) 0%, rgba(0, 0, 0, 0) 74%);
+/* 收缩态：只留图标，页面底部留白仍由 .page 保证 */
+.weui-tabbar.is-compact .weui-tabbar__label {
+  display: none;
 }
 
-.tabbar__icon,
-.tabbar__label {
-  position: relative;
-  z-index: 1;
-}
-
-.tabbar__label {
-  display: block;
-  height: 32rpx;
-  line-height: 32rpx;
-  font-size: var(--fs-micro);
-  color: var(--c-text-3);
-  letter-spacing: 0.04em;
-  transition:
-    opacity 140ms ease,
-    height var(--dur-base) var(--ease-out),
-    transform var(--dur-base) var(--ease-out);
-}
-
-/* 收起来时文字让位：高度归零而不是 visibility:hidden，
-   否则 flex 仍按 32rpx 给它留位置，图标会偏上 */
-.tabbar.is-compact .tabbar__label {
-  opacity: 0;
-  height: 0;
-  transform: scale(0.9);
-}
-
-.tabbar__item.is-active .tabbar__label {
-  color: var(--c-accent);
-  font-weight: 600;
-}
-
-/* 线性图标：用 mask 把 SVG 当镂空模板，颜色由 background-color 决定，
-   这样同一套图标能跟着 --c-text-3 / --c-accent 走，深浅色不用准备两份资源 */
-.tabbar__icon {
-  width: 44rpx;
-  height: 44rpx;
-  background-color: var(--c-text-3);
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  -webkit-mask-size: 100% 100%;
-  mask-size: 100% 100%;
-  transition:
-    background-color 120ms ease,
-    width var(--dur-base) var(--ease-out),
-    height var(--dur-base) var(--ease-out);
-}
-
-.tabbar__item.is-active .tabbar__icon {
-  background-color: var(--c-accent);
-}
-
-/* 收起后没有文字撑开，图标可以放大一档，触控目标仍是整条 1/3 宽度 */
-.tabbar.is-compact .tabbar__icon {
-  width: 46rpx;
-  height: 46rpx;
-}
-
-.tabbar__icon--home {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.6 10.2 12 3.6l8.4 6.6'/%3E%3Cpath d='M5.9 9.4V20.4h12.2V9.4'/%3E%3Cpath d='M10 20.4v-5.2h4v5.2'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.6 10.2 12 3.6l8.4 6.6'/%3E%3Cpath d='M5.9 9.4V20.4h12.2V9.4'/%3E%3Cpath d='M10 20.4v-5.2h4v5.2'/%3E%3C/svg%3E");
-}
-
-.tabbar__icon--library {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.6' y='8.4' width='16.8' height='12' rx='2.2'/%3E%3Cpath d='M3.6 8.4 5.3 4.6h13.4l1.7 3.8'/%3E%3Cpath d='M9.8 12.8h4.4'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.6' y='8.4' width='16.8' height='12' rx='2.2'/%3E%3Cpath d='M3.6 8.4 5.3 4.6h13.4l1.7 3.8'/%3E%3Cpath d='M9.8 12.8h4.4'/%3E%3C/svg%3E");
-}
-
-.tabbar__icon--calendar {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.8' y='6' width='16.4' height='14.2' rx='2.4'/%3E%3Cpath d='M8 3.6v4'/%3E%3Cpath d='M16 3.6v4'/%3E%3Cpath d='M3.8 10.6h16.4'/%3E%3Ccircle cx='12' cy='15' r='1.5' fill='%23000' stroke='none'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.8' y='6' width='16.4' height='14.2' rx='2.4'/%3E%3Cpath d='M8 3.6v4'/%3E%3Cpath d='M16 3.6v4'/%3E%3Cpath d='M3.8 10.6h16.4'/%3E%3Ccircle cx='12' cy='15' r='1.5' fill='%23000' stroke='none'/%3E%3C/svg%3E");
-}
-
-.tabbar__icon--user {
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.6' r='3.9'/%3E%3Cpath d='M5 20.4c0-3.5 3.1-5.8 7-5.8s7 2.3 7 5.8'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.6' r='3.9'/%3E%3Cpath d='M5 20.4c0-3.5 3.1-5.8 7-5.8s7 2.3 7 5.8'/%3E%3C/svg%3E");
+.weui-tabbar.is-compact .weui-tabbar__icon {
+  width: 56rpx;
+  height: 56rpx;
 }

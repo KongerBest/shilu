@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" />
   <empty-state
     wx:elif="{{error}}"
@@ -18,21 +18,21 @@
     <block wx:else>
       <view class="section" wx:if="{{systemRows.length > 0}}">
         <view class="section__head">
-          <text class="section__title">系统预设</text>
+          <text class="section__title weui-cells__title">系统预设</text>
           <text class="section__action">首次登录自动创建</text>
         </view>
         <view class="card">
           <view
             wx:for="{{systemRows}}"
             wx:key="_id"
-            class="tpl-row"
+            class="tpl-row weui-cell weui-cell_access"
             data-id="{{item._id}}"
             bindtap="onTemplateTap"
           >
             <view class="tpl-main">
               <view class="tpl-head">
                 <text class="tpl-name">{{item.name}}</text>
-                <text class="tag tag--accent">预设</text>
+                <text class="tag weui-badge tag--accent">预设</text>
               </view>
               <text class="tpl-meta">{{item.meta}}</text>
             </view>
@@ -43,7 +43,7 @@
 
       <view class="section">
         <view class="section__head">
-          <text class="section__title">我创建的</text>
+          <text class="section__title weui-cells__title">我创建的</text>
           <text class="section__action">共 {{customRows.length}} 个</text>
         </view>
         <view class="card" wx:if="{{customRows.length === 0}}">
@@ -53,7 +53,7 @@
           <view
             wx:for="{{customRows}}"
             wx:key="_id"
-            class="tpl-row"
+            class="tpl-row weui-cell weui-cell_access"
             data-id="{{item._id}}"
             bindtap="onTemplateTap"
           >
@@ -66,7 +66,7 @@
         </view>
       </view>
 
-      <button class="btn-primary" hover-class="btn-primary--hover" bindtap="onCreateTap">新建模板</button>
+      <button class="btn-primary weui-btn weui-btn_primary" hover-class="btn-primary--hover" bindtap="onCreateTap">新建模板</button>
     </block>
   </block>
 </view>

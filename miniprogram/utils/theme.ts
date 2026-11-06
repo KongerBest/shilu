@@ -11,11 +11,10 @@ export type ThemeMode = 'light' | 'dark';
 
 const STORAGE_KEY = 'shilu.theme';
 
-/** 导出给 scroll-edge.ts 复用：顶栏动画的起始色必须和 onShow 刷的色一致，不能各写一份。 */
+/** WEUI 导航栏：与 weui.wxss 的 --weui-BG-1 / 暗色板一致，纯平面色，不做渐变。 */
 export const NAV_BAR: Record<ThemeMode, { bg: string; front: '#ffffff' | '#000000' }> = {
-  // 与 --bg-gradient 的顶部色一致，避免导航栏和页面之间出现一条硬边
-  light: { bg: '#dcece5', front: '#000000' },
-  dark: { bg: '#101917', front: '#ffffff' }
+  light: { bg: '#f7f7f7', front: '#000000' },
+  dark: { bg: '#1e1e1e', front: '#ffffff' }
 };
 
 export function getTheme(): ThemeMode {

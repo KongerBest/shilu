@@ -1,38 +1,44 @@
-<view class="fr" wx:if="{{field}}">
-  <view class="fr-head">
+<view class="weui-cells weui-cells_form fr" wx:if="{{field}}">
+  <view class="weui-cells__title fr-head">
     <text class="fr-label">{{field.label}}</text>
-    <text wx:if="{{field.required}}" class="fr-required">必填</text>
-    <text wx:if="{{field.sensitive}}" class="fr-badge">敏感</text>
+    <text wx:if="{{field.required}}" class="weui-badge fr-required">必填</text>
+    <text wx:if="{{field.sensitive}}" class="weui-badge fr-badge">敏感</text>
     <text class="fr-type">{{typeLabel}}</text>
   </view>
 
   <!-- 文本类：单行 / 数字 / 电话 / 邮箱 / 链接 / 地点 -->
-  <input
-    wx:if="{{isInput}}"
-    class="fr-input {{error ? 'fr-input--error' : ''}}"
-    value="{{text}}"
-    type="{{inputType}}"
-    placeholder="{{placeholder}}"
-    placeholder-class="fr-placeholder"
-    maxlength="{{maxlength}}"
-    disabled="{{disabled}}"
-    bindinput="onInput"
-    bindblur="onBlur"
-  />
+  <view wx:if="{{isInput}}" class="weui-cell fr-control">
+    <view class="weui-cell__bd">
+      <input
+        class="weui-input fr-input {{error ? 'fr-input--error' : ''}}"
+        value="{{text}}"
+        type="{{inputType}}"
+        placeholder="{{placeholder}}"
+        placeholder-class="weui-input__placeholder"
+        maxlength="{{maxlength}}"
+        disabled="{{disabled}}"
+        bindinput="onInput"
+        bindblur="onBlur"
+      />
+    </view>
+  </view>
 
   <!-- 多行文本 -->
-  <textarea
-    wx:elif="{{field.type === 'textarea'}}"
-    class="fr-textarea {{error ? 'fr-input--error' : ''}}"
-    value="{{text}}"
-    placeholder="{{placeholder}}"
-    placeholder-class="fr-placeholder"
-    maxlength="{{maxlength}}"
-    disabled="{{disabled}}"
-    auto-height
-    bindinput="onInput"
-    bindblur="onBlur"
-  />
+  <view wx:elif="{{field.type === 'textarea'}}" class="weui-cell fr-control">
+    <view class="weui-cell__bd">
+      <textarea
+        class="weui-textarea fr-textarea {{error ? 'fr-input--error' : ''}}"
+        value="{{text}}"
+        placeholder="{{placeholder}}"
+        placeholder-class="weui-input__placeholder"
+        maxlength="{{maxlength}}"
+        disabled="{{disabled}}"
+        auto-height
+        bindinput="onInput"
+        bindblur="onBlur"
+      />
+    </view>
+  </view>
 
   <!-- 日期 -->
   <picker
@@ -42,14 +48,16 @@
     disabled="{{disabled}}"
     bindchange="onDateChange"
   >
-    <view class="fr-picker {{error ? 'fr-input--error' : ''}}">
-      <text class="{{text ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{text || placeholder}}</text>
-      <text class="fr-chevron">›</text>
+    <view class="weui-cell fr-picker {{error ? 'fr-input--error' : ''}}">
+      <view class="weui-cell__bd">
+        <text class="{{text ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{text || placeholder}}</text>
+      </view>
+      <view class="weui-cell__ft"><text class="fr-chevron">›</text></view>
     </view>
   </picker>
 
   <!-- 日期时间：拆成日期与时间两个选择器，避免自造轮子 -->
-  <view wx:elif="{{field.type === 'datetime'}}" class="fr-datetime">
+  <view wx:elif="{{field.type === 'datetime'}}" class="weui-cell fr-datetime">
     <picker mode="date" value="{{datePart}}" disabled="{{disabled}}" bindchange="onDatePart">
       <view class="fr-picker fr-picker--half {{error ? 'fr-input--error' : ''}}">
         <text class="{{datePart ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{datePart || '选择日期'}}</text>
@@ -70,36 +78,42 @@
     disabled="{{disabled}}"
     bindchange="onSelect"
   >
-    <view class="fr-picker {{error ? 'fr-input--error' : ''}}">
-      <text class="{{selectLabel ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{selectLabel || placeholder}}</text>
-      <text class="fr-chevron">›</text>
+    <view class="weui-cell fr-picker {{error ? 'fr-input--error' : ''}}">
+      <view class="weui-cell__bd">
+        <text class="{{selectLabel ? 'fr-picker-value' : 'fr-placeholder-text'}}">{{selectLabel || placeholder}}</text>
+      </view>
+      <view class="weui-cell__ft"><text class="fr-chevron">›</text></view>
     </view>
   </picker>
 
-  <!-- 多选 -->
-  <view wx:elif="{{field.type === 'multi_select'}}" class="fr-chips">
-    <view
-      wx:for="{{options}}"
-      wx:key="value"
-      class="fr-chip {{item.checked ? 'fr-chip--on' : ''}}"
-      data-value="{{item.value}}"
-      bindtap="onToggleMulti"
-    >
-      {{item.label}}
+  <!-- 多选：WEUI 无 chip，用 Cells 内的中性标签 + 品牌色选中态 -->
+  <view wx:elif="{{field.type === 'multi_select'}}" class="weui-cell fr-control">
+    <view class="weui-cell__bd fr-chips">
+      <view
+        wx:for="{{options}}"
+        wx:key="value"
+        class="fr-chip {{item.checked ? 'fr-chip--on' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onToggleMulti"
+      >{{item.label}}</view>
     </view>
   </view>
 
   <!-- 开关 -->
-  <view wx:elif="{{field.type === 'switch'}}" class="fr-switch-row">
-    <text class="fr-switch-text">{{boolValue ? '是' : '否'}}</text>
-    <switch checked="{{boolValue}}" disabled="{{disabled}}" color="#2F5D50" bindchange="onSwitch" />
+  <view wx:elif="{{field.type === 'switch'}}" class="weui-cell weui-cell_switch fr-switch-row">
+    <view class="weui-cell__bd"><text class="fr-switch-text">{{boolValue ? '是' : '否'}}</text></view>
+    <view class="weui-cell__ft">
+      <switch checked="{{boolValue}}" disabled="{{disabled}}" color="#07C160" bindchange="onSwitch" />
+    </view>
   </view>
 
   <!-- 附件类：阶段二还没有统一附件服务，明确标注而不是放个点不动的按钮 -->
-  <view wx:else class="fr-deferred">
-    <text class="fr-deferred-title">{{typeLabel}}字段暂未开放</text>
-    <text class="fr-deferred-desc">需要附件服务支持，将在下一阶段接入</text>
+  <view wx:else class="weui-cell fr-deferred">
+    <view class="weui-cell__bd">
+      <text class="fr-deferred-title">{{typeLabel}}字段暂未开放</text>
+      <text class="fr-deferred-desc">需要附件服务支持，将在下一阶段接入</text>
+    </view>
   </view>
 
-  <text wx:if="{{error}}" class="fr-error">{{error}}</text>
+  <view wx:if="{{error}}" class="weui-cells__tips weui-cells__tips_warn fr-error">{{error}}</view>
 </view>

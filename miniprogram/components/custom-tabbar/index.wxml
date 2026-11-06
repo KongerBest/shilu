@@ -1,14 +1,20 @@
-<view class="tabbar {{compact ? 'is-compact' : ''}}">
+<view class="weui-tabbar {{compact ? 'is-compact' : ''}}">
   <view
     wx:for="{{tabs}}"
     wx:key="key"
-    class="tabbar__item {{current === item.key ? 'is-active' : ''}}"
+    class="weui-tabbar__item {{current === item.key ? 'weui-bar__item_on' : ''}}"
     data-key="{{item.key}}"
     bindtap="onTap"
-    hover-class="tabbar__item--hover"
+    hover-class="weui-cell_active"
     hover-stay-time="60"
   >
-    <view class="tabbar__icon tabbar__icon--{{item.icon}}"></view>
-    <text class="tabbar__label">{{item.label}}</text>
+    <view class="weui-tabbar__icon">
+      <icon
+        type="{{item.icon === 'home' ? 'info' : item.icon === 'library' ? 'search' : item.icon === 'calendar' ? 'waiting' : 'success_no_circle'}}"
+        size="24"
+        color="{{current === item.key ? '#07C160' : '#9A9A9A'}}"
+      />
+    </view>
+    <text class="weui-tabbar__label">{{item.label}}</text>
   </view>
 </view>

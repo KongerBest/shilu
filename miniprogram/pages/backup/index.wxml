@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <view class="card">
     <text class="card__title">导出备份</text>
     <text class="form-hint">
@@ -6,7 +6,7 @@
     </text>
 
     <button
-      class="btn-primary"
+      class="btn-primary weui-btn weui-btn_primary"
       hover-class="btn-primary--hover"
       loading="{{exporting}}"
       disabled="{{exporting}}"
@@ -15,30 +15,30 @@
 
     <block wx:if="{{exportReady}}">
       <view class="meta">
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">文件</text>
           <text class="meta__value">{{fileName}}</text>
         </view>
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">大小</text>
           <text class="meta__value tabular">{{fileSize}}</text>
         </view>
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">时间</text>
           <text class="meta__value tabular">{{exportedAt}}</text>
         </view>
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">内容</text>
           <text class="meta__value">{{total}} 条</text>
         </view>
       </view>
 
       <view class="tag-row">
-        <text class="tag">资料 {{counts.records}}</text>
-        <text class="tag">人物 {{counts.contacts}}</text>
-        <text class="tag">纪念日 {{counts.anniversaries}}</text>
-        <text class="tag">分类 {{counts.categories}}</text>
-        <text class="tag">模板 {{counts.templates}}</text>
+        <text class="tag weui-badge">资料 {{counts.records}}</text>
+        <text class="tag weui-badge">人物 {{counts.contacts}}</text>
+        <text class="tag weui-badge">纪念日 {{counts.anniversaries}}</text>
+        <text class="tag weui-badge">分类 {{counts.categories}}</text>
+        <text class="tag weui-badge">模板 {{counts.templates}}</text>
       </view>
 
       <view class="actions">
@@ -56,7 +56,7 @@
     </text>
 
     <button
-      class="btn-primary"
+      class="btn-primary weui-btn weui-btn_primary"
       hover-class="btn-primary--hover"
       loading="{{picking}}"
       disabled="{{picking || importing}}"
@@ -69,15 +69,15 @@
 
     <view wx:if="{{preview}}" class="preview">
       <view class="meta">
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">来源</text>
           <text class="meta__value">{{preview.fileName}}</text>
         </view>
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">导出时间</text>
           <text class="meta__value tabular">{{preview.exportedAt}}</text>
         </view>
-        <view class="meta__row">
+        <view class="meta__row weui-cell">
           <text class="meta__label">条目</text>
           <text class="meta__value">{{preview.total}} 条</text>
         </view>
@@ -116,7 +116,7 @@
       </view>
 
       <button
-        class="btn-primary"
+        class="btn-primary weui-btn weui-btn_primary"
         hover-class="btn-primary--hover"
         loading="{{importing}}"
         disabled="{{importing}}"

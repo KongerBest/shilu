@@ -5,14 +5,12 @@
 
 .group {
   background-color: var(--glass-bg);
-  background-image:
-    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
-    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
+  
   border: 1rpx solid var(--glass-border);
-  border-radius: 24rpx;
-  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  border-radius: 8rpx;
+  
+  
+  
   overflow: hidden;
 }
 

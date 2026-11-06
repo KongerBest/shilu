@@ -15,7 +15,7 @@
   margin: 0;
   line-height: 1;
   border-radius: 50%;
-  background-image: linear-gradient(150deg, var(--glass-bg-strong), var(--c-accent-soft));
+  
   color: var(--c-accent);
   font-size: 44rpx;
   font-weight: 600;
@@ -23,7 +23,7 @@
   align-items: center;
   justify-content: center;
   border: 1rpx solid var(--glass-border);
-  box-shadow: var(--glass-highlight), 0 10rpx 24rpx rgba(24, 38, 33, 0.08);
+  
   overflow: hidden;
 }
 
@@ -97,14 +97,12 @@
 .group {
   margin-top: var(--sp-3);
   background-color: var(--glass-bg);
-  background-image:
-    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
-    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
+  
   border: 1rpx solid var(--glass-border);
-  border-radius: 24rpx;
-  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  border-radius: 8rpx;
+  
+  
+  
   overflow: hidden;
 }
 
@@ -157,7 +155,7 @@
 .warnbox {
   margin-top: var(--sp-4);
   padding: var(--sp-4);
-  border-radius: var(--radius-card);
+  border-radius: 8rpx;
   background: var(--c-warn-soft);
   border: 1rpx solid var(--c-warn-line);
   color: var(--c-warn-text);

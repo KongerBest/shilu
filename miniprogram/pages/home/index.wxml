@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" text="正在打开资料库" />
 
   <block wx:elif="{{error}}">
@@ -51,12 +51,12 @@
         <text class="contact-entry__title">人物档案</text>
         <text class="contact-entry__desc">{{contactsCount > 0 ? contactsCount + ' 位人物 · 生日自动倒数' : '把家人朋友存进来，生日自动倒数'}}</text>
       </view>
-      <view class="chevron"></view>
+      <text class="weui-arrow">›</text>
     </view>
 
     <view class="section">
       <view class="section__head">
-        <view class="section__title">快捷新增</view>
+        <view class="section__title weui-cells__title">快捷新增</view>
         <view class="action-btn action-btn--primary" bindtap="onNewTap" hover-class="action-btn--hover">
           <text class="action-btn__plus">+</text>
           <text>新建资料</text>
@@ -81,7 +81,7 @@
 
     <view wx:if="{{favorites.length > 0}}" class="section">
       <view class="section__head">
-        <view class="section__title">收藏</view>
+        <view class="section__title weui-cells__title">收藏</view>
         <view class="action-btn" bindtap="onSeeFavorites" hover-class="action-btn--hover">
           <text>查看全部</text>
           <view class="action-btn__arrow"></view>
@@ -98,7 +98,7 @@
 
     <view class="section">
       <view class="section__head">
-        <view class="section__title">最近记录</view>
+        <view class="section__title weui-cells__title">最近记录</view>
         <view wx:if="{{recent.length > 0}}" class="action-btn" bindtap="onSeeAll" hover-class="action-btn--hover">
           <text>全部</text>
           <view class="action-btn__arrow"></view>

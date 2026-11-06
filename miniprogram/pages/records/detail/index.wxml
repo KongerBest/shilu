@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" />
   <empty-state
     wx:elif="{{error}}"
@@ -11,7 +11,7 @@
     <view class="card">
       <view class="detail-head">
         <text class="detail-title">{{title}}</text>
-        <text wx:if="{{isArchived}}" class="tag tag--warn">已归档</text>
+        <text wx:if="{{isArchived}}" class="tag weui-badge tag--warn">已归档</text>
       </view>
       <text class="detail-meta">{{metaText}}</text>
       <view class="detail-times">
@@ -25,8 +25,8 @@
         <text class="form-hint">{{encryptedCount > 0 ? '含加密字段，解锁后可见' : '含敏感字段，默认掩码显示'}}</text>
         <text class="link" bindtap="onToggleReveal">{{encryptedCount > 0 ? '去解锁' : revealSensitive ? '隐藏' : '显示'}}</text>
       </view>
-      <view wx:for="{{rows}}" wx:key="key" class="detail-row" data-key="{{item.key}}" bindtap="onRowTap">
-        <view class="detail-label">{{item.label}}<text wx:if="{{item.sensitive}}" class="tag tag--warn">{{item.encrypted ? '加密' : '敏感'}}</text></view>
+      <view wx:for="{{rows}}" wx:key="key" class="detail-row weui-cell" data-key="{{item.key}}" bindtap="onRowTap">
+        <view class="detail-label">{{item.label}}<text wx:if="{{item.sensitive}}" class="tag weui-badge tag--warn">{{item.encrypted ? '加密' : '敏感'}}</text></view>
         <view class="detail-value {{item.encrypted ? 'detail-value--locked' : ''}}"><block wx:if="{{item.encrypted}}">{{item.text}}</block><block wx:elif="{{revealSensitive || !item.sensitive}}">{{item.raw}}</block><block wx:else>{{item.text}}</block></view>
       </view>
     </view>
@@ -135,7 +135,7 @@
       </text>
     </view>
 
-    <button class="btn-primary" hover-class="btn-primary--hover" bindtap="onEditTap">编辑</button>
+    <button class="btn-primary weui-btn weui-btn_primary" hover-class="btn-primary--hover" bindtap="onEditTap">编辑</button>
 
     <view class="detail-actions">
       <text class="link" bindtap="onFavoriteTap">{{isFavorite ? '取消收藏' : '收藏'}}</text>

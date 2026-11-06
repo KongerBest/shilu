@@ -1,20 +1,20 @@
-<view class="page page--plain {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page page--plain {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <view class="section">
     <view class="section__head">
-      <text class="section__title">应用信息</text>
+      <text class="section__title weui-cells__title">应用信息</text>
     </view>
     <view class="card info">
-      <view class="kv">
+      <view class="kv weui-cell">
         <text class="kv__k">版本</text>
         <text class="kv__v">v{{version}}</text>
       </view>
       <view class="divider"></view>
-      <view class="kv">
+      <view class="kv weui-cell">
         <text class="kv__k">云开发环境</text>
         <text class="kv__v {{cloudReady ? 'is-ok' : 'is-bad'}}">{{cloudReady ? '已配置' : '未配置'}}</text>
       </view>
       <view class="divider"></view>
-      <view class="kv">
+      <view class="kv weui-cell">
         <text class="kv__k">保险箱</text>
         <text class="kv__v {{vaultEnabled ? 'is-ok' : 'is-off'}}">{{vaultEnabled ? '本构建可用' : '当前构建关闭'}}</text>
       </view>
@@ -23,11 +23,11 @@
 
   <view wx:if="{{showLimits}}" class="section">
     <view class="section__head">
-      <text class="section__title">已知限制与未完成项</text>
+      <text class="section__title weui-cells__title">已知限制与未完成项</text>
       <text class="section__action" bindtap="onCopyLimits">复制</text>
     </view>
     <view class="card limits">
-      <view wx:for="{{limits}}" wx:key="*this" class="limit">
+      <view wx:for="{{limits}}" wx:key="*this" class="limit weui-cell">
         <text class="limit__index tabular">{{index + 1}}</text>
         <text class="limit__text">{{item}}</text>
       </view>
@@ -37,14 +37,14 @@
 
   <view class="section">
     <view class="section__head">
-      <text class="section__title">法律信息</text>
+      <text class="section__title weui-cells__title">法律信息</text>
     </view>
     <view class="group">
-      <view class="row" bindtap="onOpenPrivacy" hover-class="row--hover">
+      <view class="row weui-cell weui-cell_access" bindtap="onOpenPrivacy" hover-class="row--hover">
         <text class="row__label">隐私政策</text>
         <view class="row__right"><view class="row__arrow"></view></view>
       </view>
-      <view class="row" bindtap="onOpenTerms" hover-class="row--hover">
+      <view class="row weui-cell weui-cell_access" bindtap="onOpenTerms" hover-class="row--hover">
         <text class="row__label">用户协议</text>
         <view class="row__right"><view class="row__arrow"></view></view>
       </view>

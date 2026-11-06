@@ -1,180 +1,115 @@
 /**
- * 设计令牌。所有颜色/字号/间距/圆角只从这里取，页面里不写字面量。
+ * WEUI 设计令牌映射层。
+ *
+ * 视觉真值来源：styles/weui.wxss（Tencent weui-wxss v2.5.0，官方发布版）。
+ * 本文件不再定义任何自有色板/玻璃材质，只把旧业务语义变量映射到 WEUI 官方变量，
+ * 使尚未改名完成的旧样式也自动获得 WEUI 的配色、层级与暗色主题表现。
  *
  * 主题机制：
- * - `page` 上是浅色（默认）
- * - 页面根节点加 `.theme-dark` 覆盖为深色，由 `utils/theme.ts` 控制
- * - 自定义组件（tabbar / 卡片）不写颜色字面量，一律用变量，靠 CSS 变量继承穿透样式隔离
+ * - light：weui.wxss 在 page / [data-weui-theme=light] 上定义 --weui-* 浅色值
+ * - dark ：根节点带 data-weui-theme="dark"，weui.wxss 的 [data-weui-theme=dark]
+ *          覆盖同名变量；本文件用「选择器并列」让别名在该节点上重新解析，
+ *          避免 CSS 变量在 page 上被提前求值成浅色后无法跟随主题切换。
  */
-page {
-  /* 色彩：暖白纸感 + 墨绿主色，避免纯白纯黑的廉价感 */
-  --c-bg: #f7f7f5;
-  --c-surface: #ffffff;
-  --c-surface-sunken: #f1f1ed;
-  --c-text: #1a1a18;
-  --c-text-2: #54544f;
-  --c-text-3: #8c8c86;
-  --c-line: #e8e8e3;
-  --c-accent: #2f5d50;
-  --c-accent-soft: #eaf0ed;
-  --c-danger: #c24c3f;
-  --c-warn: #c08a2e;
-  --c-warn-soft: #fdf6e8;
-  --c-warn-line: #f0e0bd;
-  --c-warn-text: #8a6a1f;
+page,
+[data-weui-theme='dark'] {
+  /* 语义色：全部指向 WEUI 官方变量 */
+  --c-bg: var(--weui-BG-0);
+  --c-surface: var(--weui-BG-2);
+  --c-surface-sunken: var(--weui-BG-1);
+  --c-text: var(--weui-FG-0);
+  --c-text-2: var(--weui-FG-1);
+  --c-text-3: var(--weui-FG-2);
+  --c-line: var(--weui-FG-3);
+  --c-accent: var(--weui-BRAND);
+  --c-accent-soft: var(--weui-TAG-BACKGROUND-GREEN);
+  --c-danger: var(--weui-RED);
+  --c-warn: var(--weui-ORANGE);
+  --c-warn-soft: var(--weui-TAG-BACKGROUND-ORANGE);
+  --c-warn-line: var(--weui-FG-3);
+  --c-warn-text: var(--weui-TAG-TEXT-ORANGE);
 
-  /* 组件专用：不透明值，避免 rgba 在深色下泛白 */
-  --c-tabbar-bg: rgba(255, 255, 255, 0.94);
+  --c-tabbar-bg: var(--weui-BG-1);
   --c-fab-fg: #ffffff;
   --c-knob: #ffffff;
-  --c-shadow-card: 0 2rpx 8rpx rgba(26, 26, 24, 0.04);
-  --c-shadow-fab: 0 8rpx 24rpx rgba(47, 93, 80, 0.28);
+  --c-shadow-card: none;
+  --c-shadow-fab: none;
 
-  /* 强调色的渐变两端与上面的文字色。
-     深色下主色更亮，白字对比度不足，因此 on-accent 在深色里是近黑色。 */
-  --c-accent-deep: #24493f;
-  --c-accent-bright: #3d7362;
+  --c-accent-deep: var(--weui-TEXTGREEN);
+  --c-accent-bright: var(--weui-BRAND);
   --c-on-accent: #ffffff;
-  --shadow-accent: 0 12rpx 28rpx rgba(47, 93, 80, 0.26);
+  --shadow-accent: none;
 
-  /* 环境光：玻璃要有东西可折射，否则 blur 在纯色底上等于没做 */
-  --glow-1: #d5ebe1;
-  --glow-2: #f9e2cd;
-  --glow-3: #dfe6f7;
-  /* 整页色彩底：没有 backdrop-filter 时，靠它给半透明卡片「染色」 */
-  --bg-gradient: linear-gradient(165deg, #dcece5 0%, #f6e9dd 46%, #dbe3f4 100%);
+  /* 旧玻璃材质变量：一律中性化，彻底移除渐变 / 折射 / 磨砂 */
+  --glow-1: transparent;
+  --glow-2: transparent;
+  --glow-3: transparent;
+  --bg-gradient: none;
+  --glass-bg: var(--weui-BG-2);
+  --glass-bg-strong: var(--weui-BG-2);
+  --glass-bg-soft: var(--weui-BG-1);
+  --glass-border: var(--weui-FG-3);
+  --glass-border-soft: var(--weui-FG-3);
+  --glass-highlight: none;
+  --glass-ring: none;
+  --glass-shadow: none;
+  --glass-shadow-lg: none;
+  --glass-specular: transparent;
+  --glass-blur: none;
+  --c-accent-glass: var(--weui-BRAND);
+  --c-accent-glass-bright: var(--weui-BRAND);
+  --c-accent-glass-soft: var(--weui-TAG-BACKGROUND-GREEN);
+  --shadow-float: none;
+  --glass-tabbar: var(--weui-BG-1);
 
-  /* 玻璃材质：内容卡片不透传 blur（列表里几十张会拖性能），
-     只靠「半透明 + 顶部内高光 + 边缘亮线」模拟折射。 */
-  --glass-bg: rgba(255, 255, 255, 0.32);
-  --glass-bg-strong: rgba(255, 255, 255, 0.52);
-  --glass-bg-soft: rgba(255, 255, 255, 0.22);
-  --glass-border: rgba(255, 255, 255, 0.88);
-  --glass-border-soft: rgba(255, 255, 255, 0.56);
-  --glass-highlight: inset 0 2rpx 0 rgba(255, 255, 255, 0.96), inset 0 -2rpx 0 rgba(255, 255, 255, 0.3);
-  /* 玻璃边缘折射：一整圈 1rpx 亮描边，模拟玻璃曲面边缘对光的折射。
-     叠加在顶部内高光之上，让「边缘亮、中间透」的液态感比只有顶部高光更明确 */
-  --glass-ring: inset 0 0 0 1rpx rgba(255, 255, 255, 0.72);
-  --glass-shadow: 0 12rpx 32rpx rgba(24, 38, 33, 0.1), 0 2rpx 6rpx rgba(24, 38, 33, 0.04);
-  --glass-shadow-lg: 0 24rpx 64rpx rgba(24, 38, 33, 0.12);
-  /* 左上角斜向高光：浅色下是玻璃受光面，深色下必须很克制，否则糊成白雾 */
-  --glass-specular: rgba(255, 255, 255, 0.5);
-  --glass-blur: blur(28rpx) saturate(180%);
-  /* 主按钮的液态玻璃：主色的半透明版，透出环境光做折射，比纯色更“玻璃” */
-  --c-accent-glass: rgba(47, 93, 80, 0.84);
-  --c-accent-glass-bright: rgba(61, 115, 98, 0.88);
-  /* 选中/切换态的高透主色玻璃背景：文章强调切换态是「高透玻璃」而非磨砂/实心 */
-  --c-accent-glass-soft: rgba(47, 93, 80, 0.12);
-  /* 悬浮层的投影要明显重于内容卡片，否则「浮起来」的感觉出不来 */
-  --shadow-float: 0 18rpx 44rpx rgba(24, 38, 33, 0.16), 0 2rpx 8rpx rgba(24, 38, 33, 0.06);
-  --glass-tabbar: rgba(252, 252, 250, 0.72);
+  /* 动效：WEUI 只用短促的状态反馈，不做整页转场 */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --ease-out: ease-out;
 
-  /* 动效：整套界面只用这两条曲线，避免每个组件各写一个时长导致节奏散掉
-     --ease-out 是 iOS 那类「起步快、收尾稳」的曲线，适合位移与形态变化 */
-  --dur-fast: 140ms;
-  --dur-base: 260ms;
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-
-  /* 字体 */
-  --font-sans: -apple-system, 'PingFang SC', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  /* 字排：贴近 WEUI 17px 正文 / 14px 辅助文 */
+  --font-sans: -apple-system-font, 'PingFang SC', 'Helvetica Neue', sans-serif;
   --font-mono: 'SF Mono', Menlo, Consolas, monospace;
-  --fs-display: 56rpx;
+  --fs-display: 48rpx;
   --fs-h1: 40rpx;
-  --fs-title: 32rpx;
-  --fs-body: 28rpx;
-  --fs-caption: 24rpx;
-  --fs-micro: 20rpx;
+  --fs-title: 34rpx;
+  --fs-body: 32rpx;
+  --fs-caption: 28rpx;
+  --fs-micro: 24rpx;
   --lh-body: 1.6;
 
-  /* 间距：8 的倍数体系 */
+  /* 间距：8 的倍数，主内边距对齐 WEUI 的 16px */
   --sp-1: 8rpx;
-  --sp-2: 12rpx;
+  --sp-2: 16rpx;
   --sp-3: 16rpx;
-  --sp-4: 24rpx;
+  --sp-4: 32rpx;
   --sp-5: 32rpx;
   --sp-6: 48rpx;
   --sp-7: 64rpx;
 
-  /* 圆角 */
+  /* WEUI 列表/表单容器不圆角，弹层 12px */
   --radius-sm: 8rpx;
-  --radius-card: 20rpx;
-  --radius-sheet: 28rpx;
+  --radius-card: 0rpx;
+  --radius-sheet: 24rpx;
   --radius-pill: 999rpx;
 
-  /* 控件尺寸：按钮/输入统一高度，避免各页各写一套 */
-  --h-control: 64rpx;
+  --h-control: 88rpx;
   --h-chip: 56rpx;
-
   --tabbar-height: 108rpx;
 
-  /* ---------- 滚动边界氛围 ----------
-     全部取自上面的三团环境光 / 整页渐变，不另起色系：靠近顶部或底部尽头时，
-     边缘叠一层同源柔光，离开时再淡出。原生导航栏由 JS 同步换成 --nav-* 的实色。 */
-  --edge-top-tint: rgba(118, 174, 152, 0.42);
-  --edge-bottom-tint: rgba(160, 156, 204, 0.36);
-  /* 顶栏玻璃上沿：一道亮线 + 半透明底色，配合 backdrop-filter 做磨砂观感 */
-  --edge-specular: rgba(255, 255, 255, 0.78);
-  --edge-glass: rgba(255, 255, 255, 0.24);
-  /* 三态底色分别对应 --bg-gradient 的 0% / 46% / 100% 附近，切换时不会跳色 */
-  --nav-top: #dcece5;
-  --nav-mid: #e9e9e2;
-  --nav-bottom: #dbe3f4;
+  /* 滚动边界氛围已随玻璃层移除；原生导航栏统一用 WEUI 平面色 */
+  --edge-top-tint: transparent;
+  --edge-bottom-tint: transparent;
+  --edge-specular: transparent;
+  --edge-glass: transparent;
+  --nav-top: #f7f7f7;
+  --nav-mid: #f7f7f7;
+  --nav-bottom: #f7f7f7;
 }
 
-/* 深色主题：不是把浅色反相，而是降饱和 + 抬升层级靠亮度差 */
-.theme-dark {
-  --c-bg: #14161a;
-  --c-surface: #1c1f25;
-  --c-surface-sunken: #24282f;
-  --c-text: #eceef1;
-  --c-text-2: #a8adb6;
-  --c-text-3: #7f858f;
-  --c-line: #2c313a;
-  --c-accent: #4f9e86;
-  --c-accent-soft: #1d2b27;
-  --c-danger: #d4675a;
-  --c-warn: #d8a24a;
-  --c-warn-soft: #2b2416;
-  --c-warn-line: #45391f;
-  --c-warn-text: #d8b06a;
-
-  --c-tabbar-bg: rgba(20, 22, 26, 0.94);
-  --c-fab-fg: #0e1512;
-  --c-shadow-card: 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
-  --c-shadow-fab: 0 8rpx 24rpx rgba(0, 0, 0, 0.55);
-
-  --c-accent-deep: #6fb8a0;
-  --c-accent-bright: #3d7f6c;
-  --c-on-accent: #08120e;
-  --shadow-accent: 0 12rpx 28rpx rgba(0, 0, 0, 0.5);
-
-  --glow-1: #153830;
-  --glow-2: #1c2444;
-  --glow-3: #32202a;
-  --bg-gradient: linear-gradient(165deg, #101917 0%, #12141a 46%, #17151f 100%);
-
-  --glass-bg: rgba(40, 45, 54, 0.5);
-  --glass-bg-strong: rgba(48, 54, 64, 0.7);
-  --glass-bg-soft: rgba(36, 40, 48, 0.42);
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-border-soft: rgba(255, 255, 255, 0.09);
-  --glass-highlight: inset 0 1rpx 0 rgba(255, 255, 255, 0.16), inset 0 -1rpx 0 rgba(255, 255, 255, 0.04);
-  --glass-ring: inset 0 0 0 1rpx rgba(255, 255, 255, 0.09);
-  --glass-shadow: 0 14rpx 36rpx rgba(0, 0, 0, 0.42);
-  --glass-shadow-lg: 0 28rpx 70rpx rgba(0, 0, 0, 0.55);
-  --glass-tabbar: rgba(22, 25, 31, 0.72);
-  --glass-specular: rgba(255, 255, 255, 0.08);
-  --c-accent-glass: rgba(79, 158, 134, 0.9);
-  --c-accent-glass-bright: rgba(61, 127, 108, 0.92);
-  --c-accent-glass-soft: rgba(79, 158, 134, 0.16);
-  --shadow-float: 0 18rpx 44rpx rgba(0, 0, 0, 0.55), 0 2rpx 8rpx rgba(0, 0, 0, 0.4);
-
-  /* 深色下柔光要更暗、更克制，否则边缘会泛白把文字吃掉 */
-  --edge-top-tint: rgba(28, 76, 64, 0.52);
-  --edge-bottom-tint: rgba(58, 44, 68, 0.48);
-  --edge-specular: rgba(255, 255, 255, 0.11);
-  --edge-glass: rgba(30, 34, 41, 0.34);
-  --nav-top: #101917;
-  --nav-mid: #14161a;
-  --nav-bottom: #17151f;
+/** 深色下三层底色跟随 WEUI 暗色板，且导航栏不再做渐变三态切换 */
+[data-weui-theme='dark'] {
+  --nav-top: #1e1e1e;
+  --nav-mid: #1e1e1e;
+  --nav-bottom: #1e1e1e;
 }

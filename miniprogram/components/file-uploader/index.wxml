@@ -1,74 +1,85 @@
-<view class="uploader">
-  <view wx:if="{{loading}}" class="uploader__hint">加载中…</view>
-
-  <view wx:if="{{acceptImage}}" class="grid">
-    <view wx:for="{{items}}" wx:key="_id" class="tile">
-      <image
-        wx:if="{{item.encrypted !== 1}}"
-        class="tile__img"
-        src="{{item.url}}"
-        mode="aspectFill"
-        data-index="{{index}}"
-        bindtap="onPreview"
-      />
-      <view
-        wx:else
-        class="tile__enc"
-        data-index="{{index}}"
-        bindtap="onPreview"
-        hover-class="tile--hover"
-      >
-        <view class="tile__lock"></view>
-        <text class="tile__enc-text">已加密</text>
-      </view>
-      <view wx:if="{{!readonly}}" class="tile__del" data-id="{{item._id}}" catchtap="onRemove">×</view>
-    </view>
-
-    <view wx:if="{{uploading}}" class="tile tile--progress">
-      <text class="tile__progress tabular">{{encryptStep || (progress + '%')}}</text>
-    </view>
-    <view
-      wx:elif="{{!readonly && items.length < limit}}"
-      class="tile tile--add"
-      bindtap="onAdd"
-      hover-class="tile--hover"
-    >
-      <text class="tile__plus">+</text>
-      <text class="tile__hint">{{items.length}}/{{limit}}</text>
-    </view>
+<view class="weui-uploader uploader">
+  <view wx:if="{{loading}}" class="weui-loadmore">
+    <text class="weui-loadmore__tips">加载中…</text>
   </view>
 
-  <block wx:else>
-    <view
-      wx:for="{{items}}"
-      wx:key="_id"
-      class="file"
-      data-index="{{index}}"
-      bindtap="onFileTap"
-    >
-      <view class="file__icon {{item.encrypted === 1 ? 'file__icon--enc' : ''}}">
-        <view wx:if="{{item.encrypted === 1}}" class="file__lock"></view>
-      </view>
-      <view class="file__main">
-        <text class="file__name">{{item.name_mask}}</text>
-        <text class="file__meta">{{item.encrypted === 1 ? '已加密 · ' : ''}}{{item.sizeText}}</text>
-      </view>
-      <view wx:if="{{!readonly}}" class="file__del" data-id="{{item._id}}" catchtap="onRemove">删除</view>
-    </view>
+  <block wx:if="{{acceptImage}}">
+    <view class="weui-uploader__bd">
+      <view class="weui-uploader__files">
+        <view wx:for="{{items}}" wx:key="_id" class="weui-uploader__file tile">
+          <image
+            wx:if="{{item.encrypted !== 1}}"
+            class="tile__img"
+            src="{{item.url}}"
+            mode="aspectFill"
+            data-index="{{index}}"
+            bindtap="onPreview"
+          />
+          <view
+            wx:else
+            class="tile__enc"
+            data-index="{{index}}"
+            bindtap="onPreview"
+            hover-class="tile--hover"
+          >
+            <icon type="info" size="24" color="#9A9A9A" />
+            <text class="tile__enc-text">已加密</text>
+          </view>
+          <view wx:if="{{!readonly}}" class="tile__del" data-id="{{item._id}}" catchtap="onRemove">×</view>
+        </view>
 
-    <view wx:if="{{uploading}}" class="file file--progress">
-      <view class="file__icon"></view>
-      <text class="file__name">{{encryptStep || ('上传中 ' + progress + '%')}}</text>
-    </view>
-    <view
-      wx:elif="{{!readonly && items.length < limit}}"
-      class="file-add"
-      bindtap="onAdd"
-      hover-class="tile--hover"
-    >
-      + 添加文件（{{items.length}}/{{limit}}）
+        <view wx:if="{{uploading}}" class="weui-uploader__file tile tile--progress">
+          <text class="tile__progress tabular">{{encryptStep || (progress + '%')}}</text>
+        </view>
+        <view
+          wx:elif="{{!readonly && items.length < limit}}"
+          class="weui-uploader__input-box tile--add"
+          bindtap="onAdd"
+          hover-class="tile--hover"
+        >
+          <text class="tile__hint">{{items.length}}/{{limit}}</text>
+        </view>
+      </view>
     </view>
   </block>
 
-  <text wx:if="{{error}}" class="uploader__error">{{error}}</text>
+  <block wx:else>
+    <view class="weui-cells file-list">
+      <view
+        wx:for="{{items}}"
+        wx:key="_id"
+        class="weui-cell file"
+        data-index="{{index}}"
+        bindtap="onFileTap"
+      >
+        <view class="weui-cell__hd file__icon {{item.encrypted === 1 ? 'file__icon--enc' : ''}}">
+          <icon wx:if="{{item.encrypted === 1}}" type="info" size="18" color="#9A9A9A" />
+          <icon wx:else type="download" size="18" color="#9A9A9A" />
+        </view>
+        <view class="weui-cell__bd file__main">
+          <text class="file__name">{{item.name_mask}}</text>
+          <text class="file__meta">{{item.encrypted === 1 ? '已加密 · ' : ''}}{{item.sizeText}}</text>
+        </view>
+        <view wx:if="{{!readonly}}" class="weui-cell__ft">
+          <text class="file__del" data-id="{{item._id}}" catchtap="onRemove">删除</text>
+        </view>
+      </view>
+
+      <view wx:if="{{uploading}}" class="weui-cell file file--progress">
+        <view class="weui-cell__bd">
+          <text class="file__name">{{encryptStep || ('上传中 ' + progress + '%')}}</text>
+        </view>
+      </view>
+      <view
+        wx:elif="{{!readonly && items.length < limit}}"
+        class="weui-cell weui-cell_link file-add"
+        bindtap="onAdd"
+        hover-class="tile--hover"
+      >
+        + 添加文件（{{items.length}}/{{limit}}）
+      </view>
+    </view>
+  </block>
+
+  <view wx:if="{{error}}" class="weui-cells__tips weui-cells__tips_warn uploader__error">{{error}}</view>
 </view>

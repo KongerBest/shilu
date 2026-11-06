@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" />
 
   <empty-state
@@ -23,7 +23,7 @@
     </view>
 
     <view class="card">
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">类型</text>
         <picker range="{{typeOptions}}" value="{{typeIndex}}" bindchange="onTypeChange">
           <view class="form-picker">
@@ -33,7 +33,7 @@
         </picker>
       </view>
 
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">日期</text>
         <picker mode="date" value="{{date}}" end="2099-12-31" bindchange="onDateChange">
           <view class="form-picker">
@@ -43,7 +43,7 @@
         </picker>
       </view>
 
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">重复</text>
         <picker range="{{repeatOptions}}" value="{{repeatIndex}}" bindchange="onRepeatChange">
           <view class="form-picker">
@@ -53,7 +53,7 @@
         </picker>
       </view>
 
-      <view class="form-row" wx:if="{{showCustom}}">
+      <view class="form-row weui-cell" wx:if="{{showCustom}}">
         <text class="form-label">间隔</text>
         <view class="interval">
           <input
@@ -74,7 +74,7 @@
     </view>
 
     <view class="card" wx:if="{{contacts.length > 0}}">
-      <view class="form-row">
+      <view class="form-row weui-cell">
         <text class="form-label">关联人物</text>
         <text class="form-picker-text">{{contactSummary}}</text>
       </view>
@@ -107,7 +107,7 @@
     </view>
 
     <button
-      class="btn-primary"
+      class="btn-primary weui-btn weui-btn_primary"
       hover-class="btn-primary--hover"
       loading="{{saving}}"
       disabled="{{saving}}"

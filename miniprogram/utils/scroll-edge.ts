@@ -1,20 +1,16 @@
 /**
- * 滚动边界氛围 + 顶栏联动。
+ * 滚动边界状态同步（WEUI 重构后只保留数据通道）。
  *
- * 视觉层在 app.wxss 的 `.page::before/::after`：两片固定在视口上下沿的渐变玻璃带，
- * 常驻但很淡；靠近顶部 / 底部尽头时同色柔光逐渐增强，离开时靠 CSS transition 平滑回落。
- * 这里只负责把「离边界还有多远」换算成两个 0~1 的数值，以及把原生导航栏切成
- * 与渐变同源的三态颜色（系统导航栏吃不了 CSS 变量，只能用 setNavigationBarColor）。
- *
- * 性能约定与 `utils/tabbar.ts` 一致：绝不每帧 setData。数值变化小于 STEP 就跳过，
- * 导航栏颜色只在跨档时调一次 API 并带 260ms 动画。状态按页面实例存 WeakMap，切页不串。
+ * 玻璃渐变带已从 app.wxss 移除，edgeTop / edgeBottom 不再驱动任何视觉层；
+ * 导航栏也统一为 WEUI 平面色，不再做三态渐变切换。保留本模块是为了不改动
+ * 各页面 onPageScroll 的调用与既有 data 字段（业务状态与流程不变）。
  */
 
 import { getTheme, NAV_BAR, type ThemeMode } from './theme';
 
-/** 与 tokens.wxss 的 --nav-mid / --nav-bottom 同步，都取自 --bg-gradient 的关键色。 */
-const NAV_MID: Record<ThemeMode, string> = { light: '#e9e9e2', dark: '#14161a' };
-const NAV_BOTTOM: Record<ThemeMode, string> = { light: '#dbe3f4', dark: '#17151f' };
+/** WEUI 平面导航栏：三态同色，不再随滚动位置换色。 */
+const NAV_MID: Record<ThemeMode, string> = { light: '#f7f7f7', dark: '#1e1e1e' };
+const NAV_BOTTOM: Record<ThemeMode, string> = { light: '#f7f7f7', dark: '#1e1e1e' };
 
 /** 接近边界的作用区间；onPageScroll 的 scrollTop 单位是 px（逻辑像素，各机型一致）。 */
 const NEAR_PX = 180;
@@ -108,7 +104,7 @@ function applyNavBar(topNear: number, bottomNear: number, state: EdgeState): voi
 /**
  * 在页面 `onPageScroll` 里调用一次即可。
  * 不新增滚动容器、不改 data 里的业务字段、不碰层级；只写 edgeTop / edgeBottom 两个数值，
- * 由根节点的内联 CSS 变量交给 ::before / ::after 渲染。
+ * WEUI 重构后这两个值仅作为状态保留，不再渲染任何玻璃渐变。
  */
 export function syncScrollEdge(host: EdgeHost, scrollTop: number): void {
   const state = stateOf(host);

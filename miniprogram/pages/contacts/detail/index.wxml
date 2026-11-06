@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" />
   <empty-state
     wx:elif="{{error}}"
@@ -17,38 +17,38 @@
           <text wx:if="{{nickname}}" class="profile__nick">{{nickname}}</text>
         </view>
         <view class="profile__tags" wx:if="{{relations.length > 0}}">
-          <text wx:for="{{relations}}" wx:key="*this" class="tag tag--accent">{{item}}</text>
+          <text wx:for="{{relations}}" wx:key="*this" class="tag weui-badge tag--accent">{{item}}</text>
         </view>
       </view>
     </view>
 
     <view class="card">
-      <view class="drow">
+      <view class="drow weui-cell">
         <text class="drow__label">手机号</text>
         <view class="drow__value">
           <block wx:if="{{hasPhone}}">
             <text wx:if="{{phoneLocked}}" class="drow__muted">已加密 · 解锁后查看</text>
             <text wx:else class="drow__text tabular">{{phoneRevealed ? phoneFull : phoneMasked}}</text>
-            <text wx:if="{{phonePlain}}" class="tag tag--warn">明文</text>
-            <text wx:elif="{{!phoneLocked}}" class="tag tag--accent">密文</text>
+            <text wx:if="{{phonePlain}}" class="tag weui-badge tag--warn">明文</text>
+            <text wx:elif="{{!phoneLocked}}" class="tag weui-badge tag--accent">密文</text>
             <text class="link drow__action" bindtap="onTogglePhone">{{phoneLocked ? '去解锁' : (phoneRevealed ? '隐藏' : '显示')}}</text>
           </block>
           <text wx:else class="drow__muted">未填写</text>
         </view>
       </view>
 
-      <view class="drow">
+      <view class="drow weui-cell">
         <text class="drow__label">生日</text>
         <view class="drow__value">
           <block wx:if="{{birthday}}">
             <text class="drow__text tabular">{{birthday}}</text>
-            <text wx:if="{{birthdayCountdown}}" class="tag tag--accent">{{birthdayCountdown}}</text>
+            <text wx:if="{{birthdayCountdown}}" class="tag weui-badge tag--accent">{{birthdayCountdown}}</text>
           </block>
           <text wx:else class="drow__muted">未填写</text>
         </view>
       </view>
 
-      <view class="drow drow--column" wx:if="{{remark}}">
+      <view class="drow weui-cell drow--column" wx:if="{{remark}}">
         <text class="drow__label">备注</text>
         <text class="drow__remark">{{remark}}</text>
       </view>
@@ -56,7 +56,7 @@
 
     <view class="section">
       <view class="section__head">
-        <text class="section__title">关联纪念日</text>
+        <text class="section__title weui-cells__title">关联纪念日</text>
         <text class="section__action">{{anniversaries.length}} 个</text>
       </view>
 
@@ -64,7 +64,7 @@
         <view
           wx:for="{{anniversaries}}"
           wx:key="_id"
-          class="arow"
+          class="arow weui-cell weui-cell_access"
           data-id="{{item._id}}"
           bindtap="onAnniversaryTap"
           hover-class="arow--hover"
@@ -76,7 +76,7 @@
             </view>
             <text class="arow__meta">{{item.dateText}}</text>
           </view>
-          <view class="chevron"></view>
+          <text class="weui-arrow">›</text>
         </view>
       </view>
       <text wx:else class="empty-note">填了生日会自动生成一条生日纪念日；其他日子在纪念日里选中这位人物即可。</text>
@@ -84,7 +84,7 @@
 
     <view class="section">
       <view class="section__head">
-        <text class="section__title">关联资料</text>
+        <text class="section__title weui-cells__title">关联资料</text>
         <text class="section__action">{{records.length}} 条</text>
       </view>
 
@@ -92,7 +92,7 @@
         <view
           wx:for="{{records}}"
           wx:key="_id"
-          class="arow"
+          class="arow weui-cell weui-cell_access"
           data-id="{{item._id}}"
           bindtap="onRecordTap"
           hover-class="arow--hover"
@@ -101,12 +101,12 @@
             <text class="arow__title">{{item.title}}</text>
             <text wx:if="{{item.summary}}" class="arow__meta">{{item.summary}}</text>
           </view>
-          <view class="chevron"></view>
+          <text class="weui-arrow">›</text>
         </view>
       </view>
       <text wx:else class="empty-note">在资料的编辑页勾选这位人物，就会出现在这里。</text>
     </view>
 
-    <button class="btn-primary" hover-class="btn-primary--hover" bindtap="onEditTap">编辑资料</button>
+    <button class="btn-primary weui-btn weui-btn_primary" hover-class="btn-primary--hover" bindtap="onEditTap">编辑资料</button>
   </block>
 </view>

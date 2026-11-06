@@ -30,7 +30,7 @@
   font-size: var(--fs-body);
   color: var(--c-text);
   border: 1rpx solid var(--glass-border);
-  border-radius: 14rpx;
+  border-radius: 8rpx;
   background: var(--glass-bg-soft);
 }
 
@@ -53,7 +53,7 @@
   border: 1rpx solid var(--glass-border);
   border-radius: 999rpx;
   background: var(--glass-bg-soft);
-  box-shadow: var(--glass-highlight);
+  
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
 }
 
@@ -65,7 +65,7 @@
   color: var(--c-accent);
   border-color: var(--c-accent);
   background: var(--c-accent-glass-soft);
-  box-shadow: var(--glass-highlight), var(--glass-ring);
+  
 }
 
 .actions {

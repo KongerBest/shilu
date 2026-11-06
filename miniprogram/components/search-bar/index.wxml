@@ -1,19 +1,25 @@
-<view class="sbar" bindtap="onTapReadonly">
-  <view class="sbar__mark"></view>
-  <input
-    wx:if="{{!readonly}}"
-    class="sbar__input"
-    value="{{inner}}"
-    placeholder="{{placeholder}}"
-    placeholder-class="sbar__ph"
-    confirm-type="search"
-    focus="{{focus}}"
-    bindinput="onInput"
-    bindconfirm="onConfirm"
-  />
-  <text wx:else class="sbar__input sbar__input--ro">{{value || placeholder}}</text>
-  <view wx:if="{{!readonly && inner}}" class="sbar__clear" catchtap="onClear">
-    <view class="sbar__clear-line"></view>
-    <view class="sbar__clear-line sbar__clear-line--r"></view>
+<view class="weui-search-bar sbar" style="display: flex; align-items: center; padding: 8px 12px; background-color: var(--weui-BG-0, #EDEDED);" bindtap="onTapReadonly">
+  <view class="sbar__form" style="display: flex; align-items: center; flex: 1; min-width: 0; min-height: 36px; padding: 0 8px; border-radius: 4px; background-color: var(--weui-BG-2, #FFFFFF);">
+    <!-- 只读态：WEUI 居中的搜索标签 -->
+    <block wx:if="{{readonly}}">
+      <icon type="search" size="14" color="#9A9A9A" />
+      <text class="sbar__text" style="margin-left: 6px; font-size: 14px; color: var(--weui-FG-1, #595959);">{{value || placeholder}}</text>
+    </block>
+    <block wx:else>
+      <icon class="sbar__mark" type="search" size="14" color="#9A9A9A" />
+      <input
+        class="weui-search-bar__input sbar__input"
+        style="flex: 1; min-width: 0; height: 36px; line-height: 36px; font-size: 14px; background-color: transparent; color: var(--weui-FG-0, #191919);"
+        value="{{inner}}"
+        placeholder="{{placeholder}}"
+        placeholder-style="color: var(--weui-FG-2, #9A9A9A)"
+        placeholder-class="weui-input__placeholder"
+        confirm-type="search"
+        focus="{{focus}}"
+        bindinput="onInput"
+        bindconfirm="onConfirm"
+      />
+      <icon wx:if="{{inner}}" type="clear" size="16" color="#9A9A9A" catchtap="onClear" />
+    </block>
   </view>
 </view>

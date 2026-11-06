@@ -1,5 +1,5 @@
-<view class="page page--plain {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
-  <view class="card doc">
+<view class="page page--plain {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <view class="card doc weui-article">
     <text class="doc__title">{{title}}</text>
     <text class="doc__date">最近更新：{{updatedAt}}</text>
     <text class="doc__intro">{{intro}}</text>

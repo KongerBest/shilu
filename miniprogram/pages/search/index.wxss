@@ -14,8 +14,8 @@
   margin: 0 calc(-1 * var(--sp-4));
   padding: var(--sp-3) var(--sp-4);
   background-color: var(--glass-bg-strong);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  
+  
   border-bottom: 1rpx solid var(--glass-border-soft);
 }
 
@@ -114,7 +114,7 @@
 .hl {
   color: var(--c-accent);
   background-color: var(--c-accent-glass-soft);
-  border-radius: 4rpx;
+  border-radius: 8rpx;
 }
 
 .hit__badge {
@@ -155,7 +155,7 @@
 .errorbox {
   margin-top: var(--sp-3);
   padding: var(--sp-4);
-  border-radius: var(--radius-card);
+  border-radius: 8rpx;
   background: var(--c-warn-soft);
   border: 1rpx solid var(--c-warn-line);
 }
@@ -178,7 +178,7 @@
   display: inline-block;
   margin-top: var(--sp-3);
   padding: var(--sp-1) var(--sp-4);
-  border-radius: var(--radius-pill);
+  border-radius: 8rpx;
   border: 1rpx solid var(--c-warn-line);
   font-size: var(--fs-caption);
   color: var(--c-warn-text);

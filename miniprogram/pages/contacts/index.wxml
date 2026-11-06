@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <search-bar
     value="{{keyword}}"
     placeholder="搜索姓名"
@@ -17,7 +17,7 @@
   <block wx:else>
     <view class="section" wx:if="{{items.length > 0}}">
       <view class="section__head">
-        <text class="section__title">{{keyword ? '搜索结果' : '全部人物'}}</text>
+        <text class="section__title weui-cells__title">{{keyword ? '搜索结果' : '全部人物'}}</text>
         <text class="section__action">{{total}} 位</text>
       </view>
 
@@ -25,7 +25,7 @@
         <view
           wx:for="{{items}}"
           wx:key="_id"
-          class="crow"
+          class="crow weui-cell weui-cell_access"
           data-id="{{item._id}}"
           bindtap="onItemTap"
           hover-class="crow--hover"
@@ -38,14 +38,14 @@
               <text wx:if="{{item.countdown}}" class="crow__count">{{item.countdown}}</text>
             </view>
             <view class="crow__meta">
-              <text wx:if="{{item.relationText}}" class="tag tag--accent">{{item.relationText}}</text>
+              <text wx:if="{{item.relationText}}" class="tag weui-badge tag--accent">{{item.relationText}}</text>
               <text wx:if="{{item.phoneText}}" class="crow__phone tabular">{{item.phoneText}}</text>
               <text wx:elif="{{!item.relationText}}" class="crow__phone">未填联系方式</text>
-              <text wx:if="{{item.isPlainPhone}}" class="tag tag--warn">明文</text>
+              <text wx:if="{{item.isPlainPhone}}" class="tag weui-badge tag--warn">明文</text>
             </view>
             <text wx:if="{{item.birthdayText}}" class="crow__birth">{{item.birthdayText}}</text>
           </view>
-          <view class="chevron"></view>
+          <text class="weui-arrow">›</text>
         </view>
       </view>
     </view>
@@ -66,7 +66,7 @@
 
     <button
       wx:if="{{items.length > 0}}"
-      class="btn-primary"
+      class="btn-primary weui-btn weui-btn_primary"
       hover-class="btn-primary--hover"
       bindtap="onCreateTap"
     >新建人物</button>

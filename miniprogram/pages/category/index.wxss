@@ -28,8 +28,8 @@
   line-height: 72rpx;
   text-align: center;
   font-size: var(--fs-caption);
-  color: #ffffff;
-  border-radius: var(--radius-sm);
+  color: var(--weui-WHITE);
+  border-radius: 8rpx;
 }
 
 .cat-info {
@@ -81,7 +81,7 @@
   height: 52rpx;
   margin-left: var(--sp-2);
   margin-bottom: 8rpx;
-  border-radius: var(--radius-pill);
+  border-radius: 8rpx;
   border: 4rpx solid transparent;
 }
 

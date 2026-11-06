@@ -1,6 +1,6 @@
 <template name="hitRow">
   <view
-    class="hit"
+    class="hit weui-cell weui-cell_access"
     hover-class="hit--hover"
     data-url="{{url}}"
     data-relaunch="{{relaunch}}"
@@ -23,7 +23,7 @@
   </view>
 </template>
 
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <view class="sbar-row">
     <view class="sbar-slot">
       <search-bar
@@ -41,7 +41,7 @@
   <block wx:if="{{!keyword}}">
     <view class="section" wx:if="{{history.length > 0}}">
       <view class="section__head">
-        <text class="section__title">最近搜索</text>
+        <text class="section__title weui-cells__title">最近搜索</text>
         <text class="section__action" bindtap="onClearHistory">清空</text>
       </view>
       <view class="chips">
@@ -58,7 +58,7 @@
 
     <view class="section" wx:if="{{recent.length > 0}}">
       <view class="section__head">
-        <text class="section__title">最近更新</text>
+        <text class="section__title weui-cells__title">最近更新</text>
       </view>
       <view class="card list">
         <block wx:for="{{recent}}" wx:key="key">
@@ -93,7 +93,7 @@
 
     <view wx:for="{{groups}}" wx:for-item="group" wx:key="key" class="section">
       <view class="section__head">
-        <text class="section__title">{{group.label}}</text>
+        <text class="section__title weui-cells__title">{{group.label}}</text>
         <text class="section__action tabular">{{group.count}}</text>
       </view>
       <view class="card list">

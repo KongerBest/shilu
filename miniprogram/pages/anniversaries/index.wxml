@@ -1,6 +1,6 @@
 <!-- 单条纪念日：列表与日历共用一套结构，避免两处改样式时漏掉一边 -->
 <template name="anniversaryRow">
-  <view class="arow" data-id="{{_id}}" bindtap="onItemTap" hover-class="arow--hover">
+  <view class="arow weui-cell weui-cell_access" data-id="{{_id}}" bindtap="onItemTap" hover-class="arow--hover">
     <view class="arow__bar" style="background: {{accent}}"></view>
     <view class="arow__main">
       <view class="arow__head">
@@ -8,15 +8,15 @@
         <text class="arow__count">{{countdown}}</text>
       </view>
       <view class="arow__meta">
-        <text class="tag tag--accent">{{typeLabel}}</text>
+        <text class="tag weui-badge tag--accent">{{typeLabel}}</text>
         <text class="arow__meta-text">{{nextText}} · {{repeatLabel}}</text>
       </view>
     </view>
-    <view class="chevron"></view>
+    <text class="weui-arrow">›</text>
   </view>
 </template>
 
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" text="正在读取" />
   <empty-state
     wx:elif="{{error}}"
@@ -68,14 +68,14 @@
       >{{granting ? '授权中' : '授权 1 次'}}</view>
     </view>
 
-    <view class="view-switch" wx:if="{{items.length > 0}}">
+    <view class="view-switch weui-navbar" wx:if="{{items.length > 0}}">
       <view
-        class="view-switch__item {{view === 'list' ? 'is-on' : ''}}"
+        class="view-switch__item weui-navbar__item {{view === 'list' ? 'weui-bar__item_on' : ''}}"
         data-view="list"
         bindtap="onViewChange"
       >列表</view>
       <view
-        class="view-switch__item {{view === 'calendar' ? 'is-on' : ''}}"
+        class="view-switch__item weui-navbar__item {{view === 'calendar' ? 'weui-bar__item_on' : ''}}"
         data-view="calendar"
         bindtap="onViewChange"
       >日历</view>
@@ -109,7 +109,7 @@
 
       <view class="section">
         <view class="section__head">
-          <text class="section__title">{{selectedLabel}}</text>
+          <text class="section__title weui-cells__title">{{selectedLabel}}</text>
           <text class="section__action" wx:if="{{!isCurrentMonth}}" bindtap="onBackToday">回到今天</text>
         </view>
 
@@ -124,7 +124,7 @@
 
     <view class="section" wx:elif="{{items.length > 0}}">
       <view class="section__head">
-        <text class="section__title">全部纪念日</text>
+        <text class="section__title weui-cells__title">全部纪念日</text>
         <text class="section__action">按临近排序</text>
       </view>
 
@@ -145,7 +145,7 @@
 
     <button
       wx:if="{{items.length > 0}}"
-      class="btn-primary"
+      class="btn-primary weui-btn weui-btn_primary"
       hover-class="btn-primary--hover"
       bindtap="onCreateTap"
     >新建纪念日</button>

@@ -1,4 +1,4 @@
-<view class="page {{themeClass}}" style="--edge-top: {{edgeTop}}; --edge-bottom: {{edgeBottom}}">
+<view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" />
   <empty-state
     wx:elif="{{error}}"
@@ -10,11 +10,11 @@
   <block wx:else>
     <view class="section">
       <view class="section__head">
-        <text class="section__title">基本信息</text>
+        <text class="section__title weui-cells__title">基本信息</text>
         <text wx:if="{{isEdit}}" class="section__action">当前第 {{version}} 版</text>
       </view>
       <view class="card">
-        <view class="form-row">
+        <view class="form-row weui-cell">
           <text class="form-label">模板名称</text>
           <input
             class="form-input"
@@ -25,7 +25,7 @@
             bindinput="onNameInput"
           />
         </view>
-        <view class="form-row">
+        <view class="form-row weui-cell">
           <text class="form-label">绑定分类</text>
           <picker range="{{categoryChoices}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
             <view class="form-picker">
@@ -41,7 +41,7 @@
 
     <view class="section">
       <view class="section__head">
-        <text class="section__title">字段（{{fieldRows.length}}）</text>
+        <text class="section__title weui-cells__title">字段（{{fieldRows.length}}）</text>
         <text class="section__action" bindtap="onAddField">+ 添加字段</text>
       </view>
 
@@ -50,12 +50,12 @@
       </view>
 
       <view class="card" wx:else>
-        <view wx:for="{{fieldRows}}" wx:key="key" class="field-row">
+        <view wx:for="{{fieldRows}}" wx:key="key" class="field-row weui-cell">
           <view class="field-main" data-index="{{index}}" bindtap="onEditField">
             <view class="field-title">
               <text class="field-label">{{item.label}}</text>
-              <text wx:if="{{item.required}}" class="tag tag--danger">必填</text>
-              <text wx:if="{{item.sensitive}}" class="tag tag--warn">敏感</text>
+              <text wx:if="{{item.required}}" class="tag weui-badge tag--danger">必填</text>
+              <text wx:if="{{item.sensitive}}" class="tag weui-badge tag--warn">敏感</text>
             </view>
             <text class="field-meta">{{item.meta}}</text>
           </view>
@@ -74,14 +74,14 @@
 
     <view class="section" wx:if="{{isEdit}}">
       <view class="section__head">
-        <text class="section__title">版本记录</text>
+        <text class="section__title weui-cells__title">版本记录</text>
         <text class="section__action" bindtap="onToggleVersions">{{showVersions ? '收起' : '查看'}}</text>
       </view>
       <view class="card" wx:if="{{showVersions}}">
         <text wx:if="{{versionItems.length === 0}}" class="muted">
           还没有历史版本。修改字段并保存后会生成新版本。
         </text>
-        <view wx:for="{{versionItems}}" wx:key="version" class="version-row">
+        <view wx:for="{{versionItems}}" wx:key="version" class="version-row weui-cell">
           <view class="version-main">
             <text class="version-title">第 {{item.version}} 版 · {{item.field_count}} 个字段</text>
             <text class="version-meta">{{item.labelsText}}</text>
@@ -91,22 +91,22 @@
       </view>
     </view>
 
-    <button class="btn-primary" hover-class="btn-primary--hover" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
+    <button class="btn-primary weui-btn weui-btn_primary" hover-class="btn-primary--hover" loading="{{saving}}" disabled="{{saving}}" bindtap="onSave">
       {{saving ? '保存中…' : '保存模板'}}
     </button>
   </block>
 </view>
 
 <!-- 字段编辑弹层 -->
-<view class="sheet-mask" wx:if="{{sheetVisible}}" bindtap="onSheetClose"></view>
-<view class="sheet" wx:if="{{sheetVisible}}">
-  <view class="sheet-head">
-    <text class="sheet-title">{{sheetIsNew ? '添加字段' : '编辑字段'}}</text>
+<view class="sheet-mask weui-mask" wx:if="{{sheetVisible}}" bindtap="onSheetClose"></view>
+<view class="sheet weui-half-screen-dialog" wx:if="{{sheetVisible}}">
+  <view class="sheet-head weui-half-screen-dialog__hd">
+    <text class="sheet-title weui-half-screen-dialog__title">{{sheetIsNew ? '添加字段' : '编辑字段'}}</text>
     <text class="sheet-close" bindtap="onSheetClose">关闭</text>
   </view>
 
-  <scroll-view class="sheet-body" scroll-y>
-    <view class="form-row">
+  <scroll-view class="sheet-body weui-half-screen-dialog__bd" scroll-y>
+    <view class="form-row weui-cell">
       <text class="form-label">字段名称</text>
       <input
         class="form-input"
@@ -118,7 +118,7 @@
       />
     </view>
 
-    <view class="form-row">
+    <view class="form-row weui-cell">
       <text class="form-label">字段类型</text>
       <picker range="{{typeLabels}}" value="{{typeIndex}}" bindchange="onSheetType">
         <view class="form-picker">
@@ -128,21 +128,21 @@
       </picker>
     </view>
 
-    <view class="form-row">
+    <view class="form-row weui-cell">
       <text class="form-label">必填</text>
-      <switch checked="{{draft.required}}" color="#2F5D50" bindchange="onSheetRequired" />
+      <switch checked="{{draft.required}}" color="#07C160" bindchange="onSheetRequired" />
     </view>
 
-    <view class="form-row">
+    <view class="form-row weui-cell">
       <view class="form-label-group">
         <text class="form-label">敏感</text>
         <text class="form-label-desc">不进索引、详情页掩码</text>
       </view>
-      <switch checked="{{draft.sensitive}}" color="#C08A2E" bindchange="onSheetSensitive" />
+      <switch checked="{{draft.sensitive}}" color="#FA9D3B" bindchange="onSheetSensitive" />
     </view>
 
     <view
-      class="form-row"
+      class="form-row weui-cell"
       wx:if="{{draft.type !== 'switch' && draft.type !== 'select' && draft.type !== 'multi_select' && draft.type !== 'date' && draft.type !== 'datetime'}}"
     >
       <text class="form-label">占位提示</text>
@@ -156,7 +156,7 @@
       />
     </view>
 
-    <view class="form-row" wx:if="{{draft.type === 'text' || draft.type === 'textarea'}}">
+    <view class="form-row weui-cell" wx:if="{{draft.type === 'text' || draft.type === 'textarea'}}">
       <text class="form-label">字数上限</text>
       <input
         class="form-input"
@@ -190,7 +190,7 @@
     </view>
 
     <!-- 默认值：按类型换控件 -->
-    <view wx:if="{{draftDefaultKind === 'text'}}" class="form-row">
+    <view wx:if="{{draftDefaultKind === 'text'}}" class="form-row weui-cell">
       <text class="form-label">默认值</text>
       <input
         class="form-input"
@@ -201,7 +201,7 @@
       />
     </view>
 
-    <view wx:elif="{{draftDefaultKind === 'number'}}" class="form-row">
+    <view wx:elif="{{draftDefaultKind === 'number'}}" class="form-row weui-cell">
       <text class="form-label">默认值</text>
       <input
         class="form-input"
@@ -213,7 +213,7 @@
       />
     </view>
 
-    <view wx:elif="{{draftDefaultKind === 'date'}}" class="form-row">
+    <view wx:elif="{{draftDefaultKind === 'date'}}" class="form-row weui-cell">
       <text class="form-label">默认值</text>
       <picker mode="date" value="{{draft.default_value}}" bindchange="onSheetDefaultDate">
         <view class="form-picker">
@@ -223,7 +223,7 @@
       </picker>
     </view>
 
-    <view wx:elif="{{draftDefaultKind === 'select'}}" class="form-row">
+    <view wx:elif="{{draftDefaultKind === 'select'}}" class="form-row weui-cell">
       <text class="form-label">默认值</text>
       <picker range="{{defaultChoices}}" bindchange="onSheetDefaultSelect">
         <view class="form-picker">
@@ -233,9 +233,9 @@
       </picker>
     </view>
 
-    <view wx:elif="{{draftDefaultKind === 'switch'}}" class="form-row">
+    <view wx:elif="{{draftDefaultKind === 'switch'}}" class="form-row weui-cell">
       <text class="form-label">默认值</text>
-      <switch checked="{{draft.default_value}}" color="#2F5D50" bindchange="onSheetDefaultSwitch" />
+      <switch checked="{{draft.default_value}}" color="#07C160" bindchange="onSheetDefaultSwitch" />
     </view>
 
     <text wx:if="{{draftDefaultKind === 'none'}}" class="form-hint">
@@ -245,8 +245,8 @@
     <text wx:if="{{sheetError}}" class="form-error">{{sheetError}}</text>
   </scroll-view>
 
-  <view class="sheet-foot">
-    <button class="btn-ghost" hover-class="btn-ghost--hover" bindtap="onSheetClose">取消</button>
-    <button class="btn-primary btn-primary--half" hover-class="btn-primary--hover" bindtap="onSheetConfirm">确定</button>
+  <view class="sheet-foot weui-half-screen-dialog__ft">
+    <button class="btn-ghost weui-btn weui-btn_default" hover-class="btn-ghost--hover" bindtap="onSheetClose">取消</button>
+    <button class="btn-primary weui-btn weui-btn_primary btn-primary--half" hover-class="btn-primary--hover" bindtap="onSheetConfirm">确定</button>
   </view>
 </view>

@@ -1,4 +1,7 @@
 {
   "component": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "mp-msg": "weui-miniprogram/msg/msg"
+  },
+  "styleIsolation": "apply-shared"
 }

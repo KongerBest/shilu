@@ -1,8 +1,5 @@
-<view class="empty">
-  <view class="empty__mark"></view>
-  <text class="empty__title">{{title}}</text>
-  <text wx:if="{{desc}}" class="empty__desc">{{desc}}</text>
-  <view wx:if="{{actionText}}" class="empty__action" bindtap="onAction" hover-class="empty__action--hover">
-    {{actionText}}
+<mp-msg type="info" size="{{64}}" title="{{title}}" desc="{{desc}}">
+  <view slot="handle" wx:if="{{actionText}}" class="weui-btn-area">
+    <button class="weui-btn weui-btn_primary" style="width: 184px; margin-left: auto; margin-right: auto;" hover-class="none" bindtap="onAction">{{actionText}}</button>
   </view>
-</view>
+</mp-msg>

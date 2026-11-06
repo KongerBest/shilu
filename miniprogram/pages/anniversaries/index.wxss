@@ -6,11 +6,9 @@
 .hero {
   margin-top: var(--sp-3);
   padding: var(--sp-5);
-  background-image:
-    linear-gradient(135deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 40%),
-    linear-gradient(160deg, var(--glass-bg-strong) 0%, var(--glass-bg) 70%);
+  
   border: 1rpx solid var(--glass-border);
-  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
+  
   overflow: hidden;
 }
 
@@ -60,10 +58,10 @@
   margin-top: var(--sp-3);
   padding: var(--sp-4) 0;
   border: 1rpx solid var(--glass-border);
-  border-radius: 24rpx;
+  border-radius: 8rpx;
   background-color: var(--glass-bg-soft);
-  background-image: linear-gradient(180deg, var(--glass-bg-strong), var(--glass-bg-soft));
-  box-shadow: var(--glass-highlight), var(--glass-ring);
+  
+  
 }
 
 .stats__item {
@@ -125,7 +123,7 @@
   flex-shrink: 0;
   width: 6rpx;
   height: 56rpx;
-  border-radius: 6rpx;
+  border-radius: 8rpx;
   margin-right: var(--sp-3);
 }
 
@@ -242,7 +240,7 @@
   border: 1rpx solid var(--glass-border);
   border-radius: 999rpx;
   background-color: var(--glass-bg-soft);
-  box-shadow: var(--glass-highlight), var(--glass-ring);
+  
 }
 
 .view-switch__item {
@@ -259,7 +257,7 @@
   color: var(--c-accent);
   font-weight: 600;
   background: var(--c-surface);
-  box-shadow: var(--c-shadow-card);
+  
 }
 
 /* 月历：6 行固定高度，换月不跳动 */
@@ -380,7 +378,7 @@
   border: 1rpx solid var(--glass-border);
   border-radius: 999rpx;
   background-color: var(--glass-bg-soft);
-  box-shadow: var(--glass-highlight), var(--glass-ring);
+  
 }
 
 .view-switch__item {
@@ -397,7 +395,7 @@
   color: var(--c-accent);
   font-weight: 600;
   background: var(--c-surface);
-  box-shadow: var(--c-shadow-card);
+  
 }
 
 /* 月历：6 行固定高度，换月不跳动 */

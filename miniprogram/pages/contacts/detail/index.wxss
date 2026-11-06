@@ -182,5 +182,5 @@
   line-height: 1.6;
   color: var(--c-text-3);
   border: 1rpx dashed var(--c-line);
-  border-radius: 20rpx;
+  border-radius: 8rpx;
 }

@@ -5,14 +5,12 @@
 
 .group {
   background-color: var(--glass-bg);
-  background-image:
-    linear-gradient(118deg, var(--glass-specular) 0%, rgba(255, 255, 255, 0) 26%),
-    linear-gradient(158deg, var(--glass-bg-strong) 0%, var(--glass-bg) 68%);
+  
   border: 1rpx solid var(--glass-border);
-  border-radius: 24rpx;
-  box-shadow: var(--glass-shadow), var(--glass-highlight), var(--glass-ring);
-  -webkit-backdrop-filter: var(--glass-blur);
-  backdrop-filter: var(--glass-blur);
+  border-radius: 8rpx;
+  
+  
+  
   overflow: hidden;
 }
 
@@ -137,9 +135,9 @@
   gap: var(--sp-2);
   height: 88rpx;
   border: 1rpx solid var(--glass-border-soft);
-  border-radius: 18rpx;
+  border-radius: 8rpx;
   background: var(--glass-bg-soft);
-  box-shadow: var(--glass-highlight), var(--glass-ring);
+  
   transition: border-color 120ms ease, background-color 120ms ease;
 }
 
@@ -150,7 +148,7 @@
 .theme-opt.is-active {
   border-color: var(--c-accent);
   background: var(--c-accent-glass-soft);
-  box-shadow: var(--glass-highlight);
+  
 }
 
 .theme-opt__dot {
@@ -160,13 +158,13 @@
 }
 
 .theme-opt__dot--light {
-  background: #f7f7f5;
-  border: 1rpx solid #d8d8d2;
+  background: var(--weui-BG-1);
+  border: 1rpx solid var(--weui-FG-3);
 }
 
 .theme-opt__dot--dark {
   background: #14161a;
-  border: 1rpx solid #3a4049;
+  border: 1rpx solid var(--weui-FG-3);
 }
 
 .theme-opt__label {
@@ -184,7 +182,7 @@
   position: relative;
   width: 88rpx;
   height: 50rpx;
-  border-radius: var(--radius-pill);
+  border-radius: 8rpx;
   /* 关闭态必须是「看得见的凹槽」：玻璃底色几乎全透，白滑块会浮在空气里 */
   background: var(--c-surface-sunken);
   border: 1rpx solid var(--c-line);
@@ -201,14 +199,14 @@
   height: 42rpx;
   border-radius: 50%;
   background: var(--c-knob);
-  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.18), 0 0 0 1rpx rgba(0, 0, 0, 0.03);
+  
   transition: transform var(--dur-base) var(--ease-out);
 }
 
 .toggle.is-on {
   background: var(--c-accent);
   border-color: var(--c-accent);
-  box-shadow: var(--shadow-accent), inset 0 1rpx 0 rgba(255, 255, 255, 0.22);
+  
 }
 
 .toggle.is-on .toggle__knob {

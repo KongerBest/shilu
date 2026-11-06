@@ -1,8 +1,4 @@
-<view class="loading loading--{{mode}}">
-  <view class="loading__dots">
-    <view class="loading__dot"></view>
-    <view class="loading__dot"></view>
-    <view class="loading__dot"></view>
-  </view>
-  <text class="loading__text">{{text}}</text>
+<view class="weui-loadmore loading--{{mode}}">
+  <mp-loading type="dot-gray" show="{{true}}" />
+  <text class="weui-loadmore__tips">{{text}}</text>
 </view>

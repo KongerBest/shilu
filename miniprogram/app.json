@@ -22,11 +22,14 @@
   ],
   "window": {
     "backgroundTextStyle": "dark",
-    "navigationBarBackgroundColor": "#F7F7F5",
+    "navigationBarBackgroundColor": "#F7F7F7",
     "navigationBarTitleText": "拾录",
     "navigationBarTextStyle": "black",
-    "backgroundColor": "#F7F7F5",
+    "backgroundColor": "#EDEDED",
     "enablePullDownRefresh": false
+  },
+  "useExtendedLib": {
+    "weui": true
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
