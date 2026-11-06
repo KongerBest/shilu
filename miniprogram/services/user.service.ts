@@ -30,10 +30,18 @@ export const userService = {
     return session;
   },
 
-  /** 强制重新拉取（下拉刷新用）。 */
+  /**
+   * 强制重新拉取（首页/我的每次显示时用）。
+   * login() 会把 stats 一起缓存，而统计随写操作变化，不能复用旧值。
+   */
   async refresh(): Promise<LoginResult> {
     session = null;
     return userService.login();
+  },
+
+  /** 只失效缓存、不发请求。写操作完成后由 overview-cache 调用。 */
+  invalidate(): void {
+    session = null;
   },
 
   async updateProfile(patch: { nickname?: string; avatarFileId?: string }): Promise<{ user: User }> {

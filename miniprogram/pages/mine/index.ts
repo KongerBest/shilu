@@ -62,7 +62,8 @@ Page({
   async load() {
     this.setData({ loading: true, error: '' });
     try {
-      const session = await userService.login();
+      // 统计随写操作变化，不能用 login() 的缓存值
+      const session = await userService.refresh();
       const nickname = session.user.nickname || '';
       this.setData({
         loading: false,

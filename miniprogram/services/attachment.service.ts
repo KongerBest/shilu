@@ -1,4 +1,5 @@
 import { call } from './transport';
+import { invalidateAfter } from './overview-cache';
 import type { Attachment } from '../types/models';
 import type { Envelope } from '../utils/crypto/envelope';
 
@@ -60,7 +61,7 @@ export const attachmentService = {
   },
 
   confirmUpload(input: ConfirmUploadInput): Promise<{ item: Attachment }> {
-    return call<{ item: Attachment }>('attachment', 'confirmUpload', input);
+    return invalidateAfter(call<{ item: Attachment }>('attachment', 'confirmUpload', input));
   },
 
   listByBiz(bizType: AttachmentBiz, bizId: string): Promise<{ items: Attachment[] }> {
@@ -81,7 +82,7 @@ export const attachmentService = {
   },
 
   remove(id: string): Promise<{ ok: boolean }> {
-    return call<{ ok: boolean }>('attachment', 'remove', { id });
+    return invalidateAfter(call<{ ok: boolean }>('attachment', 'remove', { id }));
   },
 
   reSign(ids: string[]): Promise<{ items: SignedUrl[] }> {

@@ -1,4 +1,5 @@
 import { call } from './transport';
+import { invalidateAfter } from './overview-cache';
 import type {
   Contact,
   ContactAnniversary,
@@ -35,7 +36,7 @@ export const contactService = {
   },
 
   async create(input: ContactInput & { clientId?: string }): Promise<{ item: Contact }> {
-    return call<{ item: Contact }>('contact', 'create', input);
+    return invalidateAfter(call<{ item: Contact }>('contact', 'create', input));
   },
 
   async update(input: ContactInput & { id: string }): Promise<{ item: Contact }> {
@@ -43,6 +44,6 @@ export const contactService = {
   },
 
   async remove(id: string): Promise<{ ok: boolean }> {
-    return call<{ ok: boolean }>('contact', 'remove', { id });
+    return invalidateAfter(call<{ ok: boolean }>('contact', 'remove', { id }));
   }
 };

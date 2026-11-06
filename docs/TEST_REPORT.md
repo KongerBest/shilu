@@ -627,3 +627,52 @@ padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--
 `module 'utils/scroll-edge.js' is not defined` 并白屏。执行
 `debug_clear_cache --action cleanCompileCache` + `cleanProjectFileListCache` 再 `simulator_refresh` 后恢复。
 以后通过脚本直接写盘新增 `.ts` 文件时，都要先清这两个缓存再做模拟器验证。
+
+---
+
+## 8. 线上首页统计不同步（2026-11-06）
+
+### 8.1 现象与定位
+
+线上反馈：首页「最近记录」已有 1 条「未来工厂答辩」，但统计卡仍是 `0 资料 / 0 附件 / 0 纪念日`，
+「快捷新增」7 个分类的计数也全是 0。
+
+先核云端（同一环境 `cloud1-d3gx6yqxpb924f4cf`）：
+
+| 数据 | 云端实际值 | 截图显示 |
+|---|---|---|
+| `user_stats.records_count` | 1 | 0 |
+| `user_stats.anniversaries_count` | 1 | 0 |
+| `categories(日常备忘).record_count` | 1 | 0 |
+| `records`（未删除） | 未来工厂答辩 | 已显示 |
+
+云端计数在记录创建时已正确自增，问题在**客户端两处内存缓存**：
+
+- `userService.login()` 把整个 `LoginResult`（含 `stats`）缓存，首页 `onShow()` 每次都调 `load()`，
+  但 `login()` 直接返回缓存值，统计永远停在登录那一刻；
+- `categoryService.list()` 同样缓存分类列表，`record_count` 不随写操作更新。
+
+而「最近记录」走 `recordService.list()` 实时请求，所以同一屏出现新记录 + 旧计数。
+
+### 8.2 修复
+
+| 落点 | 改动 |
+|---|---|
+| `pages/home/index.ts` | `login()` → `refresh()` 强制重拉登录态统计；`categoryService.list(true)` 强制重拉分类计数 |
+| `pages/mine/index.ts` | 同一份统计同样改为 `refresh()` |
+| `services/overview-cache.ts`（新增） | `invalidateOverview()` 清两份缓存；`invalidateAfter()` 只在写操作成功后失效 |
+| `record` / `attachment` / `contact` / `anniversary` service | 增、删类写操作接 `invalidateAfter` |
+| `backup.service.ts` | 恢复完成后调用 `invalidateOverview()`（恢复会整体改写计数） |
+
+云端计数链路未改动：`record.create/remove` 的 `bumpStat` 与 `record_count` 自增本来就正常。
+设置页「重算统计」仍作为历史脏数据的兜底校正入口。
+
+### 8.3 验证
+
+- 回归：`npm run check` → **34 文件 / 388 项通过**，typecheck 0 error（原基线 33 / 381）。
+  新增 `tests/overview-cache.test.ts` 7 项：缓存旧值复现、强制刷新、写后失效、失败不失效、
+  以及首页/各 service 的源码级防回归断言。
+- 模拟器：新增 `.ts` 后按 §7.4 清两个缓存再刷新，首页正常渲染、控制台 `grep -i error` 为空；
+  读到 `stats = 1/1/1`、`日常备忘 = 1`、`recent = 1`。
+- 人为把首页 `stats` 改成 0 后调用 `load()`，重新拉回 `1/1/1`、分类计数 1，确认刷新链路生效。
+- 线上生效需重新上传小程序代码；云端数据无需订正。

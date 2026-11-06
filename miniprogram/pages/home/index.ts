@@ -73,7 +73,9 @@ Page({
   async load() {
     this.setData({ loading: !this.data.loaded, error: '' });
     try {
-      const session = await userService.login();
+      // 登录结果自带 stats，login() 会长期缓存；每次回到首页都强制重拉，
+      // 否则新建/删除后统计卡仍是登录那一刻的旧数字。
+      const session = await userService.refresh();
       const nickname = session.user.nickname || '';
       const displayName = nickname || '设置昵称';
 
@@ -90,7 +92,8 @@ Page({
         anniversaries: session.stats.anniversaries_count
       });
 
-      const categories = await categoryService.list();
+      // 每个分类的 record_count 也会被写操作改动，必须绕开内存缓存
+      const categories = await categoryService.list(true);
 
       // 三个请求彼此独立，并发发出；任一失败不影响其余区块展示
       const [recentRes, favoriteRes] = await Promise.all([

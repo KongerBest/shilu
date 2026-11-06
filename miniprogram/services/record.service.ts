@@ -1,4 +1,5 @@
 import { call } from './transport';
+import { invalidateAfter } from './overview-cache';
 import { PAGE_SIZE } from '../config/features';
 import type { Paged } from '../types/common';
 import type { RecordListItem, RecordValues, ShiluRecord } from '../types/models';
@@ -36,7 +37,7 @@ export const recordService = {
     tags?: string[];
     contactIds?: string[];
   }): Promise<{ item: ShiluRecord }> {
-    return call<{ item: ShiluRecord }>('record', 'create', input);
+    return invalidateAfter(call<{ item: ShiluRecord }>('record', 'create', input));
   },
 
   async update(input: {
@@ -53,7 +54,7 @@ export const recordService = {
   },
 
   async remove(id: string): Promise<{ ok: boolean }> {
-    return call<{ ok: boolean }>('record', 'remove', { id });
+    return invalidateAfter(call<{ ok: boolean }>('record', 'remove', { id }));
   },
 
   async setFavorite(id: string, value: boolean): Promise<{ item: RecordListItem }> {

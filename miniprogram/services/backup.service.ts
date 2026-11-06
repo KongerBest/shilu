@@ -11,6 +11,7 @@
  */
 
 import { userService } from './user.service';
+import { invalidateOverview } from './overview-cache';
 import { vaultSession } from './vault-session';
 import { call } from './transport';
 import { contactPhoneContext } from './contact-crypto';
@@ -314,6 +315,8 @@ export const backupService = {
       refresh_all: replaceApplied
     });
     totals.stats = fin.stats || null;
+    // 恢复会整体改写统计与分类计数，本地缓存必须失效
+    invalidateOverview();
     onProgress({ phase: 'finish', label: PHASE_LABEL.finish, done: 1, total: 1 });
 
     logger.info('backup', 'import done', {

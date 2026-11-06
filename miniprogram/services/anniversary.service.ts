@@ -1,4 +1,5 @@
 import { call } from './transport';
+import { invalidateAfter } from './overview-cache';
 import type {
   Anniversary,
   AnniversaryType,
@@ -39,7 +40,7 @@ export const anniversaryService = {
   },
 
   async create(input: AnniversaryInput): Promise<{ item: Anniversary }> {
-    return call<{ item: Anniversary }>('anniversary', 'create', input);
+    return invalidateAfter(call<{ item: Anniversary }>('anniversary', 'create', input));
   },
 
   async update(input: AnniversaryInput & { id: string }): Promise<{ item: Anniversary }> {
@@ -47,6 +48,6 @@ export const anniversaryService = {
   },
 
   async remove(id: string): Promise<{ ok: boolean }> {
-    return call<{ ok: boolean }>('anniversary', 'remove', { id });
+    return invalidateAfter(call<{ ok: boolean }>('anniversary', 'remove', { id }));
   }
 };
