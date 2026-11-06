@@ -25,8 +25,14 @@ export const FIELD_TYPES: FieldType[] = [
   'location_text'
 ];
 
-/** 与云函数 template-schema.js 的同名常量保持一致：阶段三开放后两边同时改 true。 */
-export const ATTACHMENT_FIELDS_ENABLED = false;
+/**
+ * 附件类字段（图片 / 文件）。
+ *
+ * 值是一组附件 `_id`（图片最多 9、文件最多 5），文件本体在云存储，
+ * 附件行按 `biz_type='record' + biz_id + field_key` 归档。
+ * 与云函数 template-schema.js 的同名常量保持一致，两边同时 true。
+ */
+export const ATTACHMENT_FIELDS_ENABLED = true;
 
 export const FIELD_TYPE_LABELS: Record<FieldType, string> = {
   text: '单行文本',
@@ -269,6 +275,13 @@ export function formatValue(field: FieldRule, value: unknown): string {
     }
     case 'number':
       return typeof value === 'number' ? String(value) : String(value);
+    case 'image':
+    case 'file': {
+      // 值是附件 id 数组：只能给出数量，图片/文件本身在详情页由上传器渲染
+      const count = Array.isArray(value) ? value.length : 0;
+      if (count === 0) return '';
+      return field.type === 'image' ? `${count} 张图片` : `${count} 个文件`;
+    }
     default:
       return String(value);
   }

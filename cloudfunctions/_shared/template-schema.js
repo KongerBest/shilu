@@ -29,11 +29,13 @@ const FIELD_TYPES = [
 
 /**
  * 附件类字段的开关。
- * 阶段二还没有统一附件服务（阶段三），此时若允许建 image/file 字段，
- * 用户会得到"必填但无法填写"的死表单。因此在服务端也拒绝，而不只是前端隐藏入口。
- * 阶段三落地后把这里改 true 并同步 miniprogram/utils/field-rules.ts 的 ATTACHMENT_FIELDS_ENABLED。
+ *
+ * 附件服务（cloudfunctions/attachment）已支持按 field_key 归档，
+ * 客户端 field-renderer 也能渲染上传器，因此 image/file 字段可以真正填写。
+ * 值为附件 _id 数组（图片最多 9、文件最多 5），与 field-rules.ts 保持一致。
+ * 改这里必须同步 miniprogram/utils/field-rules.ts 的 ATTACHMENT_FIELDS_ENABLED。
  */
-const ATTACHMENT_FIELDS_ENABLED = false;
+const ATTACHMENT_FIELDS_ENABLED = true;
 
 const TYPE_META = {
   text: { label: '单行文本', kind: 'string', maxLength: 200 },

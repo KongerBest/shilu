@@ -23,6 +23,8 @@ export interface EncMeta {
 export interface ConfirmUploadInput {
   bizType: AttachmentBiz;
   bizId: string;
+  /** 归属的模板字段 key；空串/缺省 = 资料级自由附件 */
+  fieldKey?: string;
   role: AttachmentRole;
   fileId: string;
   nameMask: string;

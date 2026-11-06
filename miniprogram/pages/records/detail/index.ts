@@ -27,6 +27,16 @@ interface DetailRow {
   encrypted: boolean;
 }
 
+/** 模板里的图片/文件字段：值只存附件 id，展示交给只读上传器 */
+interface AttachmentFieldView {
+  key: string;
+  label: string;
+  accept: 'image' | 'file';
+  role: 'other' | 'file';
+  max: number;
+  hint: string;
+}
+
 /** 密文行在未解锁时的占位文案 */
 const LOCKED_TEXT = '已加密 · 解锁后查看';
 
@@ -39,6 +49,8 @@ interface DetailData {
   templateName: string;
   metaText: string;
   rows: DetailRow[];
+  /** 模板里的图片/文件字段（只读上传器，按 field_key 取附件） */
+  attachmentFields: AttachmentFieldView[];
   tags: string[];
   isFavorite: boolean;
   isArchived: boolean;
@@ -71,6 +83,7 @@ Page({
     templateName: '',
     metaText: '',
     rows: [] as DetailRow[],
+    attachmentFields: [] as AttachmentFieldView[],
     tags: [] as string[],
     isFavorite: false,
     isArchived: false,
@@ -138,6 +151,16 @@ Page({
       }
 
       const rows = this.buildRows(item, fields);
+      const attachmentFields: AttachmentFieldView[] = fields
+        .filter((field) => field.type === 'image' || field.type === 'file')
+        .map((field) => ({
+          key: field.key,
+          label: field.label,
+          accept: (field.type === 'file' ? 'file' : 'image') as 'image' | 'file',
+          role: (field.type === 'file' ? 'file' : 'other') as 'other' | 'file',
+          max: field.type === 'file' ? 5 : 9,
+          hint: field.type === 'file' ? '最多 5 个，单个 20MB' : '最多 9 张，单张 20MB'
+        }));
       const now = Date.now();
       const categoryName = category ? category.name : '未分类';
 
@@ -165,6 +188,7 @@ Page({
         categoryName,
         templateName,
         rows,
+        attachmentFields,
         tags: item.tags || [],
         isFavorite: item.is_favorite === 1,
         isArchived: item.is_archived === 1,
@@ -189,7 +213,11 @@ Page({
 
     if (fields.length > 0) {
       return fields
-        .filter((field) => !isBlank(values[field.key]) || field.type === 'switch')
+        // 附件字段的值是附件 id 数组，文本化没有意义，交给只读上传器渲染
+        .filter(
+          (field) =>
+            field.type !== 'image' && field.type !== 'file' && (!isBlank(values[field.key]) || field.type === 'switch')
+        )
         .map((field) => {
           const value = values[field.key];
           const locked = isEnvelope(value);

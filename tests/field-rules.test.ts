@@ -79,6 +79,15 @@ describe('formatValue', () => {
     expect(formatValue(field({ type: 'switch' }), false)).toBe('否');
   });
 
+  it('附件字段显示数量而不是一长串附件 id', () => {
+    expect(formatValue(field({ type: 'image' }), ['a', 'b'])).toBe('2 张图片');
+    expect(formatValue(field({ type: 'file' }), ['a'])).toBe('1 个文件');
+  });
+
+  it('附件字段为空数组时不显示文本', () => {
+    expect(formatValue(field({ type: 'image' }), [])).toBe('');
+  });
+
   it('空值返回空串', () => {
     expect(formatValue(field({}), null)).toBe('');
     expect(formatValue(field({}), [])).toBe('');

@@ -99,6 +99,10 @@ function toRow(draft: FieldDraft): FieldRow {
   let summary = '';
   if (draft.type === 'select' || draft.type === 'multi_select') {
     summary = `${draft.options.length} 个选项`;
+  } else if (draft.type === 'image') {
+    summary = '最多 9 张';
+  } else if (draft.type === 'file') {
+    summary = '最多 5 个';
   } else if (draft.max_length > 0) {
     summary = `最多 ${draft.max_length} 字`;
   }
@@ -113,7 +117,7 @@ function toRow(draft: FieldDraft): FieldRow {
   };
 }
 
-/** 类型选择器：附件类字段在附件服务接入前不出现在可选项里，避免建出填不了的表单。 */
+/** 类型选择器：附件类字段已接入统一附件服务，图片/文件与其它类型一样可选。 */
 const TYPE_CHOICES = FIELD_TYPES.filter(
   (type) => ATTACHMENT_FIELDS_ENABLED || (type !== 'image' && type !== 'file')
 ).map((type) => ({ value: type, label: FIELD_TYPE_LABELS[type] }));
@@ -311,6 +315,8 @@ Page({
       typeIndex: index,
       'draft.type': type,
       'draft.default_value': null,
+      // 附件字段不支持敏感标记（加密在附件层做）
+      'draft.sensitive': type === 'image' || type === 'file' ? false : this.data.draft.sensitive,
       'draft.options': [],
       draftDefaultKind: defaultKindOf(type),
       defaultChoices: []
@@ -408,6 +414,8 @@ Page({
     const normalized: FieldDraft = {
       ...draft,
       label,
+      // 附件字段不做字段级密文封装：加密在附件服务里做，字段值只存附件 id
+      sensitive: draft.type === 'image' || draft.type === 'file' ? false : draft.sensitive,
       placeholder: draft.placeholder.trim(),
       options: draft.type === 'select' || draft.type === 'multi_select' ? draft.options : []
     };

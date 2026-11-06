@@ -50,6 +50,8 @@ function flattenValues(values, fields) {
     const field = fieldMap[key];
     // 敏感字段即使被误传进 values 也不参与文本化
     if (field && field.sensitive) continue;
+    // 附件字段的值是附件 _id 数组，拼进摘要/索引既不可读也无检索价值
+    if (field && (field.type === 'image' || field.type === 'file')) continue;
     const value = values ? values[key] : undefined;
     if (isEnvelope(value)) continue;
     const text = toText(value).trim();

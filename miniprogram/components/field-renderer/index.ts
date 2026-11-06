@@ -28,6 +28,10 @@ interface FieldRendererData {
   maxlength: number;
   inputType: 'text' | 'number' | 'digit';
   isInput: boolean;
+  isAttachment: boolean;
+  attachmentAccept: 'image' | 'file';
+  attachmentRole: 'other' | 'file';
+  attachmentMax: number;
   typeLabel: string;
   deferred: boolean;
 }
@@ -63,6 +67,19 @@ Component({
     disabled: {
       type: Boolean,
       value: false
+    },
+    /**
+     * 附件字段的归属记录 id。
+     * 新建资料时由编辑页预生成（记录还没落库，附件先挂在这个 id 上）。
+     */
+    bizId: {
+      type: String,
+      value: ''
+    },
+    /** 附件是否端到端加密上传（跟随构建开关，与资料详情页的图片区一致） */
+    encrypt: {
+      type: Boolean,
+      value: false
     }
   },
 
@@ -79,6 +96,10 @@ Component({
     maxlength: -1,
     inputType: 'text',
     isInput: false,
+    isAttachment: false,
+    attachmentAccept: 'image',
+    attachmentRole: 'other',
+    attachmentMax: 9,
     typeLabel: '',
     deferred: false
   } as FieldRendererData,
@@ -101,12 +122,17 @@ Component({
       }
 
       const isPicker = field.type === 'date' || field.type === 'select';
+      const isAttachment = field.type === 'image' || field.type === 'file';
       const patch: Partial<FieldRendererData> = {
         isInput: INPUT_TYPES.indexOf(field.type) >= 0,
         inputType:
           field.type === 'number' ? 'digit' : field.type === 'phone' ? 'number' : 'text',
+        isAttachment,
+        attachmentAccept: field.type === 'file' ? 'file' : 'image',
+        attachmentRole: field.type === 'file' ? 'file' : 'other',
+        attachmentMax: field.type === 'file' ? 5 : 9,
         typeLabel: FIELD_TYPE_LABELS[field.type] || field.type,
-        deferred: field.type === 'image' || field.type === 'file',
+        deferred: false,
         placeholder: field.placeholder || `${isPicker ? '请选择' : '请输入'}${field.label}`,
         maxlength: field.max_length && field.max_length > 0 ? field.max_length : -1
       };
@@ -216,6 +242,15 @@ Component({
     onSwitch(e: WechatMiniprogram.SwitchChange) {
       this.setData({ boolValue: e.detail.value });
       this.emit(e.detail.value);
+    },
+
+    /**
+     * 附件变化：上传器回传当前附件 id 列表，字段值就是这个数组。
+     * 上传/删除即时生效（附件是独立资源），表单「保存」只落 values。
+     */
+    onAttachmentChange(e: WechatMiniprogram.CustomEvent<{ count: number; ids: string[] }>) {
+      const ids = e.detail && Array.isArray(e.detail.ids) ? e.detail.ids : [];
+      this.emit(ids);
     }
   }
 });

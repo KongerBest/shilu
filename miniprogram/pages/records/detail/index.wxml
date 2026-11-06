@@ -31,8 +31,26 @@
       </view>
     </view>
 
-    <view class="card" wx:else>
+    <view class="card" wx:elif="{{attachmentFields.length === 0}}">
       <text class="muted">这条资料还没有填写内容。</text>
+    </view>
+
+    <!-- 模板里的图片 / 文件字段：只读上传器，按字段 key 取附件 -->
+    <view class="card" wx:for="{{attachmentFields}}" wx:key="key">
+      <view class="attach-head">
+        <text class="attach-title">{{item.label}}</text>
+        <text class="form-hint">{{item.hint}}</text>
+      </view>
+      <file-uploader
+        biz-type="record"
+        biz-id="{{id}}"
+        field-key="{{item.key}}"
+        role="{{item.role}}"
+        accept="{{item.accept}}"
+        max="{{item.max}}"
+        readonly
+        encrypt="{{encryptedAttachments}}"
+      />
     </view>
 
     <block wx:if="{{isDocument}}">

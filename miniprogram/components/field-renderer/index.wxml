@@ -107,11 +107,29 @@
     </view>
   </view>
 
-  <!-- 附件类：阶段二还没有统一附件服务，明确标注而不是放个点不动的按钮 -->
+  <!-- 图片 / 文件：复用附件上传器，字段值就是附件 id 数组 -->
+  <view wx:elif="{{isAttachment}}" class="weui-cell fr-attachment">
+    <view class="weui-cell__bd">
+      <file-uploader
+        biz-type="record"
+        biz-id="{{bizId}}"
+        field-key="{{field.key}}"
+        role="{{attachmentRole}}"
+        accept="{{attachmentAccept}}"
+        max="{{attachmentMax}}"
+        readonly="{{!bizId || disabled}}"
+        encrypt="{{encrypt}}"
+        bind:change="onAttachmentChange"
+      />
+      <text wx:if="{{!bizId}}" class="fr-attachment-hint">上传环境准备中，稍候再试</text>
+    </view>
+  </view>
+
+  <!-- 兜底：未知类型明确说明，而不是放一个点不动的控件 -->
   <view wx:else class="weui-cell fr-deferred">
     <view class="weui-cell__bd">
-      <text class="fr-deferred-title">{{typeLabel}}字段暂未开放</text>
-      <text class="fr-deferred-desc">需要附件服务支持，将在下一阶段接入</text>
+      <text class="fr-deferred-title">{{typeLabel}}字段暂不支持编辑</text>
+      <text class="fr-deferred-desc">请升级到最新版本，或换一个字段类型</text>
     </view>
   </view>
 

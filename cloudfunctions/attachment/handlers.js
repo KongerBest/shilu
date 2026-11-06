@@ -6,15 +6,24 @@ const { param, notFound, forbidden, conflict } = require('./common/response');
 const { bumpStat } = require('./common/stats');
 const { logger } = require('./common/logger');
 
-/** 单条资料最多 20 个附件；单文件 ≤ 20MB（无流式加密时的硬上限）。 */
-const MAX_PER_BIZ = 20;
+/** 单条资料最多 40 个附件（模板里可有多张图片/多个文件字段，按字段上限累加上限）；
+ *  单文件 ≤ 20MB（无流式加密时的硬上限）。 */
+const MAX_PER_BIZ = 40;
 const MAX_SIZE = 20 * 1024 * 1024;
 const MAX_REORDER = 50;
 
 const BIZ_TYPES = ['record', 'contact', 'document', 'user'];
 const ROLES = ['front', 'back', 'other', 'avatar', 'file'];
+/** 模板字段 key 的形态，与 _shared/template-schema.js 的 KEY_RE 一致。 */
+const FIELD_KEY_RE = /^[A-Za-z][A-Za-z0-9_]{0,31}$/;
 
-/** 业务归属校验。联系人与证件库尚未上线，先明确拒绝而不是静默放过。 */
+/** 业务归属校验。
+ *
+ * 资料允许「未落库的草稿 id」：编辑页新建资料时先预生成 _id（字段加密与附件都要它），
+ * 记录要等用户点保存才写入。此时 doc 不存在不该报错，否则图片字段永远传不上去。
+ * 安全边界仍然成立——附件行按 owner_openid 归属，路径里也带 openid 指纹，
+ * 别人的 bizId 依然会被下面的 owner_openid 判定挡住。
+ */
 async function assertBizOwned(openid, bizType, bizId) {
   // 头像：biz_id 必须是当前登录用户的 user._id
   if (bizType === 'user') {
@@ -30,7 +39,8 @@ async function assertBizOwned(openid, bizType, bizId) {
     .doc(bizId)
     .get()
     .catch(() => null);
-  if (!res || !res.data) throw notFound('资料不存在');
+  // 草稿记录尚未落库：放行，附件行本身仍受 owner_openid 约束
+  if (!res || !res.data) return null;
   if (res.data.owner_openid !== openid) throw forbidden('无法访问该资料');
   if (res.data.is_deleted === 1) throw notFound('资料已删除');
   return res.data;
@@ -86,6 +96,8 @@ function toPublic(doc) {
     _id: doc._id,
     biz_type: doc.biz_type,
     biz_id: doc.biz_id,
+    /** 归属的模板字段 key；空串表示资料级「自由附件」 */
+    field_key: doc.field_key || '',
     role: doc.role,
     file_id: doc.file_id,
     name_mask: doc.name_mask || '',
@@ -152,6 +164,8 @@ async function confirmUpload({ openid, payload }) {
   const nameMask = requireString(payload.nameMask, 'nameMask', { max: 60 });
   const mime = optionalString(payload.mime, 'mime', 100) || '';
   const sha256 = optionalString(payload.sha256, 'sha256', 64) || '';
+  const fieldKey = optionalString(payload.fieldKey, 'fieldKey', 32) || '';
+  if (fieldKey && !FIELD_KEY_RE.test(fieldKey)) throw param('fieldKey 不合法');
 
   const size = Number(payload.size);
   if (!Number.isFinite(size) || size <= 0 || size > MAX_SIZE) {
@@ -189,6 +203,7 @@ async function confirmUpload({ openid, payload }) {
     owner_openid: openid,
     biz_type: bizType,
     biz_id: bizId,
+    field_key: fieldKey,
     role,
     file_id: fileId,
     name_enc: nameEnc,

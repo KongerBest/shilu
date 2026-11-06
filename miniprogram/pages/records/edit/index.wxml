@@ -55,6 +55,8 @@
         field="{{item.field}}"
         value="{{item.value}}"
         error="{{item.error}}"
+        biz-id="{{uploadBizId}}"
+        encrypt="{{attachmentEncrypt}}"
         bind:change="onFieldChange"
       />
     </view>

@@ -187,7 +187,10 @@ type FieldType =
   | 'image' | 'file' | 'location_text';
 ```
 
-> `image` / `file` 在阶段二被 `normalizeFields` 拒绝（返回 `type_unavailable`），因为统一附件服务要到阶段三才落地。允许建这类字段会产生「必填但填不了」的死表单，所以宁可在建模板这一步就拦住。
+> `image` / `file` 值为附件 `_id` 数组（图片 ≤ 9、文件 ≤ 5），由统一附件服务承载：附件行按
+> `biz_type='record' + biz_id + field_key` 归档，`field_key` 就是这里的字段 `key`。
+> 这两个类型不参与摘要与搜索索引（值是 id，拼进去既不可读也无检索价值），也不做字段级密文封装
+> （内容加密由附件服务负责）。
 >
 > `field_history` 存的是整份 `fields` 快照，回滚时直接换回。只保留最近 10 个版本；40 字段 × 10 版约 80KB，仍在单文档 16MB 限制内。
 
@@ -314,7 +317,8 @@ type FieldType =
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `biz_type` | `'record' \| 'contact' \| 'document' \| 'user'` | `user` 为用户头像（`biz_id = user._id`，`role='avatar'` 单张替换） |
-| `biz_id` | string | 所属实体 id |
+| `biz_id` | string | 所属实体 id；资料在新建页尚未落库时是客户端预生成的草稿 id |
+| `field_key` | string | 归属的模板字段 `key`；空串表示资料级自由附件（非模板字段） |
 | `role` | `'front' \| 'back' \| 'other' \| 'avatar' \| 'file'` | 正/反/其他 |
 | `file_id` | string | 云存储 fileID（密文时以 `.enc` 结尾） |
 | `name_enc` | 信封 \| null | 原始文件名，**加密** |
@@ -331,6 +335,9 @@ type FieldType =
 | `is_deleted` / `created_at` | | |
 
 索引（5）：`owner_openid+biz_type+biz_id+sort_order`、`owner_openid+is_deleted+created_at↓`、`owner_openid+status`、`file_id`、`owner_openid+sha256`
+
+> 单条资料最多 40 个附件（模板里多个图片/文件字段累加，各自仍有 9 / 5 上限）。
+> 删除资料时附件一并软删除，`records.attachment_count` 与 `user_stats.attachments_count` 同时回退。
 
 ### 3.11 `favorites`
 

@@ -1,4 +1,7 @@
 {
   "component": true,
+  "usingComponents": {
+    "file-uploader": "../file-uploader/index"
+  },
   "styleIsolation": "apply-shared"
 }

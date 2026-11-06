@@ -134,6 +134,8 @@ Component({
     bizType: { type: String, value: 'record' },
     bizId: { type: String, value: '' },
     role: { type: String, value: 'other' },
+    /** 归属的模板字段 key。空串 = 资料级自由附件（与模板字段附件互不干扰） */
+    fieldKey: { type: String, value: '' },
     /** image = 只允许图片；file = 只允许文件 */
     accept: { type: String, value: 'image' },
     max: { type: Number, value: 9 },
@@ -159,7 +161,7 @@ Component({
   },
 
   observers: {
-    'bizId, accept, max': function (bizId: string, accept: string, max: number) {
+    'bizId, accept, max, fieldKey': function (bizId: string, accept: string, max: number) {
       const acceptImage = accept !== 'file';
       this.setData({
         acceptImage,
@@ -185,15 +187,24 @@ Component({
   },
 
   methods: {
-    /** observer 与 attached 都会触发首次加载，这里按 biz 去重，避免两次并发请求 */
+    /** observer 与 attached 都会触发首次加载，这里按「biz + 字段」去重，避免两次并发请求 */
     scheduleLoad() {
       const bizId = this.properties.bizId;
       if (!bizId) return;
-      if (this.data.loading && this.data.lastBizId === bizId) return;
-      this.setData({ lastBizId: bizId });
+      const key = `${bizId}|${this.properties.fieldKey || ''}`;
+      if (this.data.loading && this.data.lastBizId === key) return;
+      this.setData({ lastBizId: key });
       void this.load();
     },
 
+    /**
+     * 加载附件列表。
+     *
+     * 注意：加载完成**不**触发 change。值为附件 id 数组的字段会把 change 写回
+     * 父页面 data，父页面再把它作为 value 传回来；如果加载也发 change，
+     * 「加载 → 回写 → 观察器 → 重新加载」会形成死循环（实测每次 3 个
+     * listByBiz + 1 个 reSign 无限重复）。只有用户主动上传 / 删除才发 change。
+     */
     async load() {
       const bizId = this.properties.bizId;
       if (!bizId) return;
@@ -202,15 +213,16 @@ Component({
       try {
         const res = await attachmentService.listByBiz(this.properties.bizType as AttachmentBiz, bizId);
         if (this.data.loadToken !== token) return;
-        // 同一 biz 上按 role 区分：普通资料是 other(图片) / file(文件)，
-        // 证件资料是 front(正面) / back(反面) / other(其他)。role 由调用方显式传入。
+        // 同一 biz 上先按 role 区分，再按 field_key 区分字段：
+        // 普通资料是 other(图片) / file(文件)，证件资料是 front(正面) / back(反面) / other(其他)；
+        // 模板字段附件带 field_key，资料级自由附件 field_key 为空。
         const role = this.properties.role;
+        const fieldKey = this.properties.fieldKey || '';
         const items: UploadItem[] = res.items
-          .filter((item) => item.role === role)
+          .filter((item) => item.role === role && (item.field_key || '') === fieldKey)
           .map((item) => Object.assign({ url: '', sizeText: humanSize(item.size) }, item));
         this.setData({ items, loading: false });
         await this.refreshUrls();
-        this.emitChange();
       } catch (error) {
         if (this.data.loadToken !== token) return;
         this.setData({ loading: false, error: toAppError(error).message });
@@ -305,6 +317,7 @@ Component({
 
       this.setData({ uploading: false, progress: 0, encryptStep: '' });
       await this.load();
+      this.emitChange();
       if (failed > 0) {
         wx.showToast({ title: `${failed} 个上传失败`, icon: 'none' });
       }
@@ -375,6 +388,7 @@ Component({
         await attachmentService.confirmUpload({
           bizType: this.properties.bizType as AttachmentBiz,
           bizId,
+          fieldKey: this.properties.fieldKey || '',
           role: this.properties.role as AttachmentRole,
           fileId: uploaded.fileID,
           nameMask,
@@ -440,6 +454,7 @@ Component({
           try {
             await attachmentService.remove(id);
             await this.load();
+            this.emitChange();
             wx.showToast({ title: '已删除', icon: 'none' });
           } catch (error) {
             wx.showToast({ title: toAppError(error).message, icon: 'none' });
@@ -501,8 +516,12 @@ Component({
       return msg.indexOf('bad magic') >= 0 || msg.indexOf('tag') >= 0 ? '无法解密：内容可能已损坏' : msg;
     },
 
+    /** 通知调用方当前附件集合：数量给展示用，ids 用于写入模板字段值。 */
     emitChange() {
-      this.triggerEvent('change', { count: this.data.items.length });
+      this.triggerEvent('change', {
+        count: this.data.items.length,
+        ids: this.data.items.map((item) => item._id)
+      });
     }
   }
 });

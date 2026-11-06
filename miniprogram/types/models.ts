@@ -149,6 +149,8 @@ export interface Attachment {
   _id: string;
   biz_type: 'record' | 'contact' | 'document' | 'user';
   biz_id: string;
+  /** 归属的模板字段 key；空串/缺省表示资料级自由附件（非模板字段） */
+  field_key?: string;
   role: 'front' | 'back' | 'other' | 'avatar' | 'file';
   file_id: string;
   /** 展示名，原始文件名不入库（后续加密版本才会存 name_enc） */

@@ -1,3 +1,4 @@
+import { attachmentService } from '../../../services/attachment.service';
 import { categoryService } from '../../../services/category.service';
 import { contactService } from '../../../services/contact.service';
 import { hasEnvelopes, openEnvelopes, sealSensitiveValues } from '../../../services/record-crypto';
@@ -5,6 +6,7 @@ import { recordService } from '../../../services/record.service';
 import { templateService, sortedFields } from '../../../services/template.service';
 import { userService } from '../../../services/user.service';
 import { VaultLockedError, vaultSession } from '../../../services/vault-session';
+import { ENCRYPTED_ATTACHMENT_ENABLED } from '../../../config/features';
 import type { Category, RecordValues, TemplateField } from '../../../types/models';
 import { isEnvelope } from '../../../utils/crypto/fields';
 import { toAppError } from '../../../utils/errors';
@@ -65,6 +67,15 @@ interface EditData {
   showContactPicker: boolean;
   contactSummary: string;
   selectedContactIds: string[];
+
+  /**
+   * 附件归属的记录 id。
+   * 编辑已有资料时就是真实 id；新建时是预生成的草稿 id（保存时作为 clientId 落库），
+   * 因为图片/文件字段要先把附件传到云存储，而附件必须挂在某个 biz_id 上。
+   */
+  uploadBizId: string;
+  /** 附件是否加密上传（与详情页图片区同一开关） */
+  attachmentEncrypt: boolean;
 }
 
 /** 字段值不放进 data，避免逐字输入时整页 diff；只在需要回填时同步到 fieldViews。 */
@@ -72,6 +83,15 @@ let valuesStash: RecordValues = {};
 
 /** 已跳到保险箱页等解锁：返回本页时自动重新加载。 */
 let pendingUnlock = false;
+
+/**
+ * 本次新建会话里上传过的附件 id。
+ * 用户不保存就退出时，这些附件没有任何记录引用，留在云端只是孤儿文件，主动清掉。
+ */
+let draftAttachmentIds = new Set<string>();
+
+/** 是否已成功保存：保存后离开页面不能再清理附件。 */
+let savedThisSession = false;
 
 function emptyData(): EditData {
   return {
@@ -100,8 +120,35 @@ function emptyData(): EditData {
     contacts: [],
     showContactPicker: false,
     contactSummary: '',
-    selectedContactIds: []
+    selectedContactIds: [],
+    uploadBizId: '',
+    attachmentEncrypt: ENCRYPTED_ATTACHMENT_ENABLED
   };
+}
+
+/** 数组值（附件 id 列表）内容相同就没必要再写回 data。 */
+function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((item, index) => item === b[index]);
+  }
+  return false;
+}
+
+/**
+ * 保存 / 删除成功后离开编辑页。
+ *
+ * 正常情况是 navigateBack；但如果编辑页本身就是页面栈的根（分享卡片直达、
+ * 调试时直接 reLaunch 进来），navigateBack 会失败且不报错，按钮就永久停在
+ * 「保存中…」。这里兜底 reLaunch 回资料列表，保证用户能继续操作。
+ */
+function leavePage(): void {
+  wx.navigateBack({
+    delta: 1,
+    fail: () => {
+      wx.reLaunch({ url: '/pages/records/index' });
+    }
+  });
 }
 
 /** wx.showModal 的 Promise 包装：只关心用户点了哪个按钮。 */
@@ -135,8 +182,17 @@ Page({
 
   async onLoad(options: Record<string, string | undefined>) {
     valuesStash = {};
+    draftAttachmentIds = new Set();
+    savedThisSession = false;
     const id = options.id || '';
-    this.setData({ id, isEdit: id.length > 0, locked: false, error: '' });
+    this.setData({
+      id,
+      isEdit: id.length > 0,
+      locked: false,
+      error: '',
+      // 编辑已有资料时附件直接挂在记录 id 上
+      uploadBizId: id
+    });
     wx.setNavigationBarTitle({ title: id ? '编辑资料' : '新建资料' });
 
     try {
@@ -283,12 +339,18 @@ Page({
       } else if (field.type === 'switch') {
         // 开关没默认值时给 false，否则必填开关永远校验不过
         next[field.key] = false;
+      } else if (field.type === 'image' || field.type === 'file') {
+        // 附件字段的初始值是空数组，上传器会按附件行回填真实 id
+        next[field.key] = [];
       }
     }
     valuesStash = next;
 
+    const uploadBizId = await this.ensureUploadBizId(fields);
+
     this.setData({
       fields,
+      uploadBizId,
       hasTemplate: fields.length > 0,
       hasSensitiveFields: fields.some((field) => field.sensitive),
       fieldViews: fields.map((field) => ({
@@ -298,6 +360,22 @@ Page({
         error: ''
       }))
     });
+  },
+
+  /**
+   * 附件字段需要一个 biz_id 才能上传：新建资料时预生成草稿 id，
+   * 保存时作为 clientId 交给 record.create，附件与记录从一开始就绑在同一个 id 上。
+   */
+  async ensureUploadBizId(fields: TemplateField[]): Promise<string> {
+    if (this.data.id) return this.data.id;
+    const needsAttachment = fields.some(
+      (field) => field.type === 'image' || field.type === 'file'
+    );
+    if (!needsAttachment || this.data.uploadBizId) return this.data.uploadBizId;
+
+    const id = await newRecordId();
+    this.setData({ uploadBizId: id });
+    return id;
   },
 
   onTitleInput(e: WechatMiniprogram.Input) {
@@ -348,8 +426,20 @@ Page({
     const { key, value } = e.detail;
     valuesStash[key] = value;
 
+    // 新建资料的附件先于记录存在：记下 id，用户放弃保存时清理掉
+    if (!this.data.isEdit && Array.isArray(value)) {
+      const field = this.data.fields.find((item) => item.key === key);
+      if (field && (field.type === 'image' || field.type === 'file')) {
+        (value as string[]).forEach((id) => draftAttachmentIds.add(String(id)));
+      }
+    }
+
     const index = this.data.fieldViews.findIndex((view) => view.key === key);
     if (index < 0) return;
+
+    // 值没变就不 setData：上传器可能重复回传同一组附件 id，
+    // 写回会让组件的 value 属性变引用，进而触发不必要的重渲染
+    if (sameValue(this.data.fieldViews[index].value, value)) return;
 
     const patch: Record<string, unknown> = {};
     patch[`fieldViews[${index}].value`] = value;
@@ -438,11 +528,17 @@ Page({
     // ---- 敏感字段加密 ----
     // 只处理「有值且还是明文」的敏感字段：空白不加密（加密空值等于制造脏数据），
     // 已是信封则原样带回（理论上不会出现——进页面前已解密）。
+    // 附件字段跳过：值是附件 id 数组，加密它只会让详情页读不出附件。
     const sensitiveKeys = fields.filter(
-      (field) => field.sensitive && !isBlank(values[field.key]) && !isEnvelope(values[field.key])
+      (field) =>
+        field.sensitive &&
+        field.type !== 'image' &&
+        field.type !== 'file' &&
+        !isBlank(values[field.key]) &&
+        !isEnvelope(values[field.key])
     );
 
-    let recordId = this.data.id;
+    let recordId = this.data.id || this.data.uploadBizId;
     let payloadValues = values;
 
     if (sensitiveKeys.length > 0) {
@@ -524,8 +620,9 @@ Page({
           await recordService.update({ id: created.item._id, values: resealed.values });
         }
       }
+      savedThisSession = true;
       wx.showToast({ title: '已保存', icon: 'none' });
-      setTimeout(() => wx.navigateBack(), 400);
+      setTimeout(leavePage, 400);
     } catch (error) {
       const appError = toAppError(error);
       logger.warn('record-edit', 'save failed', { code: appError.code });
@@ -541,6 +638,20 @@ Page({
     }
     pendingUnlock = true;
     wx.navigateTo({ url: '/pages/vault/index' });
+  },
+
+  /**
+   * 未保存就离开：清掉本次为草稿上传的附件。
+   * 这些附件没有任何记录引用，留着只会白占云存储与「附件」统计。
+   */
+  onUnload() {
+    if (this.data.isEdit || savedThisSession || draftAttachmentIds.size === 0) return;
+    const ids: string[] = [];
+    draftAttachmentIds.forEach((id) => ids.push(id));
+    draftAttachmentIds = new Set();
+    ids.forEach((id) => {
+      void attachmentService.remove(id).catch(() => undefined);
+    });
   },
 
   onArchiveToggle() {
@@ -568,7 +679,7 @@ Page({
         try {
           await recordService.remove(this.data.id);
           wx.showToast({ title: '已删除', icon: 'none' });
-          setTimeout(() => wx.navigateBack(), 400);
+          setTimeout(leavePage, 400);
         } catch (error) {
           this.setData({ deleting: false });
           wx.showToast({ title: toAppError(error).message, icon: 'none' });

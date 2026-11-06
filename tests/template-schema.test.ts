@@ -131,13 +131,31 @@ describe('normalizeFields', () => {
     expect(codes(result?.errors || [])).toContain('type_invalid');
   });
 
-  it('阶段二拒绝附件类字段，避免建出填不了的表单', async () => {
+  it('附件类字段已开放：图片/文件可以建成模板字段', async () => {
     const api = await loadSchema();
-    expect(api.ATTACHMENT_FIELDS_ENABLED).toBe(false);
-    const result = capture(() =>
-      api.normalizeFields([{ key: 'photo', label: '照片', type: 'image' }])
+    expect(api.ATTACHMENT_FIELDS_ENABLED).toBe(true);
+    const fields = api.normalizeFields([
+      { key: 'photo', label: '照片', type: 'image' },
+      { key: 'doc', label: '合同', type: 'file' }
+    ]);
+    expect(fields.map((field) => field.type)).toEqual(['image', 'file']);
+  });
+
+  it('图片字段最多 9 个、文件字段最多 5 个附件 id', async () => {
+    const api = await loadSchema();
+    const fields = api.normalizeFields([
+      { key: 'photo', label: '照片', type: 'image' },
+      { key: 'doc', label: '合同', type: 'file' }
+    ]);
+    const nine = Array.from({ length: 9 }, (_item, i) => `att${i}`);
+    const six = Array.from({ length: 6 }, (_item, i) => `att${i}`);
+
+    expect(capture(() => api.assertValues(fields, { photo: nine }))).toBeNull();
+    expect(codes(capture(() => api.assertValues(fields, { photo: [...nine, 'att9'] }))?.errors || [])).toContain(
+      'too_many'
     );
-    expect(codes(result?.errors || [])).toContain('type_unavailable');
+    expect(capture(() => api.assertValues(fields, { doc: six.slice(0, 5) }))).toBeNull();
+    expect(codes(capture(() => api.assertValues(fields, { doc: six }))?.errors || [])).toContain('too_many');
   });
 
   it('单选缺选项报 options_required', async () => {

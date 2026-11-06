@@ -43,6 +43,7 @@
 .fr-picker.weui-cell,
 .fr-datetime.weui-cell,
 .fr-switch-row.weui-cell,
+.fr-attachment.weui-cell,
 .fr-deferred.weui-cell {
   padding: 16rpx 32rpx;
   background-color: var(--weui-BG-2);
@@ -53,8 +54,21 @@
 .fr-picker.weui-cell::before,
 .fr-datetime.weui-cell::before,
 .fr-switch-row.weui-cell::before,
+.fr-attachment.weui-cell::before,
 .fr-deferred.weui-cell::before {
   display: none;
+}
+
+.fr-attachment.weui-cell {
+  display: block;
+  padding-bottom: 24rpx;
+}
+
+.fr-attachment-hint {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: var(--weui-FG-2);
 }
 
 .fr-input.weui-input,

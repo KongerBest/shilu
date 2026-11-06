@@ -73,7 +73,7 @@ Test Files  33 passed (33)
 | **`encrypted` 恒为 false** | 即使 `sensitive: true`，`encrypted` 也是 false（没有密钥体系就不谎称已加密） |
 | 缺字段名 | `label_required` |
 | 非法类型 | `type_invalid` |
-| **附件类字段被拒** | `image` / `file` → `type_unavailable`，且 `ATTACHMENT_FIELDS_ENABLED === false` |
+| **附件类字段可用** | `image` / `file` → 正常建字段，`ATTACHMENT_FIELDS_ENABLED === true`；图片 9 张以上、文件 5 个以上报 `too_many` |
 | 单选无选项 | `options_required` |
 | 选项重复 | `option_duplicated` |
 | 字段名重复 | `label_duplicated` |
@@ -476,7 +476,7 @@ wechatide -c WorkBuddy polling_task_result --task-id <上面的 taskId>
 | 1 | `record.create/remove` 用补偿写而非事务，统计可能短暂不一致 | 切 `db.startTransaction()`；现有 `user.recalcStats` 兜底 |
 | 2 | 未实现 Argon2id | P5-PoC 单独验证，通过后按 `key_version` 迁移 |
 | 3 | 历史记录的敏感字段可能是明文 | 回填功能已实现并端到端验证（§3.3.1），但需用户手动触发一次 |
-| 4 | `image` / `file` 字段类型未开放 | 附件只能单独上传；已在「已知限制」披露 |
+| 4 | ~~`image` / `file` 字段类型未开放~~ | 已开放：模板可建图片/文件字段，值存附件 id 数组（图片 ≤ 9、文件 ≤ 5），附件按 `field_key` 归档；新建资料时用预生成草稿 id 先传附件、保存时作为 `clientId` 落库。单测覆盖见 `tests/attachment-fields.test.ts` |
 | 5 | 字段删除后 `values` 里遗留旧键（软隐藏） | 接受；用户改回同一 key 即可恢复显示 |
 | 6 | 分类排序一次提交全部条目，服务端逐条 `update` | 分类数 ≤ 100，可接受；后续可改批量 `command` |
 | 7 | 人物头像上传未接入页面（`avatar_file_id` 恒为空串） | 复用附件服务后再接 |

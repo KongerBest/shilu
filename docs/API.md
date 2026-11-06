@@ -104,7 +104,7 @@ getWXContext().OPENID
 字段定义校验（`cloudfunctions/_shared/template-schema.js`）：
 
 - `key` 唯一且匹配 `^[A-Za-z][A-Za-z0-9_]{0,31}$`；客户端没给或重复时服务端生成 `f_xxxxxx`
-- `type` 必须在 14 种枚举内；**`image`/`file` 在阶段二被拒绝**（`type_unavailable`），因为附件服务未落地，允许建会造出必填但填不了的死表单
+- `type` 必须在 14 种枚举内；`image` / `file` 已开放，值为附件 `_id` 数组（图片 ≤ 9、文件 ≤ 5），附件行按 `field_key` 归档
 - `select` / `multi_select` 必须有 ≥1 个 `options`，`value` 去重
 - `fields.length` 1～40；同一模板内 `label` 不能重复
 - `sensitive` 字段落库的 `encrypted` 恒为 `false`（阶段五才接密钥体系），不得对外声称已加密
@@ -169,7 +169,7 @@ getWXContext().OPENID
 |---|---|---|
 | `prepareUpload` | `{ bizType, bizId, role?, ext? }` | `{ cloudPath, role, maxSize, ownerTag }` |
 | `listByBiz` | `{ bizType, bizId }` | `{ items }` |
-| `confirmUpload` | `{ bizType, bizId, role, fileId, nameMask, mime, size, width?, height?, sha256?, encrypted? }` | `{ item }` |
+| `confirmUpload` | `{ bizType, bizId, role, fieldKey?, fileId, nameMask, mime, size, width?, height?, sha256?, encrypted? }` | `{ item }` |
 | `updateMeta` | `{ id, role?, sortOrder?, nameMask? }` | `{ ok }` |
 | `reorder` | `{ ids: string[] }` | `{ ok }` |
 | `remove` | `{ id }` | `{ ok }`（软删除，文件 30 天后清） |
@@ -183,6 +183,9 @@ getWXContext().OPENID
 > **实施状态（P3 基础版）**：`prepareUpload` / `confirmUpload` / `listByBiz` / `updateMeta` / `reorder` / `remove` / `reSign` 均已实现并在真实环境跑通。
 > 客户端加密未开放：`encrypted` 只能传 0，传 1 返回 400；`name_enc` / `enc_meta` 字段保留待用。
 > `biz_type` 当前只接受 `record`，`contact` / `document` 返回 400，避免出现"登记成功但业务不存在"的空挂附件。
+> 资料允许**尚未落库的草稿 id**：新建资料页先预生成 `_id` 上传图片/文件字段的附件，保存时以 `clientId`
+> 交给 `record.create`。附件行始终按 `owner_openid` 归属，别人的 `bizId` 仍然 403。
+> `field_key` 标识归属的模板字段（空串 = 资料级自由附件），单条资料最多 40 个附件。
 
 ### 5.8 `anniversary`
 

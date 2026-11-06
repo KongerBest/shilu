@@ -245,6 +245,23 @@ async function create({ openid, payload }) {
     if (existing && existing.data) throw conflict('记录标识已被占用');
     await db.collection(COLLECTIONS.records).doc(clientId).set({ data: doc });
     recordId = clientId;
+
+    // 编辑页在草稿阶段就允许上传附件（图片/文件字段），那时记录还没落库，
+    // confirmUpload 的 attachment_count 自增会落空。这里按实际附件行补一次校准。
+    const bound = await db
+      .collection(COLLECTIONS.attachments)
+      .where({ owner_openid: openid, biz_type: 'record', biz_id: clientId, is_deleted: 0 })
+      .count()
+      .catch(() => null);
+    const attachmentCount = bound && bound.total ? bound.total : 0;
+    if (attachmentCount > 0) {
+      await db
+        .collection(COLLECTIONS.records)
+        .doc(clientId)
+        .update({ data: { attachment_count: attachmentCount, updated_at: now } })
+        .catch(() => undefined);
+      doc.attachment_count = attachmentCount;
+    }
   } else {
     const added = await db.collection(COLLECTIONS.records).add({ data: doc });
     recordId = added._id;
@@ -410,7 +427,7 @@ async function remove({ openid, payload }) {
     .doc(id)
     .update({ data: { is_deleted: 1, deleted_at: now, updated_at: now } });
 
-  // 级联：收藏记录直接删除；附件在附件模块接入后一并软删除（阶段三）
+  // 级联：收藏记录直接删除；附件（含模板图片/文件字段）随资料一起软删除
   const fav = await db
     .collection(COLLECTIONS.favorites)
     .where({ owner_openid: openid, target_type: 'record', target_id: id })
@@ -423,6 +440,22 @@ async function remove({ openid, payload }) {
       .doc(fav.data[0]._id)
       .remove()
       .catch(() => undefined);
+  }
+
+  // 附件不删会变成取不回来的孤儿（只有 biz_id 指向已删除资料），也白占统计与存储
+  const attWhere = { owner_openid: openid, biz_type: 'record', biz_id: id, is_deleted: 0 };
+  const attCount = await db
+    .collection(COLLECTIONS.attachments)
+    .where(attWhere)
+    .count()
+    .catch(() => ({ total: 0 }));
+  if (attCount.total > 0) {
+    await db
+      .collection(COLLECTIONS.attachments)
+      .where(attWhere)
+      .update({ data: { is_deleted: 1, deleted_at: now, updated_at: now } })
+      .catch(() => undefined);
+    await bumpStat(openid, existing.user_id, 'attachments_count', -attCount.total);
   }
 
   await bumpStat(openid, existing.user_id, 'records_count', -1);

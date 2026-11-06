@@ -81,5 +81,6 @@
     </view>
   </block>
 
+  <view wx:if="{{readonly && !loading && items.length === 0}}" class="weui-cells__tips uploader__empty">暂无附件</view>
   <view wx:if="{{error}}" class="weui-cells__tips weui-cells__tips_warn uploader__error">{{error}}</view>
 </view>
