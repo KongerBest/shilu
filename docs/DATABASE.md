@@ -127,7 +127,7 @@ vaults  secure_items  security_logs  backups
 | `_id` | string | **复用 `user_id`**，一条用户一行 |
 | `user_id` / `owner_openid` | string | |
 | `records_count` | number | 未删除资料数 |
-| `attachments_count` | number | 未删除附件数 |
+| `attachments_count` | number | 未删除且 `role !== 'avatar'` 的附件数（用户头像不计入） |
 | `anniversaries_count` | number | 未删除纪念日数（含生日自动生成的） |
 | `contacts_count` | number | 未删除人物数 |
 | `vault_items_count` | number | 仅 private 构建维护 |

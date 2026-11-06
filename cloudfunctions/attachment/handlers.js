@@ -212,8 +212,11 @@ async function confirmUpload({ openid, payload }) {
 
   const added = await db.collection(COLLECTIONS.attachments).add({ data: doc });
 
+  // 头像是用户资料展示，不是资料附件：不参与 attachments_count 增减与重算
+  const isAvatar = role === 'avatar';
+
   // 头像：单张替换（软删旧头像），并同步 users.avatar_file_id 供用户模型直接读
-  if (bizType === 'user' && role === 'avatar') {
+  if (bizType === 'user' && isAvatar) {
     const oldAvatars = await db
       .collection(COLLECTIONS.attachments)
       .where({ owner_openid: openid, biz_type: 'user', role: 'avatar', is_deleted: 0, _id: _.neq(added._id) })
@@ -238,7 +241,7 @@ async function confirmUpload({ openid, payload }) {
       .update({ data: { attachment_count: _.inc(1), updated_at: now } })
       .catch((error) => logger.warn('attachment', 'bump record count failed', { reason: String(error && error.message) }));
   }
-  await bumpStat(openid, user._id, 'attachments_count', 1);
+  if (!isAvatar) await bumpStat(openid, user._id, 'attachments_count', 1);
 
   return { item: toPublic(Object.assign({ _id: added._id }, doc)) };
 }
@@ -261,7 +264,12 @@ async function listByBiz({ openid, payload }) {
 
 async function updateMeta({ openid, payload }) {
   const id = requireId(payload.id, 'id');
-  await loadOwned(openid, id);
+  const existing = await loadOwned(openid, id);
+
+  // 角色一旦涉及头像就不能改：否则能把头像洗成普通附件（或反之）绕过统计口径
+  if (Object.prototype.hasOwnProperty.call(payload, 'role') && (payload.role === 'avatar' || existing.role === 'avatar')) {
+    throw param('头像附件不支持修改角色');
+  }
 
   const patch = { updated_at: Date.now() };
   if (Object.prototype.hasOwnProperty.call(payload, 'role')) {
@@ -310,6 +318,7 @@ async function reorder({ openid, payload }) {
 async function remove({ openid, payload }) {
   const id = requireId(payload.id, 'id');
   const existing = await loadOwned(openid, id);
+  const isAvatar = existing.role === 'avatar';
   const now = Date.now();
 
   await db
@@ -324,14 +333,14 @@ async function remove({ openid, payload }) {
       .update({ data: { attachment_count: _.inc(-1), updated_at: now } })
       .catch(() => undefined);
   }
-  if (existing.biz_type === 'user' && existing.role === 'avatar') {
+  if (existing.biz_type === 'user' && isAvatar) {
     await db
       .collection(COLLECTIONS.users)
       .doc(existing.biz_id)
       .update({ data: { avatar_file_id: '', updated_at: now } })
       .catch(() => undefined);
   }
-  await bumpStat(openid, existing.user_id, 'attachments_count', -1);
+  if (!isAvatar) await bumpStat(openid, existing.user_id, 'attachments_count', -1);
 
   return { ok: true };
 }

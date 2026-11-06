@@ -17,6 +17,13 @@ const EMPTY_STATS = {
   vault_items_count: 0
 };
 
+/**
+ * 统计口径版本。v1 把用户头像也算进 attachments_count（且换头像只 +1 不 -1）。
+ * v2 起：头像（role='avatar'）不属于资料附件，不参与任何增减与重算。
+ * 老用户首次登录时按新口径重算一次，之后仍走增量维护。
+ */
+const STATS_VERSION = 2;
+
 const ALLOWED_FIELDS = Object.keys(EMPTY_STATS);
 
 function toStats(doc) {
@@ -36,7 +43,10 @@ async function ensureStatsDoc(openid, userId) {
 
   try {
     await db.collection(COLLECTIONS.userStats).add({
-      data: Object.assign({ _id: userId, user_id: userId, owner_openid: openid, updated_at: Date.now() }, EMPTY_STATS)
+      data: Object.assign(
+        { _id: userId, user_id: userId, owner_openid: openid, updated_at: Date.now(), stats_version: STATS_VERSION },
+        EMPTY_STATS
+      )
     });
   } catch (error) {
     logger.warn('stats', 'insert conflict, fallback to read', { reason: String(error && error.message) });
@@ -44,6 +54,18 @@ async function ensureStatsDoc(openid, userId) {
     if (retry.data.length > 0) return toStats(retry.data[0]);
   }
   return Object.assign({}, EMPTY_STATS);
+}
+
+/**
+ * 登录 / 读资料时取统计：老口径（无 stats_version 或 < 2）自动重算一次并打标。
+ * 这样线上已有账号不必手动去设置页点「重算统计」，打开新版首页就会校正。
+ */
+async function ensureCurrentStats(openid, userId) {
+  const found = await db.collection(COLLECTIONS.userStats).where({ _id: userId }).limit(1).get();
+  const doc = found.data[0];
+  if (!doc) return ensureStatsDoc(openid, userId);
+  if (Number(doc.stats_version || 0) >= STATS_VERSION) return toStats(doc);
+  return recomputeStats(openid, userId);
 }
 
 /**
@@ -78,7 +100,11 @@ async function bumpStat(openid, userId, field, delta) {
 async function recomputeStats(openid, userId) {
   const [records, attachments, anniversaries, contacts, vaultItems] = await Promise.all([
     db.collection(COLLECTIONS.records).where({ owner_openid: openid, is_deleted: 0 }).count(),
-    db.collection(COLLECTIONS.attachments).where({ owner_openid: openid, is_deleted: 0 }).count(),
+    // 头像是用户资料展示，不是资料附件：与 bumpStat 的判定保持同一口径
+    db
+      .collection(COLLECTIONS.attachments)
+      .where({ owner_openid: openid, is_deleted: 0, role: _.neq('avatar') })
+      .count(),
     db.collection(COLLECTIONS.anniversaries).where({ owner_openid: openid, is_deleted: 0 }).count(),
     db
       .collection(COLLECTIONS.contacts)
@@ -104,13 +130,16 @@ async function recomputeStats(openid, userId) {
     await db
       .collection(COLLECTIONS.userStats)
       .doc(userId)
-      .update({ data: Object.assign({}, stats, { updated_at: Date.now() }) });
+      .update({ data: Object.assign({}, stats, { updated_at: Date.now(), stats_version: STATS_VERSION }) });
   } catch (error) {
     logger.warn('stats', 'recompute write failed', { reason: String(error && error.message) });
     await db
       .collection(COLLECTIONS.userStats)
       .add({
-        data: Object.assign({ _id: userId, user_id: userId, owner_openid: openid, updated_at: Date.now() }, stats)
+        data: Object.assign(
+          { _id: userId, user_id: userId, owner_openid: openid, updated_at: Date.now(), stats_version: STATS_VERSION },
+          stats
+        )
       })
       .catch(() => undefined);
   }
@@ -118,4 +147,4 @@ async function recomputeStats(openid, userId) {
   return stats;
 }
 
-module.exports = { EMPTY_STATS, ensureStatsDoc, bumpStat, recomputeStats };
+module.exports = { EMPTY_STATS, STATS_VERSION, ensureStatsDoc, ensureCurrentStats, bumpStat, recomputeStats };

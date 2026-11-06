@@ -1,6 +1,6 @@
 const { db, COLLECTIONS } = require('./common/db');
 const { ensureUser } = require('./common/auth');
-const { ensureStatsDoc, recomputeStats } = require('./common/stats');
+const { ensureCurrentStats, recomputeStats } = require('./common/stats');
 const { optionalString, optionalId } = require('./common/validate');
 const { param, notFound, forbidden } = require('./common/response');
 
@@ -45,13 +45,14 @@ async function login({ openid }) {
     .catch(() => undefined);
   user.last_active_at = now;
 
-  const stats = await ensureStatsDoc(openid, user._id);
+  // 老口径把头像算进附件数，按新口径自动校正一次（只发生在首次登录）
+  const stats = await ensureCurrentStats(openid, user._id);
   return { user: toPublicUser(user), stats, isNew };
 }
 
 async function getProfile({ openid }) {
   const { user } = await ensureUser(openid);
-  const stats = await ensureStatsDoc(openid, user._id);
+  const stats = await ensureCurrentStats(openid, user._id);
   return { user: toPublicUser(user), stats };
 }
 

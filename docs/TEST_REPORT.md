@@ -675,4 +675,36 @@ padding-bottom: calc(var(--tabbar-height) + env(safe-area-inset-bottom) + var(--
 - 模拟器：新增 `.ts` 后按 §7.4 清两个缓存再刷新，首页正常渲染、控制台 `grep -i error` 为空；
   读到 `stats = 1/1/1`、`日常备忘 = 1`、`recent = 1`。
 - 人为把首页 `stats` 改成 0 后调用 `load()`，重新拉回 `1/1/1`、分类计数 1，确认刷新链路生效。
-- 线上生效需重新上传小程序代码；云端数据无需订正。
+- 线上生效需重新上传小程序代码；记录与分类计数无需手工订正（附件口径另见 §9）。
+
+---
+
+## 9. 头像不计入附件统计（2026-11-06）
+
+### 9.1 口径
+
+`user_stats.attachments_count` 只统计「未删除且 `role !== 'avatar'` 的附件」。
+用户头像走同一 `attachments` 集合（`biz_type=user` / `role=avatar`），但它属于账号展示资料，
+不是资料附件；`records.attachment_count` 更与头像无关。
+
+### 9.2 原问题
+
+`confirmUpload` 对头像也 `bumpStat('attachments_count', +1)`，换头像时旧头像只软删、从不 -1；
+`remove` 删头像却 -1；`recomputeStats` 全量 count 也把头像算进去。
+结果：换 N 次头像附件数虚高 N，连「重算统计」都纠不回来。
+
+### 9.3 修复
+
+| 落点 | 改动 |
+|---|---|
+| `_shared/stats.js` | `STATS_VERSION=2`；`recomputeStats` 按 `role: _.neq('avatar')` 计数；新增 `ensureCurrentStats()`，老口径文档重算一次并打标 |
+| `user/handlers.js` | `login` / `getProfile` 改走 `ensureCurrentStats`：线上老账号打开新版即自动校正，无需手动点「重算统计」 |
+| `attachment/handlers.js` | `confirmUpload` / `remove` 只对非头像增减统计；`updateMeta` 禁止把角色改成或改自 `avatar`，避免绕过口径 |
+| 部署 | `npm run sync:shared` 后部署 `user` / `attachment` / `backup`（`backup.finish` 会调重算） |
+
+### 9.4 验证
+
+`tests/avatar-stats.test.ts` 9 项：头像上传 / 连续换头像 / 删除头像均不改统计；
+普通附件上传 +1、删除 -1；重算排除头像与软删件（历史文档缺 `role` 仍计入）；
+`login` 自动把 v1 统计迁移到 v2；v2 文档不重复重算；`updateMeta` 角色闸门。
+回归 **35 文件 / 397 项** + typecheck 0 error。
