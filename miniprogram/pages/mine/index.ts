@@ -7,7 +7,7 @@ import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { stripExif } from '../../utils/image';
 import { logger } from '../../utils/logger';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
@@ -33,7 +33,7 @@ function formatDate(timestamp: number): string {
 
 Page({
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     loading: true,
     error: '',
     initial: '拾',

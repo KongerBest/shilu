@@ -3,7 +3,7 @@ import type { Contact } from '../../types/models';
 import { countdownText, daysUntil, nextOccurrence } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface ContactView extends Contact {
@@ -47,7 +47,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     loading: true,
     error: '',
     keyword: '',

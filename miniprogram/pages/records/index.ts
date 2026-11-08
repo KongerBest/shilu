@@ -5,7 +5,7 @@ import type { Category, RecordListItem } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
 import { haptic } from '../../utils/haptics';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
@@ -32,7 +32,7 @@ let searchTimer: number | null = null;
 
 Page({
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     keyword: '',
     focus: false,
     filter: 'all' as FilterKey,

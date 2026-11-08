@@ -1,3 +1,9 @@
+<page-meta
+  background-color="{{themeBg}}"
+  background-text-style="{{themeBgText}}"
+  root-background-color="{{themeBg}}"
+  page-style="background-color:{{themeBg}};"
+></page-meta>
 <view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
   <loading wx:if="{{loading}}" mode="block" />
 

@@ -5,7 +5,7 @@ import type { Anniversary, AnniversaryType, RepeatRule, RepeatUnit } from '../..
 import { toAppError } from '../../../utils/errors';
 import { haptic } from '../../../utils/haptics';
 import { logger } from '../../../utils/logger';
-import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncTheme, themeInit } from '../../../utils/theme';
 import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 const TYPES: { value: AnniversaryType; label: string }[] = [
@@ -73,7 +73,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     id: '',
     isEdit: false,
     loading: true,

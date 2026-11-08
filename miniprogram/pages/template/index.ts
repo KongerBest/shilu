@@ -3,7 +3,7 @@ import { templateService } from '../../services/template.service';
 import type { Category, Template } from '../../types/models';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface TemplateRow {
@@ -39,7 +39,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     loading: true,
     error: '',
     systemRows: [] as TemplateRow[],

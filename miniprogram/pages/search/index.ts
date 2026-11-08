@@ -11,7 +11,7 @@ import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
 import { containsKeyword, scoreFields, splitByKeyword } from '../../utils/search';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
@@ -365,7 +365,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     focus: true,
     keyword: '',
     groups: [],

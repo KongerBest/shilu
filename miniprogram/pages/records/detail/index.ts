@@ -12,7 +12,7 @@ import { relativeTime } from '../../../utils/date';
 import { toAppError } from '../../../utils/errors';
 import { formatValue, isBlank, MASK_TEXT } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
-import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncTheme, themeInit } from '../../../utils/theme';
 import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface DetailRow {
@@ -74,7 +74,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     id: '',
     loading: true,
     error: '',

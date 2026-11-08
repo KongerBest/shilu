@@ -5,7 +5,7 @@ import type { BackupFile } from '../../utils/backup';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 interface Preview {
@@ -54,7 +54,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     exporting: false,
     exportReady: false,
     fileName: '',

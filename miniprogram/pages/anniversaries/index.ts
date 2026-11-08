@@ -9,7 +9,7 @@ import { countdownText } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncTabbarCompact } from '../../utils/tabbar';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
@@ -74,7 +74,7 @@ function toView(item: Anniversary): AnniversaryView {
 
 Page({
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     loading: true,
     error: '',
     enabled: ANNIVERSARY_ENABLED,

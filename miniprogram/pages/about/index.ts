@@ -1,7 +1,7 @@
 import { APP_VERSION, isCloudConfigured } from '../../config/env';
 import { SHOW_KNOWN_LIMITS, VAULT_ENABLED } from '../../config/features';
 import { KNOWN_LIMITS } from '../../config/known-limits';
-import { syncTheme, themeClass, getTheme } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
@@ -16,8 +16,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
-    themeMode: getTheme(),
+    ...themeInit(),
     version: APP_VERSION,
     cloudReady: isCloudConfigured(),
     vaultEnabled: VAULT_ENABLED,

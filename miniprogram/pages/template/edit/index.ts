@@ -4,7 +4,7 @@ import type { Category, FieldType, TemplateField, TemplateVersionSummary } from 
 import { toAppError } from '../../../utils/errors';
 import { ATTACHMENT_FIELDS_ENABLED, FIELD_TYPE_LABELS, FIELD_TYPES } from '../../../utils/field-rules';
 import { logger } from '../../../utils/logger';
-import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncTheme, themeInit } from '../../../utils/theme';
 import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface OptionDraft {
@@ -156,7 +156,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     id: '',
     isEdit: false,
     loading: false,

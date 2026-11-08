@@ -8,7 +8,7 @@ import { todayText } from '../../../services/anniversary.service';
 import { toAppError } from '../../../utils/errors';
 import { newContactId } from '../../../utils/id';
 import { logger } from '../../../utils/logger';
-import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncTheme, themeInit } from '../../../utils/theme';
 import type { Envelope } from '../../../types/models';
 import { syncScrollEdge } from '../../../utils/scroll-edge';
 
@@ -73,7 +73,7 @@ Page({
     saving: false,
     deleting: false,
     error: '',
-    themeClass: themeClass(),
+    ...themeInit(),
     today: todayText(),
 
     name: '',

@@ -6,7 +6,7 @@ import { userService } from '../../services/user.service';
 import { vaultSession } from '../../services/vault-session';
 import { toAppError } from '../../utils/errors';
 import { getHapticsEnabled, haptic, setHapticsEnabled } from '../../utils/haptics';
-import { syncTheme, themeClass, getTheme, setTheme, type ThemeMode } from '../../utils/theme';
+import { syncTheme, themeInit, setTheme, type ThemeMode } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
@@ -34,8 +34,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
-    themeMode: getTheme(),
+    ...themeInit(),
     hapticsEnabled: getHapticsEnabled(),
     nickname: '',
     accountTag: '',
@@ -65,7 +64,9 @@ Page({
     if (mode !== 'light' && mode !== 'dark') return;
     if (mode === this.data.themeMode) return;
     setTheme(mode);
-    this.setData({ themeMode: mode, themeClass: themeClass(mode) });
+    // 主题相关字段一次性换掉：根节点属性、page-meta 底色、下拉配色都要同步，
+    // 少刷一个就会在当前页留下旧底色，退出再进来才恢复
+    this.setData({ ...themeInit() });
   },
 
   onToggleHaptics() {

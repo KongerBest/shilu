@@ -1,3 +1,9 @@
+<page-meta
+  background-color="{{themeBg}}"
+  background-text-style="{{themeBgText}}"
+  root-background-color="{{themeBg}}"
+  page-style="background-color:{{themeBg}};"
+></page-meta>
 <template name="hitRow">
   <view
     class="hit weui-cell weui-cell_access"

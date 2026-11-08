@@ -1,3 +1,9 @@
+<page-meta
+  background-color="{{themeBg}}"
+  background-text-style="{{themeBgText}}"
+  root-background-color="{{themeBg}}"
+  page-style="background-color:{{themeBg}};"
+></page-meta>
 <!-- 单条纪念日：列表与日历共用一套结构，避免两处改样式时漏掉一边 -->
 <template name="anniversaryRow">
   <view class="arow weui-cell weui-cell_access" data-id="{{_id}}" bindtap="onItemTap" hover-class="arow--hover">

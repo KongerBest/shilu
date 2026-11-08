@@ -1,4 +1,4 @@
-import { syncTheme, themeClass, getTheme } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
@@ -178,8 +178,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
-    themeMode: getTheme(),
+    ...themeInit(),
     ...PRIVACY
   },
 

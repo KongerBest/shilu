@@ -3,7 +3,7 @@ import { vaultSession, VaultLockedError } from '../../services/vault-session';
 import { vaultService } from '../../services/vault.service';
 import { toAppError } from '../../utils/errors';
 import { haptic } from '../../utils/haptics';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
@@ -28,7 +28,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     mode: 'loading' as Mode,
     password: '',
     confirmPassword: '',

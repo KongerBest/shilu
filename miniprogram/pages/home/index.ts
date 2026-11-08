@@ -6,7 +6,7 @@ import type { Category, RecordListItem } from '../../types/models';
 import { greeting } from '../../utils/date';
 import { toAppError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
-import { syncTheme, themeClass } from '../../utils/theme';
+import { syncTheme, themeInit } from '../../utils/theme';
 import { tweenProgress, type TweenHandle } from '../../utils/tween';
 import { syncTabbarCompact } from '../../utils/tabbar';
 import { syncScrollEdge } from '../../utils/scroll-edge';
@@ -40,7 +40,7 @@ interface HomeData {
 
 Page({
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     loading: true,
     error: '',
     initial: '拾',

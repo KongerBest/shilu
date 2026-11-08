@@ -14,7 +14,7 @@ import { coerceValue, isBlank, validateValues } from '../../../utils/field-rules
 import { newRecordId } from '../../../utils/id';
 import { logger } from '../../../utils/logger';
 import { LIMITS } from '../../../utils/validate';
-import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncTheme, themeInit } from '../../../utils/theme';
 import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface ContactChip {
@@ -101,7 +101,7 @@ function emptyData(): EditData {
     saving: false,
     deleting: false,
     error: '',
-    themeClass: themeClass(),
+    ...themeInit(),
     title: '',
     titleError: '',
     categories: [],

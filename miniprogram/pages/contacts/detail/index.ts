@@ -7,7 +7,7 @@ import { countdownText, daysUntil, nextOccurrence } from '../../../utils/date';
 import { toAppError } from '../../../utils/errors';
 import { isEnvelope } from '../../../utils/crypto/fields';
 import { logger } from '../../../utils/logger';
-import { syncTheme, themeClass } from '../../../utils/theme';
+import { syncTheme, themeInit } from '../../../utils/theme';
 import { syncScrollEdge } from '../../../utils/scroll-edge';
 
 interface AnniversaryView extends ContactAnniversary {
@@ -50,7 +50,7 @@ Page({
   },
 
   data: {
-    themeClass: themeClass(),
+    ...themeInit(),
     id: '',
     loading: true,
     error: '',

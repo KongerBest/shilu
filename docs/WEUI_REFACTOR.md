@@ -443,3 +443,101 @@ WEUI 原生的 `.weui-dialog` / `.weui-toast` 都用 `translate` 居中，无法
   此前 `.84` 时会在弹层底部形成一片脏绿。
 - 深色弹层已跟随主题，取消按钮的深灰底、文字对比度均正常。
 - `npm run check`：36 文件 / 405 项通过，typecheck 0 error。
+
+## 12. 深色模式切页白闪（2026-11-08）
+
+现象：深色下每次进入新页面，先整屏白（灰）一帧，随即变黑。浅色模式看不出来，
+因为「白闪到浅灰」几乎没有色差——**这个 bug 一直存在，只是只有深色用户能看见**。
+
+### 12.1 三层根因
+
+主题要同时喂给三个互不相干的渲染层，此前只喂了最后一层，而且喂得太晚：
+
+| 层 | 谁在画 | 之前的写法 | 首帧结果 |
+| --- | --- | --- | --- |
+| 页面内容 | `.page` 视图 + `data-weui-theme` | `themeMode` **不在初始 data**，WXML 里 `{{themeMode \|\| 'light'}}` | 首帧按浅色渲染，`onShow` 的 `syncTheme` 晚一拍才翻黑 |
+| page 元素 | 原生 page（body） | `page { background-color: var(--weui-BG-0) }`，而 dark 变量只定义在内层视图上 | page 元素**永远是浅色** `#EDEDED` |
+| 窗口 / 导航栏 | 原生客户端 | `app.json` 写死 `#EDEDED` / `#F7F7F7` | 页面创建那一刻取的就是浅色 |
+
+WXML 里那个 `class="{{themeClass}}"` 是障眼法：`.theme-dark` **没有任何 CSS 规则**，
+真正生效的是 `data-weui-theme` 属性（WEUI 的暗色变量挂在属性选择器上）。
+2026-11-03 曾以为「data 里初始化 themeClass 就能防闪白」，实际防了个寂寞。
+
+这与 weui-wxss 官方 issue #148（reLaunch 深色白闪）的结论一致：
+页面 `data` 里主题值默认为空 → CSS 解释为 light → 首帧白 → `setData` 后重绘。
+
+### 12.2 修法
+
+**① 主题字段在页面构造期就位**（`utils/theme.ts` 的 `themeInit()`）
+
+```ts
+export function themeInit(): ThemeInit {
+  const mode = getTheme();          // 同步读 storage，模块求值时就拿到
+  return { themeMode: mode, themeClass: themeClass(mode),
+           themeBg: PAGE_BG[mode], themeBgText: mode === 'dark' ? 'light' : 'dark' };
+}
+```
+
+每个页面 `data` 里 `...themeInit()` 展开，19 个页面一个不落。
+`PAGE_BG`（`#ededed` / `#111`）与 `weui.wxss` 的 `--weui-BG-0` 逐位一致，
+由 `tests/theme-init.test.ts` 直接比对源码，改色板忘了同步会红。
+
+**② `page-meta` 在首帧前铺底**（每个页面 WXML 的第一个节点）
+
+```html
+<page-meta
+  background-color="{{themeBg}}"          <!-- 原生窗口底色（页面切换的空隙） -->
+  background-text-style="{{themeBgText}}" <!-- 下拉 loading 的点与文案 -->
+  root-background-color="{{themeBg}}"     <!-- resize / 空白区域的临时底色 -->
+  page-style="background-color:{{themeBg}};" <!-- page 元素本身（body） -->
+></page-meta>
+```
+
+四个属性各管一块，缺一块就还剩一块浅色。`page-style` 是 inline 样式，
+优先级高于 `page {}` 规则，所以能把「永远浅色的 page 元素」按主题刷掉。
+顺带修好一个隐藏问题：`background-text-style` 之前写死 `dark`，
+深色下拉时是**黑点黑字压在 #111 上**，等于看不见。
+
+**③ 冷启动预刷原生色**（`app.ts`）
+
+`onLaunch` 里先调一次 `applyNavBar()`。第一页的原生导航栏只能来自 `app.json`，
+能提前改的只有这一处时机；失败也无副作用，页面 `onShow` 还会再刷。
+
+**④ `wx.setBackgroundColor` 改用 BG-0**
+
+原来刷的是导航栏色 `#1e1e1e`（BG-1），比页面底色 `#111` 浅一号，
+回弹时能看到一条浅带子。窗口底色应当和页面内容连续，所以统一用 `PAGE_BG`。
+
+### 12.3 怎么验证「首帧就是深色」
+
+模拟器不渲染页面切换动画，光看截图分不出「首帧深色」和「晚一拍变深色」。
+两个可复现的探针：
+
+1. **关掉同步看初值**：把某页 `onShow` 里的 `syncTheme(this)` 注释掉再进页面。
+   页面主体仍是深色 → 说明深色来自初始 data，不是 `onShow` 补救的
+   （此时导航栏会是白的，正好反证导航栏只吃 `setNavigationBarColor`）。
+2. **给 page-style 加红框**：临时改成 `page-style="background-color:{{themeBg}};border:6px solid red;"`，
+   屏幕内容区四周出现红框 → `page-style` 确实作用在 page 根节点上，机制成立。
+
+两个探针用完都必须还原。
+
+### 12.4 残留限制
+
+原生导航栏在 `reLaunch` 瞬间仍可能取一次 `app.json` 的浅色，因为它由客户端绘制，
+页面 JS 跑起来之前没有任何通道能改。目前靠 `onShow` 的 `setNavigationBarColor`
+在同一个渲染批次里追上，实测（模拟器 + 1.0.x 真机反馈）不可察觉。
+要彻底消除必须改成 `navigationStyle: custom` 自绘导航栏，代价是 19 个页面都要
+处理状态栏高度与右上角胶囊避让，本轮未动。
+
+同理，`app.json` 的 `backgroundColor` 保持浅色：它是「小程序还没跑起来」时的兜底，
+改成深色会让浅色用户冷启动闪黑，两害相权取其轻。
+
+### 12.5 防回归
+
+`tests/theme-init.test.ts`：遍历 `app.json` 的每个页面，断言
+① `.ts` 含 `...themeInit()` 且不再出现 `themeClass: themeClass()`；
+② `.wxml` 第一个节点是 `<page-meta>` 且四种通道都绑了 `themeBg`；
+③ 根节点有 `data-weui-theme`；
+④ `PAGE_BG` 与 `weui.wxss` 的 `--weui-BG-0` 一致。
+
+新增页面漏了任一条，`npm run check` 直接红。
