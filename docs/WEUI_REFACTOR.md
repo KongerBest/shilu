@@ -53,7 +53,7 @@
 
 | 原自定义实现 | WEUI 组件 / 类 | 备注 |
 | --- | --- | --- |
-| `.btn-primary` | `weui-btn weui-btn_primary` | 保留 16px 侧边距；`[disabled]` 用 WEUI 禁用色 |
+| `.btn-primary` | `weui-btn weui-btn_primary` | 通栏；左右边距由 `.page` 的 `--page-gutter` 提供；`[disabled]` 用 WEUI 禁用色 |
 | `.btn-ghost` | `weui-btn weui-btn_default` | 弹层底部等分 |
 | `.card` | `weui-cells` / `weui-panel` 语义 + 白色平面 | 全部分隔线改用 `--weui-FG-3` |
 | `.form-row` / `.row` / `.kv` / `.drow` / `.crow` / `.arow` / `.tpl-row` / `.cat-row` / `.field-row` / `.version-row` / `.migrate-row` / `.hit` / `.limit` / `.meta__row` | `weui-cell`（可跳转项加 `weui-cell_access`） | 原 `bindtap` / `data-*` 全部保留 |
@@ -97,8 +97,8 @@
    语义不如原图标精确；如需完全还原，应补 4 组 `iconPath/selectedIconPath` 图片资源。
 4. **WEUI 无 FAB / Chip / 色点**：信息库右下 `+` 悬浮按钮、筛选 chips、分类色点、日历选中点、开关（设置页）
    保留为业务必要控件，仅用 WEUI 变量与按压态收敛，仍是自定义元素。
-5. **按钮宽度**：WEUI 标准 `weui-btn` 为 184px 居中；本项目主操作按钮改为「通栏 + 16px 侧边距」以适配原有布局，
-   `mp-msg` 内的操作按钮保持 184px。若要求严格 184px，需调整 `app.wxss` 的 `.weui-btn.weui-btn` 覆盖。
+5. **按钮宽度**：WEUI 标准 `weui-btn` 为 184px 居中；本项目主操作按钮改为「通栏」，左右边距直接复用页面的
+   `--page-gutter`，不再单独内缩一层；`mp-msg` 内的操作按钮保持 184px。若要求严格 184px，需调整 `app.wxss` 的 `.weui-btn.weui-btn` 覆盖。
 6. **搜索栏**：WEUI `weui-search-bar__box/input` 的 `height:inherit` 在自定义组件里会把内容塌成 0，
    因此 `components/search-bar` 的布局/配色用内联样式显式锁定（仍沿用 `weui-search-bar` 视觉规范）。
    后续若升级 weui-wxss 版本，建议复测此处。
@@ -127,3 +127,55 @@
 template/index / template/edit / search / backup / category 全部截图复核通过；
 `contacts/detail`、`contacts/edit` 因当前账号无人物数据，仅能验证错误态，需在真机补测。
 tabbar 四组图标均已居中于文字正上方，选中态、收缩态与暗色主题保持不变。
+
+## 8. 页边距统一（用户反馈：左右贴边、内容显宽）
+
+上一轮为了让 WEUI 白块通栏，把 `.page` 的横向内边距清成了 0，结果卡片/胶囊/搜索框直接顶到屏幕边缘，
+边框与圆角贴着屏边，看起来「整屏被拉宽」。本轮把横向留白收敛到一个变量。
+
+### 8.1 唯一来源：`--page-gutter`
+
+```css
+/* tokens.wxss */
+--page-gutter: 24rpx;   /* 卡片边缘到屏边 */
+--page-max: 100%;       /* 宽屏最大内容宽度 */
+
+/* app.wxss */
+.page {
+  padding: 0 var(--page-gutter) calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 48rpx);
+  max-width: var(--page-max);
+  margin: 0 auto;
+}
+```
+
+由此形成两条固定基线，全站只允许这两条：
+
+| 基线 | 位置 | 组成 |
+| --- | --- | --- |
+| 块边缘 | 距屏边 24rpx | `.page` 的 `--page-gutter`（卡片、胶囊、搜索框、按钮、FAB） |
+| 文本行 | 距屏边 56rpx | `--page-gutter` + 白块内部 32rpx（卡片正文、分组标题、`.form-hint`） |
+
+分组标题 `.section__head`、`.weui-cells__title`、卡片外提示文都保留 32rpx 内边距，
+正是为了让它们与「白块里的正文」对齐，而不是与白块边缘对齐（与 iOS inset grouped 表一致）。
+
+### 8.2 同步调整
+
+| 位置 | 改动 |
+| --- | --- |
+| `app.wxss` `.page--plain / .page--flush` | 不再把左右 padding 归零；`.page--flush` 改为把 `--page-gutter` 置 0（默认不用） |
+| `app.wxss` `.page > .weui-btn` | `width: calc(100% - 64rpx)` → `100%`，避免与 `--page-gutter` 叠加成两层内缩 |
+| `pages/records/index.wxss` `.fab` | `right: var(--sp-4)` → `var(--page-gutter)`，与卡片右边缘对齐 |
+| `pages/search/index.wxss` `.sbar-row` | 横向 padding 32rpx → 0，搜索框与下方卡片同一条左边线 |
+
+### 8.3 响应式
+
+- **手机 / 平板 / 分屏**：`--page-gutter` 用 rpx，随屏宽等比缩放，留白比例恒定。
+- **≥900px 的桌面窗口**：rpx 会随窗宽线性放大，若继续拉宽内容会变成一条巨型长条，
+  因此设 `--page-gutter: 40px` + `--page-max: 750px` 并居中，两侧用同一 `--weui-BG-0` 灰底补齐。
+- 仍未解决：字体字号全部是 rpx，桌面窗口越宽字号越大（小程序 rpx 机制本身如此）。
+  要彻底桌面化需把排版尺寸改为 px + 断点，属于另一轮改动。
+
+### 8.4 复核
+
+home / records / mine / settings / anniversaries / template / records-detail / records-edit /
+vault / legal 十页截图复核：左右留白一致，无贴边、无裁切，控制台无 error。

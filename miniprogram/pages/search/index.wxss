@@ -11,9 +11,10 @@
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  /* 页面已改为 WEUI 无整页内边距，不能再靠负边距做通栏，否则右侧「取消」会被裁掉 */
+  /* 页面已有 --page-gutter 横向留白，这里只留纵向间距；
+     否则搜索框会比下方卡片多缩进一层，吸顶时更明显 */
   margin: 0;
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) 0;
   background-color: var(--glass-bg-strong);
   
   

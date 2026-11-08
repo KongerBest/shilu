@@ -57,10 +57,10 @@
   padding: var(--sp-5) 0;
 }
 
-/* 悬浮新增：在 tabbar 之上留出空间 */
+/* 悬浮新增：在 tabbar 之上留出空间；右侧与页面留白对齐 */
 .fab {
   position: fixed;
-  right: var(--sp-4);
+  right: var(--page-gutter);
   bottom: calc(var(--tabbar-height) + var(--sp-4) + env(safe-area-inset-bottom) + 12rpx);
   width: 96rpx;
   height: 96rpx;

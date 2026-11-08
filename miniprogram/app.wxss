@@ -31,17 +31,21 @@ scroll-view {
 }
 
 /* ---------- 页面容器：WEUI 灰底 + 内容白块 ---------- */
+/* 横向留白统一由这里提供：页面内所有直接子元素（工具栏、卡片、按钮、提示文）
+   自动获得同一条左边线，不再各写一套 padding。 */
 .page {
   min-height: 100vh;
-  padding: 0 0 calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 48rpx);
+  padding: 0 var(--page-gutter) calc(var(--tabbar-height) + env(safe-area-inset-bottom) + 48rpx);
+  max-width: var(--page-max);
+  margin: 0 auto;
   background-color: var(--weui-BG-0);
   color: var(--weui-FG-0);
 }
 
-.page--plain,
+/* 全宽页面（通栏图 / 文档）用 .page--flush 关掉横向留白，
+   同时要自己保证内容不贴边；默认不要用。 */
 .page--flush {
-  padding-left: 0;
-  padding-right: 0;
+  --page-gutter: 0px;
 }
 
 /* ---------- 分组标题（对应 WEUI Cells 标题） ---------- */
@@ -120,7 +124,8 @@ scroll-view {
 }
 
 /* ---------- 按钮：统一到 WEUI Button ---------- */
-/* WEUI 按钮默认 184px 居中；本项目主操作按钮通栏，但保留 WEUI 的 16px 侧边距 */
+/* WEUI 按钮默认 184px 居中；主操作按钮通栏。
+   左右边距交给 .page 的 --page-gutter，这里不再叠加第二层内缩。 */
 .weui-btn.weui-btn {
   width: 100%;
   margin-left: 0;
@@ -129,9 +134,9 @@ scroll-view {
 
 .page > .weui-btn.weui-btn,
 .section > .weui-btn.weui-btn {
-  width: calc(100% - 64rpx);
-  margin-left: 32rpx;
-  margin-right: 32rpx;
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 /* 露在卡片外的说明文字也要有 WEUI 的 16px 页边距 */
@@ -517,4 +522,15 @@ scroll-view {
 
 .weui-navbar__item {
   font-size: 15px;
+}
+
+/* ---------- 宽屏适配 ----------
+   rpx 会随窗口宽度线性放大：手机、平板、分屏都保持同一套比例留白，
+   无需额外断点。但显示器级宽度（≥900px）继续拉伸只会把内容变成一条
+   巨型长条，因此限制最大宽度并居中，两侧用同一灰底补齐。 */
+@media (min-width: 900px) {
+  page {
+    --page-gutter: 40px;
+    --page-max: 750px;
+  }
 }
