@@ -3,7 +3,10 @@
 }
 
 /* 搜索条吸顶：结果几十行时还能改关键词。
-   用和卡片同一套玻璃材质，滚动时不会出现一条生硬的纯色带。 */
+   底色必须和页面同为 BG-0：这里原本用 --glass-bg-strong（= BG-2 纯白），
+   在灰底页面上是一块带直角、带硬边的白色横条，白底白框叠在一起
+   看着像「搜索框下面多出一块白板」。改回页面本色后，搜索框自己就是
+   唯一的白色面，边界由描边和色差自然给出。 */
 .sbar-row {
   position: sticky;
   top: 0;
@@ -15,10 +18,20 @@
      否则搜索框会比下方卡片多缩进一层，吸顶时更明显 */
   margin: 0;
   padding: var(--sp-3) 0;
-  background-color: var(--glass-bg-strong);
-  
-  
-  border-bottom: 1rpx solid var(--glass-border-soft);
+  background-color: var(--weui-BG-0);
+}
+
+/* 底部渐隐：内容滚到搜索条下方时淡出，避免在色带边缘出现硬切线。
+   未滚动时它叠在同色页面上，肉眼看不见。 */
+.sbar-row::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: var(--sp-4);
+  background: linear-gradient(to bottom, var(--weui-BG-0), transparent);
+  pointer-events: none;
 }
 
 .sbar-slot {
