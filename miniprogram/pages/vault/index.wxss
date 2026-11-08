@@ -95,7 +95,7 @@
 .recovery__copy {
   padding: var(--sp-2) var(--sp-5);
   border: 1rpx solid var(--glass-border-soft);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--glass-bg-soft);
   
   font-size: var(--fs-caption);
@@ -113,7 +113,7 @@
   margin-top: var(--sp-4);
   padding: var(--sp-4);
   border: 1rpx solid var(--c-warn-line);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--c-warn-soft);
 }
 

@@ -116,7 +116,7 @@
   font-size: var(--fs-caption);
   color: var(--c-accent);
   border: 1rpx solid var(--glass-border);
-  border-radius: 999rpx;
+  border-radius: var(--radius-pill);
   background: var(--c-accent-soft);
 }
 

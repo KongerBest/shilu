@@ -96,7 +96,7 @@
   padding: 0 var(--sp-3);
   font-size: var(--fs-body);
   background: var(--c-surface-sunken);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
 }
 
 .option-remove {

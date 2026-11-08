@@ -30,7 +30,7 @@
   font-size: var(--fs-body);
   color: var(--c-text);
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--glass-bg-soft);
 }
 
@@ -51,7 +51,7 @@
   font-size: var(--fs-caption);
   color: var(--c-text-2);
   border: 1rpx solid var(--glass-border);
-  border-radius: 999rpx;
+  border-radius: var(--radius-pill);
   background: var(--glass-bg-soft);
   
   transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;

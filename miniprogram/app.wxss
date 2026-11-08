@@ -91,15 +91,18 @@ scroll-view {
   font-size: 17px;
 }
 
-/* ---------- 内容块：WEUI 白色平面 + 1px 分隔线 ---------- */
+/* ---------- 内容块：大 R 角白色卡片 ---------- */
+/* 原 WEUI 通栏平面靠上下两条贯穿线分隔；改成独立卡片后，
+   用一整圈 1px 描边勾出圆角边界（暗色底上也能看清形状），
+   上下两条贯穿线随之移除，否则会从圆弧里穿出去。 */
 .card {
   margin: 0 0 32rpx;
   padding: 0 32rpx;
   background-color: var(--weui-BG-2);
-  border: 0;
-  border-top: 1rpx solid var(--weui-FG-3);
-  border-bottom: 1rpx solid var(--weui-FG-3);
-  border-radius: 0;
+  border: 1rpx solid var(--weui-FG-3);
+  border-radius: var(--radius-card);
+  /* 让内部行的底色与分隔线跟着圆弧裁切，避免直角盖住圆角 */
+  overflow: hidden;
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -107,6 +110,13 @@ scroll-view {
 
 .card + .card {
   margin-top: 0;
+}
+
+/* 卡片首行的 WEUI 顶部分隔线会从左 16px 一直画到右边缘，
+   在圆角处形成一段突兀的直线，必须去掉（行间分隔仍由后续行保留）。 */
+.card > .weui-cell:first-child::before,
+.card > .weui-cell:first-child:before {
+  display: none;
 }
 
 .divider {
@@ -130,6 +140,8 @@ scroll-view {
   width: 100%;
   margin-left: 0;
   margin-right: 0;
+  /* WEUI 官方是 8px 小圆角，这里统一到大 R 角分档里的控件级 */
+  border-radius: var(--radius-control);
 }
 
 .page > .weui-btn.weui-btn,
@@ -150,7 +162,7 @@ scroll-view {
 
 .btn-primary,
 .btn-ghost {
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -261,7 +273,7 @@ scroll-view {
   color: var(--weui-FG-1);
   background-color: var(--weui-BG-1);
   border: 1rpx solid var(--weui-FG-3);
-  border-radius: 8rpx;
+  border-radius: var(--radius-sm);
 }
 
 .icon-btn--danger {
@@ -360,7 +372,7 @@ scroll-view {
   padding: 0 12rpx;
   font-size: 24rpx;
   line-height: 36rpx;
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   background-color: var(--weui-TAG-BACKGROUND-BLACK);
   color: var(--weui-TAG-TEXT-BLACK);
 }
@@ -393,7 +405,7 @@ scroll-view {
   font-size: 28rpx;
   color: var(--weui-FG-1);
   border: 1rpx solid var(--weui-FG-3);
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   background-color: var(--weui-BG-2);
 }
 
@@ -427,7 +439,7 @@ scroll-view {
   padding: 0 32rpx calc(32rpx + env(safe-area-inset-bottom));
   background-color: var(--weui-BG-2);
   border-top: 0;
-  border-radius: 24rpx 24rpx 0 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   box-shadow: none;
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -438,7 +450,7 @@ scroll-view {
 .sheet.weui-half-screen-dialog {
   -webkit-transform: none;
   transform: none;
-  border-radius: 24rpx 24rpx 0 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
 }
 
 .sheet-head {
@@ -473,6 +485,43 @@ scroll-view {
 }
 
 /* ---------- WEUI 组件的少量布局适配 ---------- */
+/* 官方组件的默认 R 角偏小（按钮 8px、弹窗 12px、搜索框 4px），
+   在这里一次性抬到项目的大 R 角分档上。页面里不要再单独覆盖。 */
+.weui-btn.weui-btn_mini {
+  border-radius: var(--radius-control);
+}
+
+.weui-btn.weui-btn_xmini {
+  border-radius: var(--radius-sm);
+}
+
+.weui-dialog {
+  border-radius: var(--radius-sheet);
+  overflow: hidden;
+}
+
+.weui-toast {
+  border-radius: var(--radius-lg);
+}
+
+.weui-toptips {
+  border-radius: var(--radius-control);
+}
+
+.weui-badge.weui-badge {
+  border-radius: var(--radius-pill);
+}
+
+.weui-search-bar__form,
+.weui-search-bar__label {
+  border-radius: var(--radius-control);
+}
+
+/* 半屏弹层：WEUI 默认只切顶角，这里与自绘 .sheet 对齐 */
+.weui-half-screen-dialog {
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+}
+
 .weui-cells {
   margin-top: 0;
   font-size: 17px;
@@ -532,5 +581,14 @@ scroll-view {
   page {
     --page-gutter: 40px;
     --page-max: 750px;
+
+    /* rpx 会随窗口宽度线性放大：1400px 窗口下 48rpx 会算成约 90px，
+       圆角大得像药丸。桌面宽度改用固定 px，与 375px 手机上的观感对齐
+       （24rpx = 12px → 这里写 12px，其余同理）。 */
+    --radius-xs: 4px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 24px;
   }
 }

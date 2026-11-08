@@ -14,7 +14,7 @@
   width: 112rpx;
   height: 112rpx;
   margin-right: var(--sp-4);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background-color: var(--c-accent-soft);
   color: var(--c-accent);
   font-size: var(--fs-title);
@@ -182,5 +182,5 @@
   line-height: 1.6;
   color: var(--c-text-3);
   border: 1rpx dashed var(--c-line);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
 }

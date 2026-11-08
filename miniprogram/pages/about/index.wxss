@@ -7,7 +7,7 @@
   background-color: var(--glass-bg);
   
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   
   
   

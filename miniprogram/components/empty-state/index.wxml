@@ -1,5 +1,9 @@
-<mp-msg type="info" size="{{64}}" title="{{title}}" desc="{{desc}}">
-  <view slot="handle" wx:if="{{actionText}}" class="weui-btn-area">
-    <button class="weui-btn weui-btn_primary" style="width: 184px; margin-left: auto; margin-right: auto;" hover-class="none" bindtap="onAction">{{actionText}}</button>
-  </view>
-</mp-msg>
+<!-- mp-msg 是扩展库组件、样式隔离，改不动它自己的直角白底；
+     外面套一层圆角裁剪容器，让空态也变成一张大 R 角卡片。 -->
+<view class="empty-wrap">
+  <mp-msg type="info" size="{{64}}" title="{{title}}" desc="{{desc}}">
+    <view slot="handle" wx:if="{{actionText}}" class="weui-btn-area">
+      <button class="weui-btn weui-btn_primary" style="width: 184px; margin-left: auto; margin-right: auto;" hover-class="none" bindtap="onAction">{{actionText}}</button>
+    </view>
+  </mp-msg>
+</view>

@@ -66,7 +66,7 @@
   color: var(--c-accent);
   text-align: center;
   border: 1rpx solid var(--c-accent);
-  border-radius: 999rpx;
+  border-radius: var(--radius-pill);
   background: var(--c-accent-glass-soft);
 }
 
@@ -92,14 +92,14 @@
 
 .progress__track {
   height: 8rpx;
-  border-radius: 999rpx;
+  border-radius: var(--radius-pill);
   background: var(--glass-bg-strong);
   overflow: hidden;
 }
 
 .progress__fill {
   height: 100%;
-  border-radius: 999rpx;
+  border-radius: var(--radius-pill);
   background: var(--c-accent);
   transition: width 160ms ease;
 }
@@ -119,7 +119,7 @@
   line-height: 1.6;
   color: var(--c-accent);
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--c-accent-glass-soft);
 }
 
@@ -141,7 +141,7 @@
   min-width: 0;
   padding: var(--sp-3);
   border: 1rpx solid var(--c-line);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--glass-bg-soft);
   transition: border-color 140ms ease, background-color 140ms ease;
 }
@@ -167,7 +167,7 @@
   height: 24rpx;
   margin-right: var(--sp-2);
   border: 2rpx solid var(--c-text-3);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .mode.is-on .mode__dot {

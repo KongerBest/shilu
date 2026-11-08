@@ -15,7 +15,7 @@
   margin-bottom: var(--sp-4);
   padding: var(--sp-4);
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   background-color: var(--glass-bg-soft);
   
   
@@ -31,7 +31,7 @@
   width: 64rpx;
   height: 64rpx;
   margin-right: var(--sp-3);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--c-accent-soft);
   color: var(--c-accent);
   font-size: var(--fs-body);
@@ -72,7 +72,7 @@
   content: '';
   width: 8rpx;
   height: 30rpx;
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   background-color: var(--weui-BG-1);
 }
 
@@ -83,7 +83,7 @@
   gap: 16rpx;
   height: 52rpx;
   padding: 0 26rpx;
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   border: 1rpx solid var(--glass-border-soft);
   background: var(--glass-bg-soft);
   
@@ -132,7 +132,7 @@
 .hero__avatar {
   width: 92rpx;
   height: 92rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   
   color: var(--c-accent);
   font-size: 36rpx;
@@ -191,7 +191,7 @@
   background-color: var(--glass-bg);
   
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   padding: var(--sp-4) var(--sp-3);
   margin-bottom: var(--sp-5);
   
@@ -235,7 +235,7 @@
   background-color: var(--glass-bg);
   
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   padding: var(--sp-3) var(--sp-2);
   display: flex;
   flex-direction: column;
@@ -253,7 +253,7 @@
 .grid__dot {
   width: 16rpx;
   height: 16rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .grid__name {
@@ -276,7 +276,7 @@
 }
 
 .stack-item + .stack-item {
-  margin-top: var(--sp-2);
+  margin-top: var(--sp-4);
 }
 
 .errorbox {
@@ -284,7 +284,7 @@
   background-color: var(--glass-bg);
   
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   padding: var(--sp-5);
   text-align: center;
   
@@ -309,7 +309,7 @@
   display: inline-block;
   padding: 16rpx 48rpx;
   border: 1rpx solid var(--c-accent);
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   color: var(--c-accent);
   font-size: var(--fs-caption);
 }

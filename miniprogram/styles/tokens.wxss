@@ -96,11 +96,25 @@ page,
   --sp-6: 48rpx;
   --sp-7: 64rpx;
 
-  /* WEUI 列表/表单容器不圆角，弹层 12px */
-  --radius-sm: 8rpx;
-  --radius-card: 0rpx;
-  --radius-sheet: 24rpx;
-  --radius-pill: 999rpx;
+  /* 圆角：全站唯一来源，大 R 角风格。
+     分档按「元素在视线里的尺寸」递进，而不是按组件类型，
+     这样 96rpx 的缩略图和 96px 的弹窗看起来是同一种圆法。
+
+     换算基准：375px 宽屏幕上 1rpx = 0.5px，
+     所以 48rpx = 24px、32rpx = 16px、24rpx = 12px。
+     页面里不要再写裸数值，改这里整站生效。 */
+  --radius-xs: 8rpx;      /*  4px：细条、文字高亮、装饰线段 */
+  --radius-sm: 16rpx;     /*  8px：小徽章、色块、方形小控件 */
+  --radius-md: 24rpx;     /* 12px：按钮、输入框、chip、缩略图 */
+  --radius-lg: 32rpx;     /* 16px：卡片、分组容器、浮层块 */
+  --radius-xl: 48rpx;     /* 24px：弹窗、半屏弹层顶角 */
+  --radius-pill: 999rpx;  /* 胶囊：标签、筛选 chip、开关 */
+  --radius-circle: 50%;   /* 正圆：头像、圆点、悬浮按钮 */
+
+  /* 语义别名：调整分档时页面无需改动 */
+  --radius-control: var(--radius-md);
+  --radius-card: var(--radius-lg);
+  --radius-sheet: var(--radius-xl);
 
   --h-control: 88rpx;
   --h-chip: 56rpx;

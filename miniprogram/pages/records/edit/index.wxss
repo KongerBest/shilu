@@ -28,7 +28,7 @@
   margin-top: var(--sp-3);
   padding: var(--sp-3) var(--sp-4);
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background-color: var(--glass-bg-soft);
   
   

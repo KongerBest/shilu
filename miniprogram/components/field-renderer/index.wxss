@@ -28,7 +28,7 @@
   margin-left: 12rpx;
   font-size: 22rpx;
   font-weight: 400;
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   background-color: var(--weui-TAG-BACKGROUND-ORANGE);
   color: var(--weui-TAG-TEXT-ORANGE);
 }
@@ -71,16 +71,19 @@
   color: var(--weui-FG-2);
 }
 
+/* 输入框：WEUI 原生是「无边界扁平输入」，靠单元格下划线定位。
+   本项目卡片里没有下划线，扁平输入看不出可填写区域，
+   因此改为浅底 + 大 R 角的独立输入框，和按钮 / 缩略图同一档圆角。 */
 .fr-input.weui-input,
 .fr-textarea.weui-textarea {
   width: 100%;
   min-height: 64rpx;
-  padding: 8rpx 0;
+  padding: 12rpx 20rpx;
   font-size: 32rpx;
   color: var(--weui-FG-0);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
+  background-color: var(--weui-BG-1);
+  border: 1rpx solid transparent;
+  border-radius: var(--radius-control);
 }
 
 .fr-textarea.weui-textarea {
@@ -90,6 +93,7 @@
 
 .fr-input--error {
   color: var(--weui-RED);
+  border-color: var(--weui-RED);
 }
 
 .fr-placeholder-text {
@@ -119,7 +123,7 @@
   min-height: 64rpx;
   padding: 8rpx 16rpx;
   background-color: var(--weui-BG-1);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
 }
 
 .fr-chips {
@@ -134,7 +138,7 @@
   color: var(--weui-FG-1);
   background-color: var(--weui-BG-1);
   border: 1rpx solid var(--weui-FG-3);
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
 }
 
 .fr-chip--on {

@@ -24,7 +24,7 @@
   text-align: left;
   font-size: var(--fs-body);
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--glass-bg-soft);
 }
 
@@ -38,7 +38,7 @@
   line-height: 1.6;
   color: var(--c-text);
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--glass-bg-soft);
 }
 

@@ -14,7 +14,7 @@
   padding: 0;
   margin: 0;
   line-height: 1;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   
   color: var(--c-accent);
   font-size: 44rpx;
@@ -99,7 +99,7 @@
   background-color: var(--glass-bg);
   
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   
   
   
@@ -155,7 +155,7 @@
 .warnbox {
   margin-top: var(--sp-4);
   padding: var(--sp-4);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--c-warn-soft);
   border: 1rpx solid var(--c-warn-line);
   color: var(--c-warn-text);

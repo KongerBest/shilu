@@ -7,7 +7,7 @@
   background-color: var(--glass-bg);
   
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   
   
   
@@ -135,7 +135,7 @@
   gap: var(--sp-2);
   height: 88rpx;
   border: 1rpx solid var(--glass-border-soft);
-  border-radius: 8rpx;
+  border-radius: var(--radius-control);
   background: var(--glass-bg-soft);
   
   transition: border-color 120ms ease, background-color 120ms ease;
@@ -154,7 +154,7 @@
 .theme-opt__dot {
   width: 28rpx;
   height: 28rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .theme-opt__dot--light {
@@ -182,7 +182,7 @@
   position: relative;
   width: 88rpx;
   height: 50rpx;
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   /* 关闭态必须是「看得见的凹槽」：玻璃底色几乎全透，白滑块会浮在空气里 */
   background: var(--c-surface-sunken);
   border: 1rpx solid var(--c-line);
@@ -197,7 +197,7 @@
   left: 3rpx;
   width: 42rpx;
   height: 42rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--c-knob);
   
   transition: transform var(--dur-base) var(--ease-out);

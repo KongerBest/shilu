@@ -74,7 +74,7 @@
   width: 64rpx;
   height: 64rpx;
   margin-right: var(--sp-3);
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background-color: var(--c-accent-soft);
   color: var(--c-accent);
   font-size: var(--fs-caption);
@@ -116,7 +116,7 @@
 .hl {
   color: var(--c-accent);
   background-color: var(--c-accent-glass-soft);
-  border-radius: 8rpx;
+  border-radius: var(--radius-xs);
 }
 
 .hit__badge {
@@ -157,7 +157,7 @@
 .errorbox {
   margin-top: var(--sp-3);
   padding: var(--sp-4);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   background: var(--c-warn-soft);
   border: 1rpx solid var(--c-warn-line);
 }
@@ -180,7 +180,7 @@
   display: inline-block;
   margin-top: var(--sp-3);
   padding: var(--sp-1) var(--sp-4);
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   border: 1rpx solid var(--c-warn-line);
   font-size: var(--fs-caption);
   color: var(--c-warn-text);

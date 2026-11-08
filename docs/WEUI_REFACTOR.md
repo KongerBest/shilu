@@ -179,3 +179,91 @@ tabbar 四组图标均已居中于文字正上方，选中态、收缩态与暗�
 
 home / records / mine / settings / anniversaries / template / records-detail / records-edit /
 vault / legal 十页截图复核：左右留白一致，无贴边、无裁切，控制台无 error。
+
+## 9. 大 R 角统一（用户反馈：需要统一的圆角风格）
+
+WEUI 官方组件的默认圆角偏小：按钮 8px、弹窗 12px、搜索框 4px，
+而自绘的 `.card` 原本是 0（通栏白块 + 上下两条贯穿线）。结果同一屏里能同时出现
+直角卡片、4px 搜索框、8px 按钮，风格割裂。本轮把所有圆角收敛到一套分档。
+
+### 9.1 令牌：`styles/tokens.wxss`
+
+```css
+--radius-xs: 8rpx;      /*  4px  细条、文字高亮、装饰线段 */
+--radius-sm: 16rpx;     /*  8px  小徽章、色块、小方控件 */
+--radius-md: 24rpx;     /* 12px  按钮、输入框、chip、缩略图 */
+--radius-lg: 32rpx;     /* 16px  卡片、分组容器、浮层块 */
+--radius-xl: 48rpx;     /* 24px  弹窗、半屏弹层顶角 */
+--radius-pill: 999rpx;  /* 胶囊：标签、筛选 chip、开关 */
+--radius-circle: 50%;   /* 正圆：头像、圆点、FAB */
+
+/* 语义别名，页面只引用这三个 */
+--radius-control: var(--radius-md);
+--radius-card: var(--radius-lg);
+--radius-sheet: var(--radius-xl);
+```
+
+分档依据是**元素在视线里的尺寸**，不是组件类型：越大的面用越大的 R，
+这样 96rpx 的缩略图和 96px 的弹窗看起来是同一种圆法。
+
+**页面与组件里不再出现裸数值**。全站 `border-radius` 只允许三种写法：
+`var(--radius-*)`、`var(--radius-sheet) var(--radius-sheet) 0 0`（弹层顶角）、
+以及被外层裁剪的分段控件内部的 `0`。
+
+### 9.2 覆盖清单
+
+| 位置 | 原值 | 现值 |
+| --- | --- | --- |
+| `.card` | `0` + 上下 1px 贯穿线 | `--radius-card` + 整圈 1rpx 描边 + `overflow: hidden` |
+| `.weui-btn`（含 mini/xmini） | 8px / 6px / 2.8px | `--radius-control` / `--radius-sm` |
+| `.weui-dialog` | 12px | `--radius-sheet` |
+| `.weui-toast` | 12px | `--radius-lg` |
+| `.weui-toptips` / `search-bar__form` | 8px / 4px | `--radius-control` |
+| `.weui-half-screen-dialog`、`.sheet` | 24rpx 顶角 | `--radius-sheet` 顶角 |
+| `.group`（about / mine / settings） | 8rpx | `--radius-card` |
+| `.rcard`（资料卡片组件） | 无（直角） | `--radius-card` + 整圈描边 |
+| `.container` 类（stats / contact-entry / errorbox / notice …） | 8rpx | `--radius-card` 或 `--radius-control` |
+| `.chip` / `.tag` / `.fr-chip` / badge / `.action-btn` | 8rpx | `--radius-pill` |
+| `.icon-btn` / `.swatch` | 8rpx | `--radius-sm` |
+| `.toggle` | 8rpx | `--radius-pill`（轨道变胶囊） |
+| `.fr-input` / `.fr-textarea` | 0、透明无边界 | `--radius-control` + `--weui-BG-1` 浅底 |
+| `.tile` / `.tile__img` / `.tile--add`（附件缩略图） | 8rpx | `--radius-control` |
+| `.view-switch`（列表/日历分段） | 0 通栏 | `--radius-lg` + 整圈描边 |
+| `empty-state` 的 `mp-msg` | 直角白块 | 外层 `.empty-wrap` 裁剪成 `--radius-card` |
+
+### 9.3 两个容易漏的细节
+
+1. **卡片内首行的 WEUI 分隔线**：`.weui-cell::before` 是从左 16px 拉到右边缘的绝对定位线，
+   在圆角卡片里会从弧线里穿出去。已加
+   `.card > .weui-cell:first-child::before { display: none }`。
+   资料卡片 `.rcard` 同理，禁用 `.weui-media-box::before`。
+2. **`overflow: hidden` 是必需的**：卡片内行的底色、分隔线、首尾行的直角背景
+   都要靠它跟着圆弧裁切；`.group` 原本就有，`.card` / `.rcard` 本轮补上。
+
+### 9.4 输入框为什么要加底色
+
+WEUI 的 `.weui-input` 是「无边界扁平输入」，靠单元格下划线定位。
+本项目卡片里没有下划线，扁平输入看不出可填写区域，所以给
+`.fr-input` / `.fr-textarea` 加了 `--weui-BG-1` 浅底 + `--radius-control`。
+错误态同时描红边（`.fr-input--error`），比只改文字颜色更明确。
+
+日期 / 单选 / 多选这类 picker 行保持裸行（它们是列表行，不是输入框），
+避免卡片里出现一排灰块、视觉变花。
+
+### 9.5 响应式
+
+- **手机 / 平板**：圆角用 rpx，随屏宽等比缩放；375px 屏上 `48rpx = 24px`、`32rpx = 16px`。
+- **≥900px 桌面窗口**：与 `--page-gutter` 同一条断点，把圆角改回固定 px
+  （`4 / 8 / 12 / 16 / 24px`）。否则 1400px 窗口下 `48rpx` 会算成约 90px，弹窗圆角大得像药丸。
+- 组件内的 `var(--radius-*)` 通过 CSS 变量继承，不受小程序组件样式隔离影响；
+  已在 `record-card` / `file-uploader` / `field-renderer` / `empty-state` 上验证。
+
+### 9.6 复核
+
+home / records / mine / settings / anniversaries / template / records-detail / records-edit /
+records-new / contacts / contacts-edit / anniversaries-edit / vault / about / backup / category /
+search / legal 共 18 页 + 新建分类半屏弹层 + 深色模式截图复核：
+圆角一致、无直角残留、无裁切、无内容贴边；`npm run check` 36 文件 / 405 项通过。
+
+平台限制：`wx.showModal` / `wx.showActionSheet` 是原生弹窗，圆角由微信客户端控制，
+样式无法覆盖；项目内的自绘弹层（`.sheet`）已统一到 `--radius-sheet`。

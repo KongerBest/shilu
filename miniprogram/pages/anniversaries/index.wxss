@@ -58,7 +58,7 @@
   margin-top: var(--sp-3);
   padding: var(--sp-4) 0;
   border: 1rpx solid var(--glass-border);
-  border-radius: 8rpx;
+  border-radius: var(--radius-card);
   background-color: var(--glass-bg-soft);
   
   
@@ -123,7 +123,7 @@
   flex-shrink: 0;
   width: 6rpx;
   height: 56rpx;
-  border-radius: 8rpx;
+  border-radius: var(--radius-pill);
   margin-right: var(--sp-3);
 }
 
@@ -218,7 +218,7 @@
   font-size: var(--fs-caption);
   color: var(--c-accent);
   border: 1rpx solid var(--c-accent);
-  border-radius: 999rpx;
+  border-radius: var(--radius-pill);
   background: var(--c-accent-glass-soft);
 }
 
@@ -238,9 +238,11 @@
   display: flex;
   margin: 32rpx 0 0;
   padding: 0;
-  border: 0;
-  border-bottom: 1rpx solid var(--weui-FG-3);
-  border-radius: 0;
+  /* 原来贴边通栏、四角直角；改成整圈描边的大 R 角分段卡，
+     与页面其它卡片同一档圆角，选中下划线由 overflow 裁进弧线内 */
+  border: 1rpx solid var(--weui-FG-3);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   background-color: var(--weui-BG-2);
 }
 
@@ -291,7 +293,7 @@
   line-height: 60rpx;
   color: var(--c-text-2);
   text-align: center;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .cal__nav--hover {
@@ -331,7 +333,7 @@
   line-height: 56rpx;
   color: var(--c-text);
   text-align: center;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .cal-cell.is-out .cal-cell__day {
@@ -356,7 +358,7 @@
   width: 8rpx;
   height: 8rpx;
   margin-top: 2rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--c-accent);
 }
 
@@ -378,9 +380,11 @@
   display: flex;
   margin: 32rpx 0 0;
   padding: 0;
-  border: 0;
-  border-bottom: 1rpx solid var(--weui-FG-3);
-  border-radius: 0;
+  /* 原来贴边通栏、四角直角；改成整圈描边的大 R 角分段卡，
+     与页面其它卡片同一档圆角，选中下划线由 overflow 裁进弧线内 */
+  border: 1rpx solid var(--weui-FG-3);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   background-color: var(--weui-BG-2);
 }
 
@@ -431,7 +435,7 @@
   line-height: 60rpx;
   color: var(--c-text-2);
   text-align: center;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .cal__nav--hover {
@@ -471,7 +475,7 @@
   line-height: 56rpx;
   color: var(--c-text);
   text-align: center;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
 }
 
 .cal-cell.is-out .cal-cell__day {
@@ -496,7 +500,7 @@
   width: 8rpx;
   height: 8rpx;
   margin-top: 2rpx;
-  border-radius: 50%;
+  border-radius: var(--radius-circle);
   background: var(--c-accent);
 }
 

@@ -1,4 +1,11 @@
-/* WEUI Msg 官方组件（mp-msg），只补字号与留白 */
+/* WEUI Msg 官方组件（mp-msg），只补字号、留白与圆角 */
+.empty-wrap {
+  display: block;
+  /* mp-msg 自带一整块直角白底；裁剪成与页面卡片同一档的圆角 */
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
 .weui-msg {
   padding-top: 96rpx;
 }

@@ -1,7 +1,17 @@
-/* WEUI MediaBox：白色内容块、1px 分隔线、标准字号 */
+/* WEUI MediaBox：白色内容块，改为独立的大 R 角卡片 */
 .weui-media-box.rcard {
   padding: 24rpx 32rpx;
   background-color: var(--weui-BG-2);
+  /* 原来是靠顶部 1px 线分隔的连排列表，独立卡片后用整圈描边勾出圆角 */
+  border: 1rpx solid var(--weui-FG-3);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* 顶部那条贯穿线会从圆弧里穿出去，删掉 */
+.weui-media-box.rcard::before,
+.weui-media-box.rcard:before {
+  display: none;
 }
 
 .rcard__title {
