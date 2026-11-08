@@ -1,5 +1,5 @@
-<view class="weui-search-bar sbar" style="display: flex; align-items: center; padding: 8px 12px; background-color: var(--weui-BG-0, #EDEDED);" bindtap="onTapReadonly">
-  <view class="sbar__form" style="display: flex; align-items: center; flex: 1; min-width: 0; min-height: 36px; padding: 0 8px; border-radius: 4px; background-color: var(--weui-BG-2, #FFFFFF);">
+<view class="weui-search-bar sbar" style="display: flex; align-items: center; padding: 8px 0; background-color: transparent;" bindtap="onTapReadonly">
+  <view class="sbar__form" style="display: flex; align-items: center; flex: 1; min-width: 0; min-height: 36px; padding: 0 12px; background-color: var(--weui-BG-2, #FFFFFF);">
     <!-- 只读态：WEUI 居中的搜索标签 -->
     <block wx:if="{{readonly}}">
       <icon type="search" size="14" color="#9A9A9A" />

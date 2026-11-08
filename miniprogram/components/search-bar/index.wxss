@@ -1,7 +1,18 @@
-/* WEUI SearchBar 视觉规范：灰底 + 白色圆角输入区 + 系统搜索/清除图标。
-   布局与配色写在 WXML 内联样式里，避免自定义组件拿不到全局 CSS 变量时塌高。 */
+/* WEUI SearchBar 视觉规范：白色输入区 + 系统搜索/清除图标。
+   布局与配色写在 WXML 内联样式里，避免自定义组件拿不到全局 CSS 变量时塌高；
+   圆角与描边放这里，跟随 tokens.wxss 的圆角令牌与主题切换。 */
 .weui-search-bar.sbar {
   box-sizing: border-box;
+}
+
+/* 输入区做成整站同一档的大 R 角（胶囊）。
+   之前是 WEUI 默认的 4px，混在一屏 16px 圆角卡片里看着像直角。
+   描边用 FG-3：浅色下是极淡灰线，深色下是低透明度白线，
+   否则深色主题里 BG-2 与 BG-0 对比过低，输入区边界会糊掉。 */
+.sbar__form {
+  box-sizing: border-box;
+  border: 1rpx solid var(--weui-FG-3, rgba(0, 0, 0, 0.1));
+  border-radius: var(--radius-pill, 18px);
 }
 
 .sbar__mark {

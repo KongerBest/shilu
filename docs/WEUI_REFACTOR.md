@@ -218,7 +218,8 @@ WEUI 官方组件的默认圆角偏小：按钮 8px、弹窗 12px、搜索框 4p
 | `.weui-btn`（含 mini/xmini） | 8px / 6px / 2.8px | `--radius-control` / `--radius-sm` |
 | `.weui-dialog` | 12px | `--radius-sheet` |
 | `.weui-toast` | 12px | `--radius-lg` |
-| `.weui-toptips` / `search-bar__form` | 8px / 4px | `--radius-control` |
+| `.weui-toptips` | 8px | `--radius-control` |
+| `search-bar` 输入区（WXML 内联 4px） | 4px + 灰底带内缩 12px | `--radius-pill` + 1rpx 描边，外带横向归零 |
 | `.weui-half-screen-dialog`、`.sheet` | 24rpx 顶角 | `--radius-sheet` 顶角 |
 | `.group`（about / mine / settings） | 8rpx | `--radius-card` |
 | `.rcard`（资料卡片组件） | 无（直角） | `--radius-card` + 整圈描边 |
@@ -231,7 +232,7 @@ WEUI 官方组件的默认圆角偏小：按钮 8px、弹窗 12px、搜索框 4p
 | `.view-switch`（列表/日历分段） | 0 通栏 | `--radius-lg` + 整圈描边 |
 | `empty-state` 的 `mp-msg` | 直角白块 | 外层 `.empty-wrap` 裁剪成 `--radius-card` |
 
-### 9.3 两个容易漏的细节
+### 9.3 三个容易漏的细节
 
 1. **卡片内首行的 WEUI 分隔线**：`.weui-cell::before` 是从左 16px 拉到右边缘的绝对定位线，
    在圆角卡片里会从弧线里穿出去。已加
@@ -239,6 +240,9 @@ WEUI 官方组件的默认圆角偏小：按钮 8px、弹窗 12px、搜索框 4p
    资料卡片 `.rcard` 同理，禁用 `.weui-media-box::before`。
 2. **`overflow: hidden` 是必需的**：卡片内行的底色、分隔线、首尾行的直角背景
    都要靠它跟着圆弧裁切；`.group` 原本就有，`.card` / `.rcard` 本轮补上。
+3. **圆角不一定写在 `.wxss` 里**：`search-bar` 为了「组件拿不到全局变量时不塌高」，
+   把布局与配色全写在 WXML 的 `style` 属性上，`border-radius: 4px` 也一起被写死。
+   只 grep `*.wxss` 会漏掉这类元素。改圆角时务必同时 `grep border-radius --include=*.wxml`。
 
 ### 9.4 输入框为什么要加底色
 
@@ -256,7 +260,7 @@ WEUI 的 `.weui-input` 是「无边界扁平输入」，靠单元格下划线定
 - **≥900px 桌面窗口**：与 `--page-gutter` 同一条断点，把圆角改回固定 px
   （`4 / 8 / 12 / 16 / 24px`）。否则 1400px 窗口下 `48rpx` 会算成约 90px，弹窗圆角大得像药丸。
 - 组件内的 `var(--radius-*)` 通过 CSS 变量继承，不受小程序组件样式隔离影响；
-  已在 `record-card` / `file-uploader` / `field-renderer` / `empty-state` 上验证。
+  已在 `record-card` / `file-uploader` / `field-renderer` / `empty-state` / `search-bar` 上验证。
 
 ### 9.6 复核
 
@@ -264,6 +268,10 @@ home / records / mine / settings / anniversaries / template / records-detail / r
 records-new / contacts / contacts-edit / anniversaries-edit / vault / about / backup / category /
 search / legal 共 18 页 + 新建分类半屏弹层 + 深色模式截图复核：
 圆角一致、无直角残留、无裁切、无内容贴边；`npm run check` 36 文件 / 405 项通过。
+
+搜索框（`search-bar` 组件）额外复核四个使用点：首页只读态、信息库顶部、搜索页吸顶行、
+人物档案顶部。输入区为胶囊形，左边线与卡片/胶囊对齐，深色主题下靠 `--weui-FG-3`
+的 1rpx 描边维持边界。
 
 平台限制：`wx.showModal` / `wx.showActionSheet` 是原生弹窗，圆角由微信客户端控制，
 样式无法覆盖；项目内的自绘弹层（`.sheet`）已统一到 `--radius-sheet`。
