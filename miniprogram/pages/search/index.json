@@ -2,6 +2,7 @@
   "navigationBarTitleText": "搜索",
   "enablePullDownRefresh": false,
   "usingComponents": {
+    "nav-bar": "/components/nav-bar/index",
     "search-bar": "/components/search-bar/index",
     "empty-state": "/components/empty-state/index"
   }

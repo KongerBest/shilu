@@ -2,6 +2,7 @@
   "navigationBarTitleText": "纪念日",
   "enablePullDownRefresh": false,
   "usingComponents": {
+    "nav-bar": "/components/nav-bar/index",
     "loading": "/components/loading/index",
     "empty-state": "/components/empty-state/index",
     "custom-tabbar": "/components/custom-tabbar/index"

@@ -30,7 +30,8 @@
 </template>
 
 <view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
-  <view class="sbar-row">
+  <nav-bar title="搜索" back />
+  <view class="sbar-row" style="top: {{navTop}}px;">
     <view class="sbar-slot">
       <search-bar
         value="{{keyword}}"

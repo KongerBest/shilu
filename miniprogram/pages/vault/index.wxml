@@ -5,6 +5,7 @@
   page-style="background-color:{{themeBg}};"
 ></page-meta>
 <view class="page page--plain {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <nav-bar title="加密安全" back />
   <view wx:if="{{mode === 'loading'}}" class="vault-hint">加载中…</view>
 
   <!-- 首次设置主密码 -->

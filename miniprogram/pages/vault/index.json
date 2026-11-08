@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "加密安全",
-  "usingComponents": {}
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

@@ -74,6 +74,7 @@ Page({
 
   data: {
     ...themeInit(),
+    navTitle: '新建纪念日',
     id: '',
     isEdit: false,
     loading: true,
@@ -104,7 +105,7 @@ Page({
   async onLoad(options: Record<string, string | undefined>) {
     const id = options.id || '';
     this.setData({ id, isEdit: id.length > 0 });
-    wx.setNavigationBarTitle({ title: id ? '编辑纪念日' : '新建纪念日' });
+    this.setData({ navTitle: id ? '编辑纪念日' : '新建纪念日' });
 
     if (!ANNIVERSARY_ENABLED) {
       this.setData({ loading: false, error: '纪念日模块在当前构建中未开启' });

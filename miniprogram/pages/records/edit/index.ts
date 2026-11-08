@@ -38,6 +38,8 @@ interface EditData {
   deleting: boolean;
   error: string;
   themeClass: string;
+  /** 自绘导航栏标题（原生 setNavigationBarTitle 在 custom 模式下失效） */
+  navTitle: string;
 
   title: string;
   titleError: string;
@@ -102,6 +104,7 @@ function emptyData(): EditData {
     deleting: false,
     error: '',
     ...themeInit(),
+    navTitle: '资料',
     title: '',
     titleError: '',
     categories: [],
@@ -193,7 +196,7 @@ Page({
       // 编辑已有资料时附件直接挂在记录 id 上
       uploadBizId: id
     });
-    wx.setNavigationBarTitle({ title: id ? '编辑资料' : '新建资料' });
+    this.setData({ navTitle: id ? '编辑资料' : '新建资料' });
 
     try {
       // 登录态有内存缓存，这里拿 userId 只为拼字段加密的 AAD 上下文

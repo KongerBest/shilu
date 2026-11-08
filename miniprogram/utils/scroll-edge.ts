@@ -2,15 +2,10 @@
  * 滚动边界状态同步（WEUI 重构后只保留数据通道）。
  *
  * 玻璃渐变带已从 app.wxss 移除，edgeTop / edgeBottom 不再驱动任何视觉层；
- * 导航栏也统一为 WEUI 平面色，不再做三态渐变切换。保留本模块是为了不改动
- * 各页面 onPageScroll 的调用与既有 data 字段（业务状态与流程不变）。
+ * 导航栏也从 2026-11-08 起改为自绘（components/nav-bar），不再需要随滚动换色。
+ * 保留本模块是为了不改动各页面 onPageScroll 的调用与既有 data 字段
+ * （业务状态与流程不变）。
  */
-
-import { getTheme, NAV_BAR, type ThemeMode } from './theme';
-
-/** WEUI 平面导航栏：三态同色，不再随滚动位置换色。 */
-const NAV_MID: Record<ThemeMode, string> = { light: '#f7f7f7', dark: '#1e1e1e' };
-const NAV_BOTTOM: Record<ThemeMode, string> = { light: '#f7f7f7', dark: '#1e1e1e' };
 
 /** 接近边界的作用区间；onPageScroll 的 scrollTop 单位是 px（逻辑像素，各机型一致）。 */
 const NEAR_PX = 180;
@@ -32,7 +27,6 @@ interface EdgeState {
   maxScroll: number;
   lastTop: number;
   lastBottom: number;
-  navStage: string;
 }
 
 const states = new WeakMap<object, EdgeState>();
@@ -44,8 +38,7 @@ function stateOf(host: object): EdgeState {
     measuredAt: 0,
     maxScroll: -1,
     lastTop: -1,
-    lastBottom: -1,
-    navStage: ''
+    lastBottom: -1
   };
   states.set(host, fresh);
   return fresh;
@@ -82,25 +75,6 @@ function measure(state: EdgeState): void {
     .exec();
 }
 
-function applyNavBar(topNear: number, bottomNear: number, state: EdgeState): void {
-  let stage: 'top' | 'mid' | 'bottom';
-  if (topNear > 0.55) stage = 'top';
-  else if (bottomNear > 0.55) stage = 'bottom';
-  else stage = 'mid';
-  if (stage === state.navStage) return;
-
-  const theme = getTheme();
-  const conf = NAV_BAR[theme];
-  const bg = stage === 'top' ? conf.bg : stage === 'mid' ? NAV_MID[theme] : NAV_BOTTOM[theme];
-  // 三档都属于同一套浅色/深色底，frontColor 不用切换，标题与返回箭头始终清晰。
-  wx.setNavigationBarColor({
-    frontColor: conf.front,
-    backgroundColor: bg,
-    animation: { duration: 260, timingFunc: 'easeInOut' }
-  });
-  state.navStage = stage;
-}
-
 /**
  * 在页面 `onPageScroll` 里调用一次即可。
  * 不新增滚动容器、不改 data 里的业务字段、不碰层级；只写 edgeTop / edgeBottom 两个数值，
@@ -132,6 +106,4 @@ export function syncScrollEdge(host: EdgeHost, scrollTop: number): void {
     state.lastBottom = bottomOpacity;
   }
   if (Object.keys(patch).length > 0) host.setData(patch);
-
-  applyNavBar(topNear, bottomNear, state);
 }

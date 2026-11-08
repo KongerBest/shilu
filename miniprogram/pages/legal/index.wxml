@@ -5,6 +5,7 @@
   page-style="background-color:{{themeBg}};"
 ></page-meta>
 <view class="page page--plain {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <nav-bar title="{{navTitle}}" back />
   <view class="card doc weui-article">
     <text class="doc__title">{{title}}</text>
     <text class="doc__date">最近更新：{{updatedAt}}</text>

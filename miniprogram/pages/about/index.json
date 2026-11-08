@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "关于拾录",
   "enablePullDownRefresh": false,
-  "usingComponents": {}
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

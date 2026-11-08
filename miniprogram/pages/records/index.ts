@@ -33,6 +33,9 @@ let searchTimer: number | null = null;
 Page({
   data: {
     ...themeInit(),
+    // 自绘导航栏的标题。原生栏的 setNavigationBarTitle 在 custom 模式下失效，
+    // 标题改走 data，由 <nav-bar title="{{navTitle}}"> 渲染。
+    navTitle: '信息库',
     keyword: '',
     focus: false,
     filter: 'all' as FilterKey,
@@ -95,11 +98,11 @@ Page({
       this.setData({ categoryChips: chips });
       if (found) {
         this.setData({
+          navTitle: found.name,
           categoryName: found.name,
           emptyTitle: `「${found.name}」还没有资料`,
           emptyDesc: '在下方新建时会默认归入该分类'
         });
-        wx.setNavigationBarTitle({ title: found.name });
       }
     } catch (error) {
       logger.warn('records', 'load categories failed', { code: toAppError(error).code });
@@ -116,7 +119,7 @@ Page({
       emptyTitle: '还没有资料',
       emptyDesc: '点击右下角新建，或用搜索框查找已有内容'
     });
-    if (!categoryId) wx.setNavigationBarTitle({ title: '信息库' });
+    if (!categoryId) this.setData({ navTitle: '信息库' });
     void this.loadCategories(categoryId);
     void this.reload();
   },

@@ -51,6 +51,51 @@ describe('主题首帧 · 每个页面', () => {
   });
 });
 
+/** 带底部 tabbar 的页面：这些页不显示返回按钮 */
+const TAB_PAGES = [
+  'pages/home/index',
+  'pages/records/index',
+  'pages/mine/index',
+  'pages/anniversaries/index'
+];
+
+describe('自绘导航栏 · 每个页面', () => {
+  it('app.json 关掉了原生导航栏', () => {
+    const conf = JSON.parse(read('app.json'));
+    expect(conf.window.navigationStyle).toBe('custom');
+  });
+
+  it.each(PAGES)('%s 注册了 nav-bar 组件', (page) => {
+    const conf = JSON.parse(read(`${page}.json`));
+    expect(conf.usingComponents['nav-bar']).toBe('/components/nav-bar/index');
+  });
+
+  it.each(PAGES)('%s 把 nav-bar 放在 .page 的第一个子节点', (page) => {
+    const wxml = stripBom(read(`${page}.wxml`));
+    const open = wxml.match(/<view class="page[^"]*"[^>]*>\n/);
+    expect(open).toBeTruthy();
+    const firstChild = wxml.slice(open!.index! + open![0].length).split('\n')[0].trim();
+    // 必须是第一个子节点：nav-bar 内部带占位块，放在后面内容会从导航栏底下开始
+    expect(firstChild.startsWith('<nav-bar')).toBe(true);
+  });
+
+  it.each(PAGES)('%s 的返回按钮与页面类型匹配', (page) => {
+    const wxml = stripBom(read(`${page}.wxml`));
+    const tag = wxml.match(/<nav-bar[^>]*\/>/);
+    expect(tag).toBeTruthy();
+    const hasBack = tag![0].includes('back');
+    // tab 页用 reLaunch 切换，栈里只有一层，显示返回按钮没有意义
+    expect(hasBack).toBe(!TAB_PAGES.includes(page));
+  });
+
+  it.each(PAGES)('%s 若用动态标题则在 data 里有初值', (page) => {
+    const wxml = stripBom(read(`${page}.wxml`));
+    if (!wxml.includes('title="{{navTitle}}"')) return;
+    // 动态标题必须先有初值：等 onLoad 里 setData 才填会让首帧标题空一拍
+    expect(read(`${page}.ts`)).toMatch(/navTitle:\s*\S/);
+  });
+});
+
 describe('PAGE_BG 与 WEUI 色板', () => {
   const css = read('styles/weui.wxss');
 

@@ -541,3 +541,92 @@ export function themeInit(): ThemeInit {
 ④ `PAGE_BG` 与 `weui.wxss` 的 `--weui-BG-0` 一致。
 
 新增页面漏了任一条，`npm run check` 直接红。
+
+## 13. 自绘导航栏（navigationStyle: custom）
+
+第 12 节留下了唯一一处「无法在首帧之前改色」的地方：原生导航栏由客户端按
+`app.json` 绘制，页面 JS 跑起来之前没有通道能碰它。深色下 `reLaunch` 仍会
+先画一帧 `#F7F7F7`。要彻底消掉，只能自己画。
+
+### 13.1 组件与尺寸
+
+`components/nav-bar`，四个文件，加一个 `utils/nav.ts`：
+
+```html
+<nav-bar title="设置" back />
+<nav-bar title="{{navTitle}}" back />   <!-- 动态标题页 -->
+```
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| `title` | String | 标题；动态页绑 `navTitle` |
+| `back` | Boolean | 显示返回箭头。tab 页不传 |
+
+尺寸算法（`utils/nav.ts`，进程内只算一次）：
+
+```
+contentHeight = (胶囊 top - 状态栏高) * 2 + 胶囊高
+totalHeight   = statusBarHeight + contentHeight
+```
+
+不写死 44px：刘海屏、灵动岛、安卓打孔屏的胶囊位置各不相同，写死会偏。
+取不到胶囊（模拟器偶发）时退回 44px，并夹到 `[36, 72]`，
+避免拿到 0 或 200 这种离谱值把导航栏变成横幅。
+
+组件内部分两段：一个 `.nav-gap` 占位块（`height: totalHeight`）+ 一条
+`position: fixed` 的 `.nav-bar`。占位块放在组件里，19 个页面不用各自算状态栏高度。
+
+### 13.2 接线（19 个页面）
+
+1. `app.json` → `window.navigationStyle: "custom"`；
+2. 每页 `.json` 注册 `nav-bar`；
+3. 每页 `.wxml` 的 `.page` **第一个子节点**放 `<nav-bar>`（必须第一，
+   否则占位块在内容后面，页面会从导航栏底下开始）；
+4. 6 个动态标题页（信息库 / 新建编辑资料 / 新建编辑模板 / 新建编辑纪念日 /
+   新建编辑人物 / 隐私政策用户协议）在 data 里给 `navTitle` 初值，
+   原 `wx.setNavigationBarTitle` 全部改 `setData({ navTitle })`。
+
+`setNavigationBarTitle` 在 custom 模式下是空操作，留着只会让人误以为标题还归它管。
+
+### 13.3 三个必须自己处理的点
+
+**① 状态栏文字颜色。** 自绘之后 `wx.setNavigationBarColor` 已经影响不到导航栏，
+但它仍是唯一能改状态栏前景色的通道。深色下不传 `frontColor: '#ffffff'`，
+状态栏就是**黑字压在 #111 上**，时间和信号等于消失。
+`applyWindowTheme()` 里保留这次调用，只取 `frontColor`。
+
+**② 吸顶元素要让位。** 搜索页的 `.sbar-row` 原本 `top: 0`，加了导航栏后会滑到
+导航栏底下被盖住。CSS 拿不到运行时状态栏高度，改用 `navMetrics().totalHeight`
+算成 px 写进 data，内联绑到 `style="top: {{navTop}}px"`。
+
+**③ 弹层遮罩盖不住导航栏。** 实测：`.sheet-mask`（z-index 1000）压不到
+`nav-bar`（900，甚至改成 30 也一样）——自定义组件的 fixed 节点在更高一层合成。
+这与改造前原生导航栏的表现一致（页面内遮罩从来盖不住系统导航栏），
+所以不视为回归；弹层本身从 55% 高度起，不会钻到导航栏下面。
+
+### 13.4 材质
+
+导航栏是「标题与滚动内容同一高度」的浮层，比 tabbar 厚一档：
+`--glass-nav-fill` = 亮 `rgba(247,247,247,.94)` / 暗 `rgba(22,22,22,.92)`。
+用 tabbar 的 `.78` 时，分组标题会从「设置」两个字旁边透出来，
+在不支持模糊的模拟器上尤其脏。`.94` 仍能透出背后的大色块，字已经看不清。
+
+只画下沿 hairline（`--weui-FG-3`），不画上沿高光——上沿贴着状态栏，
+画高光会变成一条悬空的亮线。
+
+### 13.5 残留限制
+
+- **下拉刷新的指示器**由原生层绘制，位于 webview 之上，不受自绘导航栏影响；
+  `background-text-style` 仍按主题切换，深色下是浅色圆点。
+- **冷启动第一帧**：`onLaunch` 之前状态栏仍是 `app.json` 的 `black`，
+  深色用户理论上能察觉一瞬。这是原生启动路径，本轮无解，也不值得为它加闪屏。
+- 屏幕旋转后 `navMetrics()` 的缓存不会失效；本项目未开横屏，先不处理。
+
+### 13.6 防回归
+
+`tests/theme-init.test.ts` 扩展了四组断言（77 项）：
+
+1. `app.json` 的 `navigationStyle` 必须是 `custom`；
+2. 每个页面 json 注册了 `nav-bar`；
+3. 每个页面 `.page` 的第一个子节点是 `<nav-bar>`；
+4. tab 页没有 `back`、非 tab 页必须有；动态标题页必须在 data 里有 `navTitle` 初值。

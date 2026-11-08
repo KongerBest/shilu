@@ -5,6 +5,7 @@
   page-style="background-color:{{themeBg}};"
 ></page-meta>
 <view class="page page--plain {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <nav-bar title="关于拾录" back />
   <view class="section">
     <view class="section__head">
       <text class="section__title weui-cells__title">应用信息</text>

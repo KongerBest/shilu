@@ -5,6 +5,7 @@
   page-style="background-color:{{themeBg}};"
 ></page-meta>
 <view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <nav-bar title="备份与恢复" back />
   <view class="card">
     <text class="card__title">导出备份</text>
     <text class="form-hint">

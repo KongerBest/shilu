@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "备份与恢复",
-  "usingComponents": {}
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

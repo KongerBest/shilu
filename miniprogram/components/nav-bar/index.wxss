@@ -1,0 +1,77 @@
+/* 自绘导航栏。
+   材质与 tabbar 同一档（薄玻璃 20px 模糊）：
+   顶上这条是常驻浮层，页面内容从下面滚过，模糊有实际收益。
+   边线只画下沿——上沿贴着状态栏，画高光会变成一条奇怪的亮线。 */
+
+:host {
+  display: block;
+}
+
+/* 占位块：高度是内联的 px（JS 算好的），这里只保证它是块级、不拦截手势 */
+.nav-gap {
+  width: 100%;
+  pointer-events: none;
+}
+
+.nav-bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 900;
+  background-color: var(--glass-nav-fill);
+  border-bottom: 1rpx solid var(--weui-FG-3);
+  -webkit-backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur)) saturate(180%);
+}
+
+/* 内容区与 .page 同宽同边距：桌面端窗口再宽，标题也跟正文对齐在 750px 栏里 */
+.nav-bar__inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
+}
+
+/* 返回按钮：44px 见方的点击区，视觉上只有一枚细箭头 */
+.nav-bar__back {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  width: 88rpx;
+  height: 100%;
+}
+
+.nav-bar__back--hover {
+  opacity: 0.5;
+}
+
+.nav-bar__chevron {
+  width: 20rpx;
+  height: 20rpx;
+  margin-left: 4rpx;
+  border-bottom: 4rpx solid var(--weui-FG-0);
+  border-left: 4rpx solid var(--weui-FG-0);
+  transform: rotate(45deg);
+}
+
+/* 标题绝对居中：左右分别是返回按钮与胶囊，用 flex 排会让标题偏向一侧。
+   max-width 由 JS 按胶囊宽度内联给出，长标题先截断再钻到胶囊底下。 */
+.nav-bar__title {
+  position: absolute;
+  left: 50%;
+  display: block;
+  transform: translateX(-50%);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--weui-FG-0);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

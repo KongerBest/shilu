@@ -1,6 +1,7 @@
 {
   "navigationBarTitleText": "资料详情",
   "usingComponents": {
+    "nav-bar": "/components/nav-bar/index",
     "loading": "/components/loading/index",
     "empty-state": "/components/empty-state/index",
     "file-uploader": "/components/file-uploader/index"

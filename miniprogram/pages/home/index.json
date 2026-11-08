@@ -2,6 +2,7 @@
   "navigationBarTitleText": "拾录",
   "enablePullDownRefresh": true,
   "usingComponents": {
+    "nav-bar": "/components/nav-bar/index",
     "custom-tabbar": "/components/custom-tabbar/index",
     "search-bar": "/components/search-bar/index",
     "record-card": "/components/record-card/index",

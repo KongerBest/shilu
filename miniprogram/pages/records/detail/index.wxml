@@ -5,6 +5,7 @@
   page-style="background-color:{{themeBg}};"
 ></page-meta>
 <view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <nav-bar title="资料详情" back />
   <loading wx:if="{{loading}}" mode="block" />
   <empty-state
     wx:elif="{{error}}"

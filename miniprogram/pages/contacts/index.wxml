@@ -5,6 +5,7 @@
   page-style="background-color:{{themeBg}};"
 ></page-meta>
 <view class="page {{themeClass}}" data-weui-theme="{{themeMode || 'light'}}">
+  <nav-bar title="人物档案" back />
   <search-bar
     value="{{keyword}}"
     placeholder="搜索姓名"

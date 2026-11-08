@@ -12,6 +12,7 @@ import { haptic } from '../../utils/haptics';
 import { logger } from '../../utils/logger';
 import { containsKeyword, scoreFields, splitByKeyword } from '../../utils/search';
 import { syncTheme, themeInit } from '../../utils/theme';
+import { navMetrics } from '../../utils/nav';
 import { syncScrollEdge } from '../../utils/scroll-edge';
 
 /**
@@ -366,6 +367,9 @@ Page({
 
   data: {
     ...themeInit(),
+    // 吸顶搜索条要让开自绘导航栏的高度，否则滚动时会滑到导航栏底下被盖住。
+    // 用 JS 算好的 px 而不是 CSS 变量：CSS 拿不到运行时状态栏高度。
+    navTop: navMetrics().totalHeight,
     focus: true,
     keyword: '',
     groups: [],

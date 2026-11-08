@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "隐私政策",
   "enablePullDownRefresh": false,
-  "usingComponents": {}
+  "usingComponents": {
+    "nav-bar": "/components/nav-bar/index"
+  }
 }

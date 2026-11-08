@@ -179,14 +179,14 @@ Page({
 
   data: {
     ...themeInit(),
+    navTitle: PRIVACY.title,
     ...PRIVACY
   },
 
   onLoad(options: Record<string, string | undefined>) {
     const type: LegalType = options.type === 'terms' ? 'terms' : 'privacy';
     const doc = DOCS[type];
-    wx.setNavigationBarTitle({ title: doc.title });
-    this.setData({ ...doc });
+    this.setData({ ...doc, navTitle: doc.title });
   },
 
   onShow() {

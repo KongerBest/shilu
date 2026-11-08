@@ -70,6 +70,10 @@ page,
 
   /* B. 浮层填充（light） */
   --glass-bar-fill: rgba(247, 247, 247, 0.78);    /* 薄玻璃：吸顶条 / tabbar */
+  /* 自绘导航栏专用，比 tabbar 厚一档：它是唯一「标题与滚动内容同一高度」的浮层，
+     .78 时下面的分组标题会从「设置」两个字旁边透出来，在不支持模糊的平台
+     （模拟器 / 部分安卓）尤其明显。.94 仍能透出背后的大色块，字已经看不清。 */
+  --glass-nav-fill: rgba(247, 247, 247, 0.94);
   --glass-veil-fill: rgba(237, 237, 237, 0.72);   /* 页面色薄雾：只虚化、不改色相 */
   --glass-sheet-fill: rgba(255, 255, 255, 0.92);  /* 中玻璃：半屏弹层 */
   --glass-dialog-fill: rgba(255, 255, 255, 0.92); /* 厚玻璃：模态弹窗 */
@@ -180,6 +184,7 @@ page,
   --glass-border-soft: rgba(255, 255, 255, 0.08);
 
   --glass-bar-fill: rgba(22, 22, 22, 0.8);
+  --glass-nav-fill: rgba(22, 22, 22, 0.92);
   --glass-veil-fill: rgba(17, 17, 17, 0.72);
   --glass-sheet-fill: rgba(25, 25, 25, 0.92);
   --glass-dialog-fill: rgba(38, 38, 38, 0.92);

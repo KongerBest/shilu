@@ -67,6 +67,7 @@ Page({
   },
 
   data: {
+    navTitle: '人物',
     id: '',
     isEdit: false,
     loading: true,
@@ -96,7 +97,7 @@ Page({
   async onLoad(options: Record<string, string | undefined>) {
     const id = options.id || '';
     this.setData({ id, isEdit: id.length > 0 });
-    wx.setNavigationBarTitle({ title: id ? '编辑人物' : '新建人物' });
+    this.setData({ navTitle: id ? '编辑人物' : '新建人物' });
 
     try {
       const session = await userService.login();

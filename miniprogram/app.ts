@@ -1,7 +1,7 @@
 import { logger } from './utils/logger';
 import { initCloud } from './services/transport';
 import { toAppError } from './utils/errors';
-import { applyNavBar } from './utils/theme';
+import { applyWindowTheme } from './utils/theme';
 
 /**
  * 应用入口。
@@ -11,10 +11,9 @@ import { applyNavBar } from './utils/theme';
  */
 App({
   onLaunch() {
-    // 冷启动第一页的原生导航栏 / 窗口底色只能来自 app.json（写死浅色），
-    // 深色用户会先看到一帧浅色。这里按本地存的主题提前刷一遍，
-    // 失败也无副作用（页面 onShow 还会再刷一次）。
-    applyNavBar();
+    // 窗口底色（下拉回弹、page 根节点露出的部分）只能靠这个接口提前刷。
+    // 导航栏已经是自绘的，不再受 app.json 里那一套浅色影响。
+    applyWindowTheme();
     try {
       initCloud();
       logger.info('app', 'cloud initialized');

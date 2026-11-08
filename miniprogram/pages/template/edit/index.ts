@@ -157,6 +157,7 @@ Page({
 
   data: {
     ...themeInit(),
+    navTitle: '模板',
     id: '',
     isEdit: false,
     loading: false,
@@ -195,7 +196,7 @@ Page({
     const id = options.id || '';
     const presetCategoryId = options.categoryId || '';
     this.setData({ id, isEdit: id.length > 0, loading: true });
-    wx.setNavigationBarTitle({ title: id ? '编辑模板' : '新建模板' });
+    this.setData({ navTitle: id ? '编辑模板' : '新建模板' });
 
     try {
       const categories = await categoryService.list();

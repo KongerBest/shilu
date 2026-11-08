@@ -1,0 +1,22 @@
+<!-- 占位块：把页面内容顶到导航栏下方。
+     高度由 navMetrics() 在组件创建时算好，页面不需要自己知道状态栏有多高。 -->
+<view class="nav-gap" style="height: {{totalHeight}}px;"></view>
+
+<!-- 导航栏本体：fixed 贴住视口顶部，内容从它下面滚过时被虚化。
+     用 view 而不是原生导航栏，是因为只有视图层才吃得到主题变量、能在首帧就画成深色。 -->
+<view class="nav-bar" style="padding-top: {{statusBarHeight}}px;">
+  <view class="nav-bar__inner" style="height: {{contentHeight}}px;">
+    <view
+      wx:if="{{back}}"
+      class="nav-bar__back"
+      hover-class="nav-bar__back--hover"
+      hover-stay-time="80"
+      bindtap="onBack"
+      aria-role="button"
+      aria-label="返回"
+    >
+      <view class="nav-bar__chevron"></view>
+    </view>
+    <text class="nav-bar__title" style="max-width: {{titleMaxWidth}}px;">{{title}}</text>
+  </view>
+</view>
