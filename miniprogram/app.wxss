@@ -91,19 +91,81 @@ scroll-view {
   font-size: 17px;
 }
 
+/* ==========================================================================
+   毛玻璃材质层（iOS 风格）
+   --------------------------------------------------------------------------
+   只给「背后确实有内容在动」的元素挂模糊，共三档：
+
+     .glass-bar     吸顶工具条、tabbar      blur 20px  薄玻璃
+     .glass-sheet   半屏弹层                blur 32px  中玻璃
+     .glass-dialog  模态框、toast           blur 44px  厚玻璃
+
+   卡片、输入框、按钮一律不挂模糊：它们背后只有纯灰页面，
+   模糊没有信息价值，却要在列表滚动时为每一张卡片做一次离屏采样。
+   这类元素改用 --glass-bg 系半透明填充 + 上沿高光，观感是乳白玻璃而非死白纸片。
+
+   写法约定：
+   1. -webkit- 前缀先写，iOS 旧 WebView 只认前缀版；
+   2. saturate 那条声明独立成行放最后。不支持 filter 函数的浏览器会
+      整条丢弃、退回上一条纯 blur，于是支持端更「苹果」、不支持端也不崩；
+   3. 挂了 blur 的元素不要再加 transform / will-change：
+      会新建包含块，WebKit 采样背景时错位，表现为「模糊区域整体偏移」。
+      WEUI 原生的 .weui-dialog / .weui-toast 自带 translate 居中，
+      这里靠高 alpha 填充兜底，不另改它们的定位方式。
+   ========================================================================== */
+
+.glass-bar,
+.glass-sheet,
+.glass-dialog {
+  /* 三档共用的兜底填充：即使某个类忘了写自己的 fill，也不会透成透明 */
+  background-color: var(--glass-bar-fill);
+}
+
+/* 薄玻璃：吸顶条 / tabbar。面积窄长，模糊半径小，滚动时开销可控。 */.glass-bar {
+  -webkit-backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur)) saturate(180%);
+  /* 上沿一道 1rpx 内高光：玻璃的「厚度」全靠这条线 */
+  box-shadow: inset 0 1rpx 0 var(--glass-edge-light);
+}
+
+/* 中玻璃：半屏弹层。只切上沿高光，左右边留给圆角裁切。 */
+.glass-sheet {
+  background-color: var(--glass-sheet-fill);
+  -webkit-backdrop-filter: blur(var(--glass-sheet-blur));
+  backdrop-filter: blur(var(--glass-sheet-blur));
+  backdrop-filter: blur(var(--glass-sheet-blur)) saturate(180%);
+  border-top: 1rpx solid var(--glass-edge-light);
+  box-shadow: var(--glass-lift);
+}
+
+/* 厚玻璃：模态框。alpha 最高，因为模态下面通常压着表单，
+   文字不能透上来；模糊只负责把底下的轮廓化成色块。 */
+.glass-dialog {
+  background-color: var(--glass-dialog-fill);
+  -webkit-backdrop-filter: blur(var(--glass-dialog-blur));
+  backdrop-filter: blur(var(--glass-dialog-blur));
+  backdrop-filter: blur(var(--glass-dialog-blur)) saturate(180%);
+  border: 1rpx solid var(--glass-edge-light);
+}
+
 /* ---------- 内容块：大 R 角白色卡片 ---------- */
 /* 原 WEUI 通栏平面靠上下两条贯穿线分隔；改成独立卡片后，
    用一整圈 1px 描边勾出圆角边界（暗色底上也能看清形状），
-   上下两条贯穿线随之移除，否则会从圆弧里穿出去。 */
+   上下两条贯穿线随之移除，否则会从圆弧里穿出去。
+   底色取 .90 的半透明白：叠在 #ededed 上合成约 #fbfbfb，
+   比纯白低 4 个色阶，肉眼是「乳白玻璃」而不是「打印纸」。
+   刻意不挂 backdrop-filter —— 见上方材质层说明。 */
 .card {
   margin: 0 0 32rpx;
   padding: 0 32rpx;
-  background-color: var(--weui-BG-2);
+  background-color: var(--glass-bg);
   border: 1rpx solid var(--weui-FG-3);
   border-radius: var(--radius-card);
   /* 让内部行的底色与分隔线跟着圆弧裁切，避免直角盖住圆角 */
   overflow: hidden;
-  box-shadow: none;
+  /* 上沿内高光：暗色下是一丝微光，亮色下不可见，但不写就「薄」不下去 */
+  box-shadow: inset 0 1rpx 0 var(--glass-edge-light);
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -437,12 +499,19 @@ scroll-view {
   flex-direction: column;
   max-height: 75vh;
   padding: 0 32rpx calc(32rpx + env(safe-area-inset-bottom));
-  background-color: var(--weui-BG-2);
-  border-top: 0;
+  /* 中玻璃：0.92 白 + 32px 模糊。这里 alpha 比直觉高，是因为弹层底下
+     往往是彩色的东西——绿色主按钮、分类色块、红色警示标签。
+     .84 的填充在没有模糊的平台（模拟器、部分安卓）会把这些颜色
+     淡成一片脏影子；.92 之后只剩一层几乎察觉不到的环境色，
+     有模糊时又照样透出柔和的明暗变化，两头都不亏。 */
+  background-color: var(--glass-sheet-fill);
+  border-top: 1rpx solid var(--glass-edge-light);
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
-  box-shadow: none;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+  box-shadow: var(--glass-lift);
+  -webkit-backdrop-filter: blur(var(--glass-sheet-blur));
+  backdrop-filter: blur(var(--glass-sheet-blur));
+  backdrop-filter: blur(var(--glass-sheet-blur)) saturate(180%);
+  /* 必须保持 none：transform 会新建包含块，让上面的模糊采样错位 */
   -webkit-transform: none;
   transform: none;
 }
@@ -495,13 +564,30 @@ scroll-view {
   border-radius: var(--radius-sm);
 }
 
+/* 厚玻璃：0.92 白 + 44px 模糊。模态框盖住的往往是表单，
+   文字不能透上来，所以 alpha 拉到最高；模糊只负责把底下大块的
+   卡片与按钮化成没有轮廓的色块，制造「悬浮在页面之上」的层级。
+   WEUI 原生用 transform: translateY(-50%) 居中，此处的模糊采样
+   可能因此偏移几像素，但高 alpha 填充让这点误差看不出来。 */
 .weui-dialog {
   border-radius: var(--radius-sheet);
   overflow: hidden;
+  background-color: var(--glass-dialog-fill);
+  border: 1rpx solid var(--glass-edge-light);
+  -webkit-backdrop-filter: blur(var(--glass-dialog-blur));
+  backdrop-filter: blur(var(--glass-dialog-blur));
+  backdrop-filter: blur(var(--glass-dialog-blur)) saturate(180%);
 }
 
+/* toast 是深底白字的小方块，玻璃感只体现在边缘：
+   模糊半径取 24px（比弹窗小，因为面积小、离视线更近）。 */
 .weui-toast {
   border-radius: var(--radius-lg);
+  background-color: var(--glass-toast-fill);
+  border: 1rpx solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px) saturate(180%);
 }
 
 .weui-toptips {
@@ -517,9 +603,17 @@ scroll-view {
   border-radius: var(--radius-control);
 }
 
-/* 半屏弹层：WEUI 默认只切顶角，这里与自绘 .sheet 对齐 */
-.weui-half-screen-dialog {
+/* 半屏弹层：WEUI 默认只切顶角，这里与自绘 .sheet 对齐。
+   项目里所有弹层都写作 class="sheet weui-half-screen-dialog"，
+   所以这里用双类选择器（0,2,0）直接把 WEUI 源的
+   .weui-half-screen-dialog{background: BG-2}（0,1,0）按住，
+   不依赖 @import 的先后顺序——顺序一变就悄悄退回纯白，很难查。 */
+.sheet.weui-half-screen-dialog {
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background-color: var(--glass-sheet-fill);
+  -webkit-backdrop-filter: blur(var(--glass-sheet-blur));
+  backdrop-filter: blur(var(--glass-sheet-blur));
+  backdrop-filter: blur(var(--glass-sheet-blur)) saturate(180%);
 }
 
 .weui-cells {

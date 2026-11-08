@@ -47,8 +47,20 @@
 </view>
 
 <!-- 新建 / 编辑分类 -->
-<view class="sheet-mask weui-mask" wx:if="{{sheetVisible}}" bindtap="onSheetClose"></view>
-<view class="sheet weui-half-screen-dialog" wx:if="{{sheetVisible}}">
+<!-- 弹层是 .page 的兄弟节点，不在根节点子树里，拿不到 page 上那套
+     data-weui-theme 变量，所以每个弹层节点都要自己声明一次；
+     漏了的话暗色模式下弹层仍是浅色玻璃，和背后的暗页面对不上。 -->
+<view
+  class="sheet-mask weui-mask"
+  data-weui-theme="{{themeMode || 'light'}}"
+  wx:if="{{sheetVisible}}"
+  bindtap="onSheetClose"
+></view>
+<view
+  class="sheet weui-half-screen-dialog"
+  data-weui-theme="{{themeMode || 'light'}}"
+  wx:if="{{sheetVisible}}"
+>
   <view class="sheet-head weui-half-screen-dialog__hd">
     <text class="sheet-title weui-half-screen-dialog__title">{{sheetMode === 'create' ? '新建分类' : '编辑分类'}}</text>
     <text class="sheet-close" bindtap="onSheetClose">关闭</text>
@@ -103,8 +115,17 @@
 </view>
 
 <!-- 删除前选择资料迁往哪个分类 -->
-<view class="sheet-mask weui-mask" wx:if="{{migrateVisible}}" bindtap="onMigrateClose"></view>
-<view class="sheet weui-half-screen-dialog" wx:if="{{migrateVisible}}">
+<view
+  class="sheet-mask weui-mask"
+  data-weui-theme="{{themeMode || 'light'}}"
+  wx:if="{{migrateVisible}}"
+  bindtap="onMigrateClose"
+></view>
+<view
+  class="sheet weui-half-screen-dialog"
+  data-weui-theme="{{themeMode || 'light'}}"
+  wx:if="{{migrateVisible}}"
+>
   <view class="sheet-head weui-half-screen-dialog__hd">
     <text class="sheet-title weui-half-screen-dialog__title">资料迁往哪里</text>
     <text class="sheet-close" bindtap="onMigrateClose">取消</text>

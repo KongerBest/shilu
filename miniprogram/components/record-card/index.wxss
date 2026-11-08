@@ -1,11 +1,15 @@
-/* WEUI MediaBox：白色内容块，改为独立的大 R 角卡片 */
+/* WEUI MediaBox：白色内容块，改为独立的大 R 角卡片。
+   底色跟全局 .card 一致走 --glass-bg（.90 半透明白）：信息库、搜索页、
+   分类页会用同一张卡在不同底色上，如果这里留纯白，和别的卡片并排时
+   会有一张明显更亮。 */
 .weui-media-box.rcard {
   padding: 24rpx 32rpx;
-  background-color: var(--weui-BG-2);
+  background-color: var(--glass-bg);
   /* 原来是靠顶部 1px 线分隔的连排列表，独立卡片后用整圈描边勾出圆角 */
   border: 1rpx solid var(--weui-FG-3);
   border-radius: var(--radius-card);
   overflow: hidden;
+  box-shadow: inset 0 1rpx 0 var(--glass-edge-light);
 }
 
 /* 顶部那条贯穿线会从圆弧里穿出去，删掉 */

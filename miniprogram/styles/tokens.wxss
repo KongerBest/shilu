@@ -40,27 +40,58 @@ page,
   --c-on-accent: #ffffff;
   --shadow-accent: none;
 
-  /* 旧玻璃材质变量：一律中性化，彻底移除渐变 / 折射 / 磨砂 */
-  --glow-1: transparent;
-  --glow-2: transparent;
-  --glow-3: transparent;
-  --bg-gradient: none;
-  --glass-bg: var(--weui-BG-2);
-  --glass-bg-strong: var(--weui-BG-2);
-  --glass-bg-soft: var(--weui-BG-1);
+  /* ==========================================================================
+     毛玻璃材质（iOS 风格）
+     --------------------------------------------------------------------------
+     分两层，不要混用：
+
+     A. 面元素（在文档流里，背后只有纯灰页面）
+        只做「半透明填充 + 细边 + 内高光」，不挂 backdrop-filter。
+        理由：背景是 #ededed 纯色，模糊它没有任何视觉收益，
+        却要为列表里每一张卡片开辟一次离屏采样，滚动直接掉帧。
+        alpha 取 .78~.94，合成后仍接近 #fbfbfb，与 WEUI 纯白几乎无差，
+        所以「不模糊」这件事用户看不出来。
+
+     B. 浮层（吸顶条 / tabbar / 半屏弹层 / 模态框 / toast）
+        这些背后有真实内容在滚，才值得付模糊的代价。
+        填充 alpha 与模糊半径成反比：越透越要糊得狠，否则字会花。
+
+     兼容性：backdrop-filter 在 iOS WebView 生效，微信开发者工具模拟器
+     返回 none，部分安卓 X5 内核也不支持。所以填充色本身必须是可用的，
+     模糊只当增益——读下面每条 alpha 时都假设它「没有模糊」也成立。
+     ========================================================================== */
+
+  /* A. 面元素 */
+  --glass-bg: rgba(255, 255, 255, 0.9);        /* 常规面：卡片、区块 */
+  --glass-bg-strong: rgba(255, 255, 255, 0.94); /* 需要压住底色的面：工具条、统计块 */
+  --glass-bg-soft: rgba(255, 255, 255, 0.78);   /* 大块留白面：hero、空态 */
   --glass-border: var(--weui-FG-3);
-  --glass-border-soft: var(--weui-FG-3);
-  --glass-highlight: none;
-  --glass-ring: none;
-  --glass-shadow: none;
-  --glass-shadow-lg: none;
-  --glass-specular: transparent;
-  --glass-blur: none;
+  --glass-border-soft: rgba(0, 0, 0, 0.06);
+
+  /* B. 浮层填充（light） */
+  --glass-bar-fill: rgba(247, 247, 247, 0.78);    /* 薄玻璃：吸顶条 / tabbar */
+  --glass-veil-fill: rgba(237, 237, 237, 0.72);   /* 页面色薄雾：只虚化、不改色相 */
+  --glass-sheet-fill: rgba(255, 255, 255, 0.92);  /* 中玻璃：半屏弹层 */
+  --glass-dialog-fill: rgba(255, 255, 255, 0.92); /* 厚玻璃：模态弹窗 */
+  --glass-toast-fill: rgba(48, 48, 48, 0.84);     /* 深玻璃：toast（白字压暗底） */
+
+  /* B. 浮层模糊半径。20px 是「能感觉到柔化但还看得清轮廓」的临界值，
+     再小就像脏了，再大安卓端采样开销陡增。 */
+  --glass-bar-blur: 20px;
+  --glass-sheet-blur: 32px;
+  --glass-dialog-blur: 44px;
+
+  /* 边缘：玻璃之所以像玻璃，靠的是上沿一道高光，
+     而不是模糊本身。这条线在任何平台都能画出来，是材质的骨架。 */
+  --glass-edge-light: rgba(255, 255, 255, 0.72);
+
+  /* 浮层外阴影：向上投，制造「压在内容之上」的悬浮感 */
+  --glass-lift: 0 -6rpx 28rpx rgba(15, 23, 42, 0.07);
+
   --c-accent-glass: var(--weui-BRAND);
   --c-accent-glass-bright: var(--weui-BRAND);
   --c-accent-glass-soft: var(--weui-TAG-BACKGROUND-GREEN);
-  --shadow-float: none;
-  --glass-tabbar: var(--weui-BG-1);
+  --shadow-float: var(--glass-lift);
 
   /* 动效：WEUI 只用短促的状态反馈，不做整页转场 */
   --dur-fast: 120ms;
@@ -137,4 +168,23 @@ page,
   --nav-top: #1e1e1e;
   --nav-mid: #1e1e1e;
   --nav-bottom: #1e1e1e;
+
+  /* 毛玻璃：暗色不是「把亮色乘个系数」，要重新配平。
+     暗底上的半透明白会发灰发脏，所以填充改用中性深灰；
+     alpha 反而要更高（.80~.92），因为暗色下内容与底的明度差小，
+     透太多会让文字边界糊掉。
+     边缘高光必须降到 .08~.12：深色玻璃的亮边只该是「一丝」，亮了就成塑料。 */
+  --glass-bg: rgba(28, 28, 28, 0.9);
+  --glass-bg-strong: rgba(34, 34, 34, 0.94);
+  --glass-bg-soft: rgba(24, 24, 24, 0.78);
+  --glass-border-soft: rgba(255, 255, 255, 0.08);
+
+  --glass-bar-fill: rgba(22, 22, 22, 0.8);
+  --glass-veil-fill: rgba(17, 17, 17, 0.72);
+  --glass-sheet-fill: rgba(25, 25, 25, 0.92);
+  --glass-dialog-fill: rgba(38, 38, 38, 0.92);
+  --glass-toast-fill: rgba(58, 58, 58, 0.88);
+
+  --glass-edge-light: rgba(255, 255, 255, 0.1);
+  --glass-lift: 0 -6rpx 28rpx rgba(0, 0, 0, 0.34);
 }

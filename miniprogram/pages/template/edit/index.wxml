@@ -98,8 +98,18 @@
 </view>
 
 <!-- 字段编辑弹层 -->
-<view class="sheet-mask weui-mask" wx:if="{{sheetVisible}}" bindtap="onSheetClose"></view>
-<view class="sheet weui-half-screen-dialog" wx:if="{{sheetVisible}}">
+<!-- 弹层在 .page 外部，需要自带 data-weui-theme 才能跟随暗色 -->
+<view
+  class="sheet-mask weui-mask"
+  data-weui-theme="{{themeMode || 'light'}}"
+  wx:if="{{sheetVisible}}"
+  bindtap="onSheetClose"
+></view>
+<view
+  class="sheet weui-half-screen-dialog"
+  data-weui-theme="{{themeMode || 'light'}}"
+  wx:if="{{sheetVisible}}"
+>
   <view class="sheet-head weui-half-screen-dialog__hd">
     <text class="sheet-title weui-half-screen-dialog__title">{{sheetIsNew ? '添加字段' : '编辑字段'}}</text>
     <text class="sheet-close" bindtap="onSheetClose">关闭</text>

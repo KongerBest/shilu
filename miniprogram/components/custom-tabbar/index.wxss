@@ -1,6 +1,11 @@
 /* WEUI Tabbar：贴底、无悬浮胶囊、无渐变；选中态用 weui-bar__item_on。
    图标与文字的上下居中布局写在 WXML 内联样式里，避免 WEUI 全局
-   .weui-tabbar__icon{display:inline-block} 压过组件 WXSS 导致图标与文字并排。 */
+   .weui-tabbar__icon{display:inline-block} 压过组件 WXSS 导致图标与文字并排。
+
+   材质：薄玻璃（--glass-bar-fill + 20px 模糊）。
+   tabbar 是全局唯一始终悬在滚动内容之上的长条，也是毛玻璃收益最大的一处——
+   列表滚到底部时，卡片从它下面穿过、被虚化成柔和的色块，层级一眼可见。
+   面积虽宽但高度只有 ~80px，模糊开销恒定，不随列表长度增长。 */
 .weui-tabbar {
   position: fixed;
   left: 0;
@@ -10,7 +15,13 @@
   height: auto;
   min-height: var(--tabbar-height);
   padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background-color: var(--glass-bar-fill);
+  /* 外沿 hairline 负责「分隔」，内沿高光负责「厚度」，两条都要有 */
   border-top: 1rpx solid var(--weui-FG-3);
+  box-shadow: inset 0 1rpx 0 var(--glass-edge-light);
+  -webkit-backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur)) saturate(180%);
 }
 
 .weui-tabbar__item {

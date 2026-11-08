@@ -3,10 +3,13 @@
 }
 
 /* 搜索条吸顶：结果几十行时还能改关键词。
-   底色必须和页面同为 BG-0：这里原本用 --glass-bg-strong（= BG-2 纯白），
-   在灰底页面上是一块带直角、带硬边的白色横条，白底白框叠在一起
-   看着像「搜索框下面多出一块白板」。改回页面本色后，搜索框自己就是
-   唯一的白色面，边界由描边和色差自然给出。 */
+
+   材质用 --glass-veil-fill 而不是 --glass-bar-fill：
+   本页底色是 BG-0 灰，如果吸顶条吃 #f7f7f7 的白玻璃，合成后会比页面亮
+   8 个色阶，重新长出上一轮刚去掉的那块「白板」。
+   veil 是「页面本色 + 0.72 透明」，只改变虚实、不改变色相：
+   滚动时卡片从下面经过，被 20px 模糊柔化成灰雾，搜索框仍是页面上
+   唯一一个白色面，层次不乱。 */
 .sbar-row {
   position: sticky;
   top: 0;
@@ -18,10 +21,16 @@
      否则搜索框会比下方卡片多缩进一层，吸顶时更明显 */
   margin: 0;
   padding: var(--sp-3) 0;
-  background-color: var(--weui-BG-0);
+  background-color: var(--glass-veil-fill);
+  box-shadow: inset 0 1rpx 0 var(--glass-edge-light);
+  -webkit-backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur));
+  backdrop-filter: blur(var(--glass-bar-blur)) saturate(180%);
 }
 
-/* 底部渐隐：内容滚到搜索条下方时淡出，避免在色带边缘出现硬切线。
+/* 底部渐隐：滚到搜索条下方的内容先被模糊、再被这条 32rpx 的雾带收边，
+   避免玻璃条下沿出现一条硬切线。
+   模糊失效的平台（模拟器 / 部分安卓）上，它单独负责柔化边界，同样成立。
    未滚动时它叠在同色页面上，肉眼看不见。 */
 .sbar-row::after {
   content: '';
@@ -30,7 +39,7 @@
   right: 0;
   left: 0;
   height: var(--sp-4);
-  background: linear-gradient(to bottom, var(--weui-BG-0), transparent);
+  background: linear-gradient(to bottom, var(--glass-veil-fill), transparent);
   pointer-events: none;
 }
 
